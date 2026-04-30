@@ -1,0 +1,409 @@
+/* ============================================================
+   PublicCardPage — PetCard Digital Wallet (public, no auth)
+   Color palette aligned with petcard-mobile theme.
+   ============================================================ */
+
+:root {
+  --pc-primary: #27a9d8;
+  --pc-primary-dark: #107fa8;
+  --pc-primary-soft: #e6f7fc;
+  --pc-bg: #f6fbfe;
+  --pc-surface: #ffffff;
+  --pc-text: #14313f;
+  --pc-muted: #607d8b;
+  --pc-border: #d8eef6;
+  --pc-success: #06a77d;
+  --pc-danger: #e63946;
+  --pc-warning: #d4880f;
+  --pc-radius-sm: 8px;
+  --pc-radius-md: 12px;
+  --pc-radius-lg: 16px;
+}
+
+/* Page container */
+.card-page {
+  min-height: 100vh;
+  background: var(--pc-bg);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  color: var(--pc-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--pc-surface);
+  border-bottom: 1px solid var(--pc-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-icon {
+  display: flex;
+  align-items: center;
+  color: var(--pc-primary);
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pc-primary-dark);
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pc-primary-dark);
+  background: var(--pc-primary-soft);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* Main content */
+.card-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--pc-border);
+  border-top-color: var(--pc-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading p {
+  font-size: 15px;
+  color: var(--pc-muted);
+}
+
+/* Error states */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pc-muted);
+  margin-bottom: 16px;
+}
+
+.error-state h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--pc-text);
+  margin: 0 0 8px;
+}
+
+.error-state p {
+  font-size: 15px;
+  color: var(--pc-muted);
+  max-width: 400px;
+  margin: 0;
+}
+
+.retry-btn {
+  margin-top: 24px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--pc-primary);
+  border: none;
+  border-radius: var(--pc-radius-md);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.retry-btn:hover {
+  opacity: 0.85;
+}
+
+/* Pet profile */
+.pet-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  padding: 24px;
+}
+
+.pet-avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.pet-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--pc-radius-md);
+  object-fit: cover;
+}
+
+.pet-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--pc-radius-md);
+  background: var(--pc-primary-soft);
+  color: var(--pc-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.pet-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pet-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--pc-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pet-breed {
+  font-size: 14px;
+  color: var(--pc-muted);
+  margin: 4px 0 0;
+}
+
+.pet-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.detail-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-primary-soft);
+  color: var(--pc-primary-dark);
+}
+
+.detail-pill.species {
+  background: var(--pc-primary);
+  color: #fff;
+}
+
+.tutor-info {
+  font-size: 13px;
+  color: var(--pc-muted);
+  margin: 12px 0 0;
+}
+
+.tutor-info strong {
+  color: var(--pc-text);
+}
+
+/* QR Code */
+.qr-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 24px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+}
+
+.qr-image {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--pc-radius-sm);
+}
+
+/* Health sections */
+.health-section {
+  margin-top: 16px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-lg);
+  padding: 24px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pc-text);
+  margin: 0 0 16px;
+}
+
+.section-icon {
+  color: var(--pc-primary);
+  flex-shrink: 0;
+}
+
+.count-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pc-primary-dark);
+  background: var(--pc-primary-soft);
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 4px;
+}
+
+.empty-section {
+  font-size: 14px;
+  color: var(--pc-muted);
+  text-align: center;
+  padding: 24px 0;
+  margin: 0;
+}
+
+/* Tables */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pc-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pc-border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--pc-border);
+  color: var(--pc-text);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: var(--pc-primary-soft);
+}
+
+/* Footer */
+.card-footer {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 13px;
+  color: var(--pc-muted);
+  border-top: 1px solid var(--pc-border);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.card-footer strong {
+  color: var(--pc-primary-dark);
+}
+
+/* ============================================================
+   Responsive — mobile adjustments
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .card-content {
+    padding: 16px 12px 40px;
+  }
+
+  .pet-profile {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 16px;
+  }
+
+  .pet-details {
+    justify-content: center;
+  }
+
+  .tutor-info {
+    text-align: center;
+  }
+
+  .pet-name {
+    font-size: 22px;
+  }
+
+  .health-section {
+    padding: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  thead th,
+  tbody td {
+    padding: 8px;
+  }
+
+  .qr-image {
+    width: 140px;
+    height: 140px;
+  }
+}
