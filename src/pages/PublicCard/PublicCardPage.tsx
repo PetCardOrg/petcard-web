@@ -168,9 +168,6 @@ function MedicationTable({
   );
 }
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export function PublicCardPage() {
   const { token } = useParams<{ token: string }>();
   const [card, setCard] = useState<CarteiraDigitalPublicResponseDto | null>(
@@ -180,11 +177,15 @@ export function PublicCardPage() {
   const [error, setError] = useState<"not_found" | "network" | null>(null);
 
   useEffect(() => {
-    if (!token || !UUID_RE.test(token)) {
+    if (!token) {
       setError("not_found");
       setIsLoading(false);
       return;
     }
+
+    setCard(null);
+    setError(null);
+    setIsLoading(true);
 
     let cancelled = false;
 
