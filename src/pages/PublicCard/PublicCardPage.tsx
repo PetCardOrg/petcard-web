@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type {
   CarteiraDigitalPublicResponseDto,
   DewormingRecordResponseDto,
@@ -17,19 +18,8 @@ import {
 
 import { getPublicCard } from "../../services/card.service";
 import { ApiError } from "../../services/api";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
 import "./PublicCardPage.css";
-
-const SPECIES_LABELS: Record<string, string> = {
-  DOG: "Cachorro",
-  CAT: "Gato",
-  BIRD: "Ave",
-  OTHER: "Outro",
-};
-
-const SEX_LABELS: Record<string, string> = {
-  MALE: "Macho",
-  FEMALE: "Fêmea",
-};
 
 function formatDate(iso: string): string {
   const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -37,7 +27,9 @@ function formatDate(iso: string): string {
   return `${match[3]}/${match[2]}/${match[1]}`;
 }
 
-function calculateAge(birthDate: string | undefined): string | null {
+function useCalculateAge(birthDate: string | undefined): string | null {
+  const { t } = useTranslation();
+
   if (!birthDate) return null;
   const match = birthDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return null;
@@ -55,19 +47,20 @@ function calculateAge(birthDate: string | undefined): string | null {
   if (totalMonths >= 12) {
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
-    const yearsPart = years === 1 ? "1 ano" : `${years} anos`;
+    const yearsPart = t("age.year", { count: years });
     if (months === 0) return yearsPart;
-    const monthsPart = months === 1 ? "1 mês" : `${months} meses`;
-    return `${yearsPart} e ${monthsPart}`;
+    const monthsPart = t("age.month", { count: months });
+    return t("age.yearsAndMonths", { years: yearsPart, months: monthsPart });
   }
-  if (totalMonths > 0)
-    return totalMonths === 1 ? "1 mês" : `${totalMonths} meses`;
-  return "Menos de 1 mês";
+  if (totalMonths > 0) return t("age.month", { count: totalMonths });
+  return t("age.lessThanOneMonth");
 }
 
 function VaccineTable({ vaccines }: { vaccines: VaccineRecordResponseDto[] }) {
+  const { t } = useTranslation();
+
   if (vaccines.length === 0) {
-    return <p className="empty-section">Nenhuma vacina registrada.</p>;
+    return <p className="empty-section">{t("publicCard.empty.vaccines")}</p>;
   }
 
   return (
@@ -75,10 +68,10 @@ function VaccineTable({ vaccines }: { vaccines: VaccineRecordResponseDto[] }) {
       <table>
         <thead>
           <tr>
-            <th>Vacina</th>
-            <th>Data de aplicação</th>
-            <th>Próxima dose</th>
-            <th>Veterinário</th>
+            <th>{t("publicCard.table.vaccine")}</th>
+            <th>{t("publicCard.table.applicationDate")}</th>
+            <th>{t("publicCard.table.nextDose")}</th>
+            <th>{t("publicCard.table.veterinarian")}</th>
           </tr>
         </thead>
         <tbody>
@@ -101,8 +94,10 @@ function DewormingTable({
 }: {
   dewormings: DewormingRecordResponseDto[];
 }) {
+  const { t } = useTranslation();
+
   if (dewormings.length === 0) {
-    return <p className="empty-section">Nenhuma vermifugação registrada.</p>;
+    return <p className="empty-section">{t("publicCard.empty.dewormings")}</p>;
   }
 
   return (
@@ -110,10 +105,10 @@ function DewormingTable({
       <table>
         <thead>
           <tr>
-            <th>Produto</th>
-            <th>Data de aplicação</th>
-            <th>Próxima dose</th>
-            <th>Veterinário</th>
+            <th>{t("publicCard.table.product")}</th>
+            <th>{t("publicCard.table.applicationDate")}</th>
+            <th>{t("publicCard.table.nextDose")}</th>
+            <th>{t("publicCard.table.veterinarian")}</th>
           </tr>
         </thead>
         <tbody>
@@ -136,8 +131,10 @@ function MedicationTable({
 }: {
   medications: MedicationRecordResponseDto[];
 }) {
+  const { t } = useTranslation();
+
   if (medications.length === 0) {
-    return <p className="empty-section">Nenhuma medicação registrada.</p>;
+    return <p className="empty-section">{t("publicCard.empty.medications")}</p>;
   }
 
   return (
@@ -145,11 +142,11 @@ function MedicationTable({
       <table>
         <thead>
           <tr>
-            <th>Medicação</th>
-            <th>Dosagem</th>
-            <th>Frequência</th>
-            <th>Início</th>
-            <th>Término</th>
+            <th>{t("publicCard.table.medication")}</th>
+            <th>{t("publicCard.table.dosage")}</th>
+            <th>{t("publicCard.table.frequency")}</th>
+            <th>{t("publicCard.table.startDate")}</th>
+            <th>{t("publicCard.table.endDate")}</th>
           </tr>
         </thead>
         <tbody>
@@ -159,7 +156,11 @@ function MedicationTable({
               <td>{m.dosage}</td>
               <td>{m.frequency}</td>
               <td>{formatDate(m.start_date)}</td>
-              <td>{m.end_date ? formatDate(m.end_date) : "Em andamento"}</td>
+              <td>
+                {m.end_date
+                  ? formatDate(m.end_date)
+                  : t("publicCard.table.ongoing")}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -170,6 +171,7 @@ function MedicationTable({
 
 export function PublicCardPage() {
   const { token } = useParams<{ token: string }>();
+  const { t } = useTranslation();
   const [card, setCard] = useState<CarteiraDigitalPublicResponseDto | null>(
     null,
   );
@@ -210,12 +212,14 @@ export function PublicCardPage() {
     };
   }, [token]);
 
+  const age = useCalculateAge(card?.birth_date);
+
   if (isLoading) {
     return (
       <div className="card-page">
         <div className="loading">
           <div className="spinner" />
-          <p>Carregando carteira digital...</p>
+          <p>{t("publicCard.loading")}</p>
         </div>
       </div>
     );
@@ -228,11 +232,8 @@ export function PublicCardPage() {
           <div className="error-icon">
             <IoSearchOutline size={48} />
           </div>
-          <h1>Carteira não encontrada</h1>
-          <p>
-            O link acessado não corresponde a nenhuma carteira digital
-            cadastrada. Verifique se o link está correto.
-          </p>
+          <h1>{t("publicCard.notFound.title")}</h1>
+          <p>{t("publicCard.notFound.description")}</p>
         </div>
       </div>
     );
@@ -245,25 +246,23 @@ export function PublicCardPage() {
           <div className="error-icon">
             <IoAlertCircleOutline size={48} />
           </div>
-          <h1>Erro ao carregar</h1>
-          <p>
-            Não foi possível carregar a carteira digital. Tente novamente em
-            alguns instantes.
-          </p>
+          <h1>{t("publicCard.networkError.title")}</h1>
+          <p>{t("publicCard.networkError.description")}</p>
           <button
             className="retry-btn"
             onClick={() => window.location.reload()}
           >
-            Tentar novamente
+            {t("publicCard.networkError.retry")}
           </button>
         </div>
       </div>
     );
   }
 
-  const age = calculateAge(card.birth_date);
-  const speciesLabel = SPECIES_LABELS[card.species] ?? card.species;
-  const sexLabel = SEX_LABELS[card.sex] ?? card.sex;
+  const speciesLabel = t(`species.${card.species}`, {
+    defaultValue: card.species,
+  });
+  const sexLabel = t(`sex.${card.sex}`, { defaultValue: card.sex });
 
   return (
     <div className="card-page">
@@ -272,9 +271,12 @@ export function PublicCardPage() {
           <span className="brand-icon">
             <IoPawOutline size={24} />
           </span>
-          <span className="brand-name">PetCard</span>
+          <span className="brand-name">{t("brand.name")}</span>
         </div>
-        <span className="badge">Carteira Digital</span>
+        <div className="header-actions">
+          <LanguageSwitcher />
+          <span className="badge">{t("brand.badge")}</span>
+        </div>
       </header>
 
       <main className="card-content">
@@ -284,7 +286,7 @@ export function PublicCardPage() {
             {card.photo_url ? (
               <img
                 src={card.photo_url}
-                alt={`Foto de ${card.pet_name}`}
+                alt={card.pet_name}
                 className="pet-avatar"
               />
             ) : (
@@ -308,7 +310,8 @@ export function PublicCardPage() {
             </div>
 
             <p className="tutor-info">
-              Tutor: <strong>{card.tutor_name}</strong>
+              {t("publicCard.petProfile.tutor")}:{" "}
+              <strong>{card.tutor_name}</strong>
             </p>
           </div>
         </section>
@@ -318,7 +321,7 @@ export function PublicCardPage() {
           <section className="qr-section">
             <img
               src={card.qr_code_url}
-              alt="QR Code da carteira digital"
+              alt={t("publicCard.qrCodeAlt")}
               className="qr-image"
             />
           </section>
@@ -328,7 +331,7 @@ export function PublicCardPage() {
         <section className="health-section">
           <h2 className="section-title">
             <IoMedkitOutline className="section-icon" size={20} />
-            Vacinas
+            {t("publicCard.sections.vaccines")}
             <span className="count-badge">{card.vaccines.length}</span>
           </h2>
           <VaccineTable vaccines={card.vaccines} />
@@ -337,7 +340,7 @@ export function PublicCardPage() {
         <section className="health-section">
           <h2 className="section-title">
             <IoBugOutline className="section-icon" size={20} />
-            Vermifugações
+            {t("publicCard.sections.dewormings")}
             <span className="count-badge">{card.dewormings.length}</span>
           </h2>
           <DewormingTable dewormings={card.dewormings} />
@@ -346,7 +349,7 @@ export function PublicCardPage() {
         <section className="health-section">
           <h2 className="section-title">
             <IoBandageOutline className="section-icon" size={20} />
-            Medicações
+            {t("publicCard.sections.medications")}
             <span className="count-badge">{card.medications.length}</span>
           </h2>
           <MedicationTable medications={card.medications} />
@@ -354,10 +357,7 @@ export function PublicCardPage() {
       </main>
 
       <footer className="card-footer">
-        <p>
-          Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu
-          pet em um só lugar.
-        </p>
+        <p dangerouslySetInnerHTML={{ __html: t("publicCard.footer") }} />
       </footer>
     </div>
   );

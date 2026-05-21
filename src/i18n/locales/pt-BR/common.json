@@ -1,0 +1,71 @@
+{
+  "brand": {
+    "name": "PetCard",
+    "badge": "Carteira Digital"
+  },
+  "publicCard": {
+    "loading": "Carregando carteira digital...",
+    "notFound": {
+      "title": "Carteira não encontrada",
+      "description": "O link acessado não corresponde a nenhuma carteira digital cadastrada. Verifique se o link está correto."
+    },
+    "networkError": {
+      "title": "Erro ao carregar",
+      "description": "Não foi possível carregar a carteira digital. Tente novamente em alguns instantes.",
+      "retry": "Tentar novamente"
+    },
+    "petProfile": {
+      "tutor": "Tutor"
+    },
+    "qrCodeAlt": "QR Code da carteira digital",
+    "sections": {
+      "vaccines": "Vacinas",
+      "dewormings": "Vermifugações",
+      "medications": "Medicações"
+    },
+    "table": {
+      "vaccine": "Vacina",
+      "product": "Produto",
+      "medication": "Medicação",
+      "applicationDate": "Data de aplicação",
+      "nextDose": "Próxima dose",
+      "veterinarian": "Veterinário",
+      "dosage": "Dosagem",
+      "frequency": "Frequência",
+      "startDate": "Início",
+      "endDate": "Término",
+      "ongoing": "Em andamento"
+    },
+    "empty": {
+      "vaccines": "Nenhuma vacina registrada.",
+      "dewormings": "Nenhuma vermifugação registrada.",
+      "medications": "Nenhuma medicação registrada."
+    },
+    "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar."
+  },
+  "notFoundPage": {
+    "title": "Página não encontrada",
+    "description": "O endereço acessado não existe."
+  },
+  "species": {
+    "DOG": "Cachorro",
+    "CAT": "Gato",
+    "BIRD": "Ave",
+    "OTHER": "Outro"
+  },
+  "sex": {
+    "MALE": "Macho",
+    "FEMALE": "Fêmea"
+  },
+  "age": {
+    "year_one": "1 ano",
+    "year_other": "{{count}} anos",
+    "month_one": "1 mês",
+    "month_other": "{{count}} meses",
+    "yearsAndMonths": "{{years}} e {{months}}",
+    "lessThanOneMonth": "Menos de 1 mês"
+  },
+  "languageSwitcher": {
+    "label": "Idioma"
+  }
+}
