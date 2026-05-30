@@ -9,10 +9,18 @@ import {
   IoBug,
   IoMedical,
   IoDocumentText,
+  IoAdd,
+  IoClose,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
-import { fetchPetProfile } from "../../services/pet-profile.service";
-import type { PetProfileData } from "../../services/pet-profile.service";
+import {
+  fetchPetProfile,
+  createClinicalNote,
+} from "../../services/pet-profile.service";
+import type {
+  PetProfileData,
+  CreateClinicalNoteDto,
+} from "../../services/pet-profile.service";
 import { ApiError } from "../../services/api";
 import "./VetPetProfilePage.css";
 
@@ -128,6 +136,13 @@ export function VetPetProfilePage() {
     "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
   >("timeline");
 
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState<CreateClinicalNoteDto>({
+    diagnostico: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     if (!token || !id) return;
     setLoading(true);
@@ -156,6 +171,46 @@ export function VetPetProfilePage() {
 
   function formatDate(d: Date | string) {
     return new Date(d).toLocaleDateString();
+  }
+
+  function openForm() {
+    setFormData({ diagnostico: "" });
+    setSubmitError(null);
+    setShowForm(true);
+  }
+
+  function closeForm() {
+    setShowForm(false);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!token || !id || !formData.diagnostico.trim()) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const dto: CreateClinicalNoteDto = {
+        diagnostico: formData.diagnostico.trim(),
+      };
+      if (formData.prescricao?.trim()) {
+        dto.prescricao = formData.prescricao.trim();
+      }
+      if (formData.observacoes?.trim()) {
+        dto.observacoes = formData.observacoes.trim();
+      }
+      await createClinicalNote(token, id, dto);
+      setShowForm(false);
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        logout();
+        return;
+      }
+      setSubmitError(t("petProfile.form.submitError"));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -450,6 +505,15 @@ export function VetPetProfilePage() {
 
               {activeTab === "notes" && (
                 <>
+                  <button
+                    type="button"
+                    className="vet-pet-profile-add-note-btn"
+                    onClick={openForm}
+                  >
+                    <IoAdd size={18} />
+                    {t("petProfile.form.addNote")}
+                  </button>
+
                   {data.clinicalNotes.length === 0 ? (
                     <p className="vet-pet-profile-empty">
                       {t("petProfile.emptyNotes")}
@@ -489,6 +553,108 @@ export function VetPetProfilePage() {
               )}
             </div>
           </>
+        )}
+
+        {showForm && (
+          <div className="vet-note-modal-overlay" onClick={closeForm}>
+            <div
+              className="vet-note-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="vet-note-modal-header">
+                <h3>{t("petProfile.form.title")}</h3>
+                <button
+                  type="button"
+                  className="vet-note-modal-close"
+                  onClick={closeForm}
+                >
+                  <IoClose size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="vet-note-form">
+                <div className="vet-note-form-field">
+                  <label htmlFor="diagnostico">
+                    {t("petProfile.form.diagnostico")}{" "}
+                    <span className="vet-note-required">*</span>
+                  </label>
+                  <textarea
+                    id="diagnostico"
+                    rows={3}
+                    required
+                    placeholder={t("petProfile.form.diagnosticoPlaceholder")}
+                    value={formData.diagnostico}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        diagnostico: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="vet-note-form-field">
+                  <label htmlFor="prescricao">
+                    {t("petProfile.form.prescricao")}
+                  </label>
+                  <textarea
+                    id="prescricao"
+                    rows={3}
+                    placeholder={t("petProfile.form.prescricaoPlaceholder")}
+                    value={formData.prescricao ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        prescricao: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="vet-note-form-field">
+                  <label htmlFor="observacoes">
+                    {t("petProfile.form.observacoes")}
+                  </label>
+                  <textarea
+                    id="observacoes"
+                    rows={3}
+                    placeholder={t("petProfile.form.observacoesPlaceholder")}
+                    value={formData.observacoes ?? ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        observacoes: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                {submitError && (
+                  <p className="vet-note-form-error">{submitError}</p>
+                )}
+
+                <div className="vet-note-form-actions">
+                  <button
+                    type="button"
+                    className="vet-note-form-cancel"
+                    onClick={closeForm}
+                    disabled={submitting}
+                  >
+                    {t("petProfile.form.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    className="vet-note-form-submit"
+                    disabled={submitting || !formData.diagnostico.trim()}
+                  >
+                    {submitting
+                      ? t("petProfile.form.submitting")
+                      : t("petProfile.form.submit")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </main>
     </div>

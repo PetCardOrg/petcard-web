@@ -58,6 +58,24 @@ export interface PetProfileData {
   clinicalNotes: ClinicalNote[];
 }
 
+export interface CreateClinicalNoteDto {
+  diagnostico: string;
+  prescricao?: string;
+  observacoes?: string;
+}
+
+export async function createClinicalNote(
+  token: string,
+  petId: string,
+  dto: CreateClinicalNoteDto,
+): Promise<ClinicalNote> {
+  return apiFetch<ClinicalNote>(`/pets/${petId}/clinical-notes`, {
+    method: "POST",
+    body: dto,
+    token,
+  });
+}
+
 export async function fetchPetProfile(
   token: string,
   petId: string,

@@ -127,6 +127,20 @@
       "deworming": "Vermifugação",
       "medication": "Medicação",
       "clinical_note": "Nota Clínica"
+    },
+    "form": {
+      "title": "Nova Nota Clínica",
+      "addNote": "Nova Nota",
+      "diagnostico": "Diagnóstico",
+      "diagnosticoPlaceholder": "Descreva o diagnóstico...",
+      "prescricao": "Prescrição",
+      "prescricaoPlaceholder": "Medicamentos, dosagens, frequência...",
+      "observacoes": "Observações",
+      "observacoesPlaceholder": "Observações adicionais...",
+      "submit": "Salvar",
+      "submitting": "Salvando...",
+      "cancel": "Cancelar",
+      "submitError": "Erro ao salvar a nota clínica. Tente novamente."
     }
   }
 }

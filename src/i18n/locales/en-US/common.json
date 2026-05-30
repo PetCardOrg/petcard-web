@@ -127,6 +127,20 @@
       "deworming": "Deworming",
       "medication": "Medication",
       "clinical_note": "Clinical Note"
+    },
+    "form": {
+      "title": "New Clinical Note",
+      "addNote": "New Note",
+      "diagnostico": "Diagnosis",
+      "diagnosticoPlaceholder": "Describe the diagnosis...",
+      "prescricao": "Prescription",
+      "prescricaoPlaceholder": "Medications, dosages, frequency...",
+      "observacoes": "Observations",
+      "observacoesPlaceholder": "Additional observations...",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "cancel": "Cancel",
+      "submitError": "Failed to save clinical note. Please try again."
     }
   }
 }
