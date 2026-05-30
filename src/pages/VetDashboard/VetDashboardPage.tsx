@@ -9,6 +9,7 @@ import {
   IoQrCode,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
 import { fetchDashboardPets } from "../../services/dashboard.service";
 import type {
   DashboardPetItem,
@@ -99,6 +100,7 @@ export function VetDashboardPage() {
           <span className="vet-dashboard-brand">{t("brand.name")}</span>
         </div>
         <div className="vet-dashboard-user">
+          <LanguageSwitcher />
           <span className="vet-dashboard-username">{user?.nome}</span>
           <button
             type="button"
