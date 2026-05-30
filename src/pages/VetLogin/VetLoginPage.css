@@ -1,0 +1,130 @@
+.vet-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6fbfe;
+  padding: 1rem;
+}
+
+.vet-login-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #d8eef6;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.vet-login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.vet-login-logo-mark {
+  width: 48px;
+  height: 48px;
+  background: #27a9d8;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vet-login-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.875rem;
+  font-weight: 800;
+  text-align: center;
+  color: #14313f;
+}
+
+.vet-login-subtitle {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  color: #607d8b;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.vet-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vet-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.vet-login-field label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #14313f;
+}
+
+.vet-login-field input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d8eef6;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #14313f;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.vet-login-field input::placeholder {
+  color: #607d8b;
+}
+
+.vet-login-field input:focus {
+  border-color: #27a9d8;
+  box-shadow: 0 0 0 3px rgb(39 169 216 / 12%);
+}
+
+.vet-login-field input:disabled {
+  background: #f6fbfe;
+  cursor: not-allowed;
+}
+
+.vet-login-error {
+  margin: 0.5rem 0 0;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #e63946;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.vet-login-button {
+  margin-top: 1rem;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 12px;
+  background: #27a9d8;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.vet-login-button:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.vet-login-button:active:not(:disabled) {
+  opacity: 0.82;
+}
+
+.vet-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
