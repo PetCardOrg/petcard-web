@@ -80,7 +80,26 @@
     "genericError": "Erro ao fazer login. Tente novamente."
   },
   "vetDashboard": {
-    "welcome": "Olá, {{name}}",
-    "logout": "Sair"
+    "title": "Pets Atendidos",
+    "subtitle": "Pets com notas clínicas recentes",
+    "logout": "Sair",
+    "searchPlaceholder": "Buscar por nome do pet ou tutor...",
+    "loading": "Carregando...",
+    "empty": "Nenhum pet atendido ainda",
+    "emptyDescription": "Quando você registrar notas clínicas, os pets aparecerão aqui.",
+    "error": "Erro ao carregar os dados",
+    "retry": "Tentar novamente",
+    "table": {
+      "pet": "Pet",
+      "species": "Espécie",
+      "breed": "Raça",
+      "tutor": "Tutor",
+      "lastAttended": "Último atendimento"
+    },
+    "pagination": {
+      "prev": "Anterior",
+      "next": "Próxima",
+      "page": "Página {{current}} de {{total}}"
+    }
   }
 }
