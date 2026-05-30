@@ -83,6 +83,7 @@
     "title": "Attended Pets",
     "subtitle": "Pets with recent clinical notes",
     "logout": "Sign out",
+    "scanQr": "Scan QR",
     "searchPlaceholder": "Search by pet or owner name...",
     "loading": "Loading...",
     "empty": "No pets attended yet",
@@ -142,5 +143,24 @@
       "cancel": "Cancel",
       "submitError": "Failed to save clinical note. Please try again."
     }
+  },
+  "vetScan": {
+    "title": "Scan QR Code",
+    "idleTitle": "QR Code Scanner",
+    "idleDescription": "Point your camera at the pet's digital card QR Code to quickly access its profile.",
+    "startButton": "Open Camera",
+    "scanHint": "Position the QR Code within the scanning area",
+    "resolving": "Looking up pet...",
+    "invalidTitle": "Invalid QR Code",
+    "invalidDescription": "The scanned QR Code does not match a PetCard digital card.",
+    "errorTitle": "Error",
+    "errorDescription": "An error occurred while reading the QR Code.",
+    "resolveError": "Failed to look up pet data. Please try again.",
+    "tryAgain": "Try again",
+    "permissionDeniedTitle": "Access denied",
+    "permissionDeniedDescription": "Allow camera access in your browser settings to use the scanner.",
+    "noCameraTitle": "Camera unavailable",
+    "noCameraDescription": "No camera was found on this device.",
+    "backToDashboard": "Back to dashboard"
   }
 }

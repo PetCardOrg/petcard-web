@@ -6,6 +6,7 @@ import {
   IoAlertCircle,
   IoSearch,
   IoChevronForward,
+  IoQrCode,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { fetchDashboardPets } from "../../services/dashboard.service";
@@ -117,6 +118,14 @@ export function VetDashboardPage() {
               {t("vetDashboard.subtitle")}
             </p>
           </div>
+          <button
+            type="button"
+            className="vet-dashboard-scan-btn"
+            onClick={() => navigate("/vet/scan")}
+          >
+            <IoQrCode size={18} />
+            {t("vetDashboard.scanQr")}
+          </button>
         </div>
 
         <div className="vet-dashboard-search">
