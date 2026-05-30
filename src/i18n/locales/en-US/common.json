@@ -67,5 +67,20 @@
   },
   "languageSwitcher": {
     "label": "Language"
+  },
+  "vetLogin": {
+    "subtitle": "Veterinarian Access",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "invalidCredentials": "Invalid email or password.",
+    "genericError": "Login failed. Please try again."
+  },
+  "vetDashboard": {
+    "welcome": "Hello, {{name}}",
+    "logout": "Sign out"
   }
 }

@@ -1,0 +1,67 @@
+.vet-dashboard {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.vet-dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+}
+
+.vet-dashboard-brand {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1a1a1a;
+}
+
+.vet-dashboard-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vet-dashboard-username {
+  font-size: 0.875rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.vet-dashboard-logout {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.vet-dashboard-logout:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.vet-dashboard-content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vet-dashboard-content h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: #1a1a1a;
+}
+
+.vet-dashboard-crmv {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}

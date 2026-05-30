@@ -67,5 +67,20 @@
   },
   "languageSwitcher": {
     "label": "Idioma"
+  },
+  "vetLogin": {
+    "subtitle": "Acesso Veterinário",
+    "email": "E-mail",
+    "emailPlaceholder": "seu@email.com",
+    "password": "Senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "submit": "Entrar",
+    "submitting": "Entrando...",
+    "invalidCredentials": "E-mail ou senha inválidos.",
+    "genericError": "Erro ao fazer login. Tente novamente."
+  },
+  "vetDashboard": {
+    "welcome": "Olá, {{name}}",
+    "logout": "Sair"
   }
 }
