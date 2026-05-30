@@ -80,7 +80,26 @@
     "genericError": "Login failed. Please try again."
   },
   "vetDashboard": {
-    "welcome": "Hello, {{name}}",
-    "logout": "Sign out"
+    "title": "Attended Pets",
+    "subtitle": "Pets with recent clinical notes",
+    "logout": "Sign out",
+    "searchPlaceholder": "Search by pet or owner name...",
+    "loading": "Loading...",
+    "empty": "No pets attended yet",
+    "emptyDescription": "When you create clinical notes, the pets will appear here.",
+    "error": "Failed to load data",
+    "retry": "Try again",
+    "table": {
+      "pet": "Pet",
+      "species": "Species",
+      "breed": "Breed",
+      "tutor": "Owner",
+      "lastAttended": "Last attended"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}"
+    }
   }
 }
