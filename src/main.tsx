@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 import { PublicCardPage } from "./pages/PublicCard/PublicCardPage";
 import { VetLoginPage } from "./pages/VetLogin/VetLoginPage";
 import { VetDashboardPage } from "./pages/VetDashboard/VetDashboardPage";
+import { VetPetProfilePage } from "./pages/VetPetProfile/VetPetProfilePage";
 import { NotFoundPage } from "./pages/NotFound/NotFoundPage";
 
 import "./index.css";
@@ -55,6 +56,14 @@ createRoot(document.getElementById("root")!).render(
             element={
               <ProtectedRoute>
                 <VetDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vet/pets/:id"
+            element={
+              <ProtectedRoute>
+                <VetPetProfilePage />
               </ProtectedRoute>
             }
           />

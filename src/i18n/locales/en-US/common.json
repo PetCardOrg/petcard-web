@@ -101,5 +101,32 @@
       "next": "Next",
       "page": "Page {{current}} of {{total}}"
     }
+  },
+  "petProfile": {
+    "title": "Pet Profile",
+    "tutor": "Owner",
+    "error": "Failed to load data",
+    "retry": "Try again",
+    "nextDose": "Next dose",
+    "prescription": "Prescription",
+    "observations": "Observations",
+    "emptyTimeline": "No events registered.",
+    "emptyVaccines": "No vaccines registered.",
+    "emptyDewormings": "No dewormings registered.",
+    "emptyMedications": "No medications registered.",
+    "emptyNotes": "No clinical notes registered.",
+    "tabs": {
+      "timeline": "Timeline",
+      "vaccines": "Vaccines",
+      "dewormings": "Dewormings",
+      "medications": "Medications",
+      "notes": "Clinical Notes"
+    },
+    "types": {
+      "vaccine": "Vaccine",
+      "deworming": "Deworming",
+      "medication": "Medication",
+      "clinical_note": "Clinical Note"
+    }
   }
 }

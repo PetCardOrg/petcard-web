@@ -273,9 +273,18 @@
     border-color 0.2s;
 }
 
+.vet-dashboard-pet-card-clickable {
+  cursor: pointer;
+}
+
 .vet-dashboard-pet-card:hover {
   border-color: #b8dfe9;
   box-shadow: 0 2px 8px rgb(0 0 0 / 5%);
+}
+
+.vet-pet-card-chevron {
+  color: #9caab4;
+  flex-shrink: 0;
 }
 
 .vet-pet-card-photo {
