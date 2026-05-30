@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { IoPaw, IoAlertCircle, IoSearch } from "react-icons/io5";
+import {
+  IoPaw,
+  IoAlertCircle,
+  IoSearch,
+  IoChevronForward,
+} from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { fetchDashboardPets } from "../../services/dashboard.service";
 import type {
@@ -23,6 +29,7 @@ const SPECIES_COLORS: Record<string, { bg: string; text: string }> = {
 export function VetDashboardPage() {
   const { t } = useTranslation();
   const { user, token, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -164,7 +171,23 @@ export function VetDashboardPage() {
               {data.items.map((pet) => {
                 const colors = getSpeciesColors(pet.species);
                 return (
-                  <div key={pet.id} className="vet-dashboard-pet-card">
+                  <div
+                    key={pet.id}
+                    className="vet-dashboard-pet-card vet-dashboard-pet-card-clickable"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      navigate(`/vet/pets/${pet.id}`, {
+                        state: { tutor_name: pet.tutor_name },
+                      })
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter")
+                        navigate(`/vet/pets/${pet.id}`, {
+                          state: { tutor_name: pet.tutor_name },
+                        });
+                    }}
+                  >
                     {pet.photo_url ? (
                       <img
                         src={pet.photo_url}
@@ -202,6 +225,10 @@ export function VetDashboardPage() {
                         </span>
                       </div>
                     </div>
+                    <IoChevronForward
+                      size={18}
+                      className="vet-pet-card-chevron"
+                    />
                   </div>
                 );
               })}

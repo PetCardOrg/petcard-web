@@ -101,5 +101,32 @@
       "next": "Próxima",
       "page": "Página {{current}} de {{total}}"
     }
+  },
+  "petProfile": {
+    "title": "Perfil do Pet",
+    "tutor": "Tutor",
+    "error": "Erro ao carregar os dados",
+    "retry": "Tentar novamente",
+    "nextDose": "Próxima dose",
+    "prescription": "Prescrição",
+    "observations": "Observações",
+    "emptyTimeline": "Nenhum evento registrado.",
+    "emptyVaccines": "Nenhuma vacina registrada.",
+    "emptyDewormings": "Nenhuma vermifugação registrada.",
+    "emptyMedications": "Nenhuma medicação registrada.",
+    "emptyNotes": "Nenhuma nota clínica registrada.",
+    "tabs": {
+      "timeline": "Timeline",
+      "vaccines": "Vacinas",
+      "dewormings": "Vermifugações",
+      "medications": "Medicações",
+      "notes": "Notas Clínicas"
+    },
+    "types": {
+      "vaccine": "Vacina",
+      "deworming": "Vermifugação",
+      "medication": "Medicação",
+      "clinical_note": "Nota Clínica"
+    }
   }
 }
