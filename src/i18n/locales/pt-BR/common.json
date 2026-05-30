@@ -83,6 +83,7 @@
     "title": "Pets Atendidos",
     "subtitle": "Pets com notas clínicas recentes",
     "logout": "Sair",
+    "scanQr": "Escanear QR",
     "searchPlaceholder": "Buscar por nome do pet ou tutor...",
     "loading": "Carregando...",
     "empty": "Nenhum pet atendido ainda",
@@ -142,5 +143,24 @@
       "cancel": "Cancelar",
       "submitError": "Erro ao salvar a nota clínica. Tente novamente."
     }
+  },
+  "vetScan": {
+    "title": "Escanear QR Code",
+    "idleTitle": "Leitor de QR Code",
+    "idleDescription": "Aponte a câmera para o QR Code da carteira digital do pet para acessar o perfil rapidamente.",
+    "startButton": "Abrir Câmera",
+    "scanHint": "Posicione o QR Code dentro da área de leitura",
+    "resolving": "Buscando pet...",
+    "invalidTitle": "QR Code inválido",
+    "invalidDescription": "O QR Code lido não corresponde a uma carteira digital do PetCard.",
+    "errorTitle": "Erro",
+    "errorDescription": "Ocorreu um erro ao tentar ler o QR Code.",
+    "resolveError": "Erro ao buscar os dados do pet. Tente novamente.",
+    "tryAgain": "Tentar novamente",
+    "permissionDeniedTitle": "Acesso negado",
+    "permissionDeniedDescription": "Permita o acesso à câmera nas configurações do navegador para usar o scanner.",
+    "noCameraTitle": "Câmera indisponível",
+    "noCameraDescription": "Nenhuma câmera foi encontrada neste dispositivo.",
+    "backToDashboard": "Voltar ao dashboard"
   }
 }
