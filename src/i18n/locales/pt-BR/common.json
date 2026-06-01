@@ -1,0 +1,166 @@
+{
+  "brand": {
+    "name": "PetCard",
+    "badge": "Carteira Digital"
+  },
+  "publicCard": {
+    "loading": "Carregando carteira digital...",
+    "notFound": {
+      "title": "Carteira não encontrada",
+      "description": "O link acessado não corresponde a nenhuma carteira digital cadastrada. Verifique se o link está correto."
+    },
+    "networkError": {
+      "title": "Erro ao carregar",
+      "description": "Não foi possível carregar a carteira digital. Tente novamente em alguns instantes.",
+      "retry": "Tentar novamente"
+    },
+    "petProfile": {
+      "tutor": "Tutor"
+    },
+    "qrCodeAlt": "QR Code da carteira digital",
+    "sections": {
+      "vaccines": "Vacinas",
+      "dewormings": "Vermifugações",
+      "medications": "Medicações"
+    },
+    "table": {
+      "vaccine": "Vacina",
+      "product": "Produto",
+      "medication": "Medicação",
+      "applicationDate": "Data de aplicação",
+      "nextDose": "Próxima dose",
+      "veterinarian": "Veterinário",
+      "dosage": "Dosagem",
+      "frequency": "Frequência",
+      "startDate": "Início",
+      "endDate": "Término",
+      "ongoing": "Em andamento"
+    },
+    "empty": {
+      "vaccines": "Nenhuma vacina registrada.",
+      "dewormings": "Nenhuma vermifugação registrada.",
+      "medications": "Nenhuma medicação registrada."
+    },
+    "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar."
+  },
+  "notFoundPage": {
+    "title": "Página não encontrada",
+    "description": "O endereço acessado não existe."
+  },
+  "species": {
+    "DOG": "Cachorro",
+    "CAT": "Gato",
+    "BIRD": "Ave",
+    "OTHER": "Outro"
+  },
+  "sex": {
+    "MALE": "Macho",
+    "FEMALE": "Fêmea"
+  },
+  "age": {
+    "year_one": "1 ano",
+    "year_other": "{{count}} anos",
+    "month_one": "1 mês",
+    "month_other": "{{count}} meses",
+    "yearsAndMonths": "{{years}} e {{months}}",
+    "lessThanOneMonth": "Menos de 1 mês"
+  },
+  "languageSwitcher": {
+    "label": "Idioma"
+  },
+  "vetLogin": {
+    "subtitle": "Acesso Veterinário",
+    "email": "E-mail",
+    "emailPlaceholder": "seu@email.com",
+    "password": "Senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "submit": "Entrar",
+    "submitting": "Entrando...",
+    "invalidCredentials": "E-mail ou senha inválidos.",
+    "genericError": "Erro ao fazer login. Tente novamente."
+  },
+  "vetDashboard": {
+    "title": "Pets Atendidos",
+    "subtitle": "Pets com notas clínicas recentes",
+    "logout": "Sair",
+    "scanQr": "Escanear QR",
+    "searchPlaceholder": "Buscar por nome do pet ou tutor...",
+    "loading": "Carregando...",
+    "empty": "Nenhum pet atendido ainda",
+    "emptyDescription": "Quando você registrar notas clínicas, os pets aparecerão aqui.",
+    "error": "Erro ao carregar os dados",
+    "retry": "Tentar novamente",
+    "table": {
+      "pet": "Pet",
+      "species": "Espécie",
+      "breed": "Raça",
+      "tutor": "Tutor",
+      "lastAttended": "Último atendimento"
+    },
+    "pagination": {
+      "prev": "Anterior",
+      "next": "Próxima",
+      "page": "Página {{current}} de {{total}}"
+    }
+  },
+  "petProfile": {
+    "title": "Perfil do Pet",
+    "tutor": "Tutor",
+    "error": "Erro ao carregar os dados",
+    "retry": "Tentar novamente",
+    "nextDose": "Próxima dose",
+    "prescription": "Prescrição",
+    "observations": "Observações",
+    "emptyTimeline": "Nenhum evento registrado.",
+    "emptyVaccines": "Nenhuma vacina registrada.",
+    "emptyDewormings": "Nenhuma vermifugação registrada.",
+    "emptyMedications": "Nenhuma medicação registrada.",
+    "emptyNotes": "Nenhuma nota clínica registrada.",
+    "tabs": {
+      "timeline": "Timeline",
+      "vaccines": "Vacinas",
+      "dewormings": "Vermifugações",
+      "medications": "Medicações",
+      "notes": "Notas Clínicas"
+    },
+    "types": {
+      "vaccine": "Vacina",
+      "deworming": "Vermifugação",
+      "medication": "Medicação",
+      "clinical_note": "Nota Clínica"
+    },
+    "form": {
+      "title": "Nova Nota Clínica",
+      "addNote": "Nova Nota",
+      "diagnostico": "Diagnóstico",
+      "diagnosticoPlaceholder": "Descreva o diagnóstico...",
+      "prescricao": "Prescrição",
+      "prescricaoPlaceholder": "Medicamentos, dosagens, frequência...",
+      "observacoes": "Observações",
+      "observacoesPlaceholder": "Observações adicionais...",
+      "submit": "Salvar",
+      "submitting": "Salvando...",
+      "cancel": "Cancelar",
+      "submitError": "Erro ao salvar a nota clínica. Tente novamente."
+    }
+  },
+  "vetScan": {
+    "title": "Escanear QR Code",
+    "idleTitle": "Leitor de QR Code",
+    "idleDescription": "Aponte a câmera para o QR Code da carteira digital do pet para acessar o perfil rapidamente.",
+    "startButton": "Abrir Câmera",
+    "scanHint": "Posicione o QR Code dentro da área de leitura",
+    "resolving": "Buscando pet...",
+    "invalidTitle": "QR Code inválido",
+    "invalidDescription": "O QR Code lido não corresponde a uma carteira digital do PetCard.",
+    "errorTitle": "Erro",
+    "errorDescription": "Ocorreu um erro ao tentar ler o QR Code.",
+    "resolveError": "Erro ao buscar os dados do pet. Tente novamente.",
+    "tryAgain": "Tentar novamente",
+    "permissionDeniedTitle": "Acesso negado",
+    "permissionDeniedDescription": "Permita o acesso à câmera nas configurações do navegador para usar o scanner.",
+    "noCameraTitle": "Câmera indisponível",
+    "noCameraDescription": "Nenhuma câmera foi encontrada neste dispositivo.",
+    "backToDashboard": "Voltar ao dashboard"
+  }
+}

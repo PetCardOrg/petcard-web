@@ -66,6 +66,12 @@
   color: var(--pc-primary-dark);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .badge {
   font-size: 12px;
   font-weight: 700;

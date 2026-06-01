@@ -1,0 +1,645 @@
+.vet-pet-profile {
+  min-height: 100vh;
+  background: #f6fbfe;
+}
+
+/* ── Header ── */
+
+.vet-pet-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #d8eef6;
+}
+
+.vet-pet-profile-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #107fa8;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.vet-pet-profile-back:hover {
+  background: #e6f7fc;
+}
+
+.vet-pet-profile-header-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #14313f;
+}
+
+/* ── Content ── */
+
+.vet-pet-profile-content {
+  padding: 1.5rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── Loading skeleton ── */
+
+.vet-pet-profile-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vet-pet-profile-skeleton-hero {
+  height: 120px;
+  background: #e8f0f4;
+  border-radius: 16px;
+  animation: profile-pulse 1.2s ease-in-out infinite;
+}
+
+.vet-pet-profile-skeleton-tabs {
+  height: 40px;
+  background: #e8f0f4;
+  border-radius: 12px;
+  animation: profile-pulse 1.2s ease-in-out infinite;
+}
+
+.vet-pet-profile-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vet-pet-profile-skeleton-item {
+  height: 72px;
+  background: #e8f0f4;
+  border-radius: 12px;
+  animation: profile-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes profile-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ── State card (error) ── */
+
+.vet-pet-profile-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 2rem;
+  background: #fff;
+  border: 1px solid #d8eef6;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.vet-pet-profile-state-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.vet-pet-profile-error-icon {
+  background: #fef2f2;
+}
+
+.vet-pet-profile-state-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #14313f;
+}
+
+.vet-pet-profile-state-card button {
+  padding: 0.625rem 1.25rem;
+  border: 1px solid #d8eef6;
+  border-radius: 12px;
+  background: #fff;
+  color: #107fa8;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vet-pet-profile-state-card button:hover {
+  background: #e6f7fc;
+  border-color: #27a9d8;
+}
+
+/* ── Hero ── */
+
+.vet-pet-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid #d8eef6;
+  border-radius: 16px;
+  margin-bottom: 1.25rem;
+}
+
+.vet-pet-profile-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.vet-pet-profile-avatar {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vet-pet-profile-hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.vet-pet-profile-hero-info h2 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: #14313f;
+}
+
+.vet-pet-profile-breed {
+  display: block;
+  font-size: 0.875rem;
+  color: #607d8b;
+  margin-bottom: 0.375rem;
+}
+
+.vet-pet-profile-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vet-pet-profile-species-pill {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.vet-pet-profile-sex,
+.vet-pet-profile-weight,
+.vet-pet-profile-birth {
+  font-size: 0.8125rem;
+  color: #607d8b;
+}
+
+.vet-pet-profile-tutor {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: #607d8b;
+}
+
+/* ── Tabs ── */
+
+.vet-pet-profile-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: #edf2f7;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+}
+
+.vet-pet-profile-tab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #607d8b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.vet-pet-profile-tab:hover {
+  color: #14313f;
+}
+
+.vet-pet-profile-tab.active {
+  background: #fff;
+  color: #14313f;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+
+/* ── Empty ── */
+
+.vet-pet-profile-empty {
+  text-align: center;
+  color: #607d8b;
+  padding: 2rem 1rem;
+  font-size: 0.9375rem;
+}
+
+/* ── Section list ── */
+
+.vet-pet-profile-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vet-section-card {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #d8eef6;
+  border-radius: 12px;
+}
+
+.vet-section-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.vet-section-card-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #14313f;
+}
+
+.vet-section-card-date {
+  font-size: 0.75rem;
+  color: #9caab4;
+  white-space: nowrap;
+}
+
+.vet-section-card-sub {
+  display: block;
+  font-size: 0.8125rem;
+  color: #607d8b;
+  margin-top: 0.125rem;
+}
+
+.vet-section-card-notes {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: #607d8b;
+  line-height: 1.5;
+}
+
+.vet-section-card-field {
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: #607d8b;
+  line-height: 1.5;
+}
+
+.vet-section-card-field strong {
+  color: #14313f;
+  font-weight: 600;
+}
+
+/* ── Timeline ── */
+
+.vet-pet-profile-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.vet-pet-profile-timeline::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #d8eef6;
+}
+
+.vet-timeline-item {
+  display: flex;
+  gap: 0.75rem;
+  padding-bottom: 1.25rem;
+  position: relative;
+}
+
+.vet-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.vet-timeline-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  z-index: 1;
+}
+
+.vet-timeline-body {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid #d8eef6;
+  border-radius: 12px;
+}
+
+.vet-timeline-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.vet-timeline-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #14313f;
+}
+
+.vet-timeline-date {
+  font-size: 0.75rem;
+  color: #9caab4;
+  white-space: nowrap;
+}
+
+.vet-timeline-subtitle {
+  display: block;
+  font-size: 0.8125rem;
+  color: #607d8b;
+  margin-top: 0.125rem;
+}
+
+.vet-timeline-details {
+  display: block;
+  font-size: 0.8125rem;
+  color: #607d8b;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.vet-timeline-type-badge {
+  display: inline-block;
+  margin-top: 0.375rem;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* ── Add note button ── */
+
+.vet-pet-profile-add-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1.25rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: #27a9d8;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.vet-pet-profile-add-note-btn:hover {
+  background: #1e8fb8;
+}
+
+/* ── Modal ── */
+
+.vet-note-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.vet-note-modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 15%);
+}
+
+.vet-note-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #d8eef6;
+}
+
+.vet-note-modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #14313f;
+}
+
+.vet-note-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #607d8b;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.vet-note-modal-close:hover {
+  background: #f0f4f8;
+}
+
+/* ── Form ── */
+
+.vet-note-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.vet-note-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.vet-note-form-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #14313f;
+}
+
+.vet-note-required {
+  color: #e63946;
+}
+
+.vet-note-form-field textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d8eef6;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  color: #14313f;
+  background: #fff;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.vet-note-form-field textarea::placeholder {
+  color: #9caab4;
+}
+
+.vet-note-form-field textarea:focus {
+  border-color: #27a9d8;
+  box-shadow: 0 0 0 3px rgb(39 169 216 / 12%);
+}
+
+.vet-note-form-error {
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #e63946;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.vet-note-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.vet-note-form-cancel {
+  padding: 0.625rem 1.25rem;
+  border: 1px solid #d8eef6;
+  border-radius: 12px;
+  background: #fff;
+  color: #607d8b;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.vet-note-form-cancel:hover {
+  background: #f0f4f8;
+  border-color: #b8dfe9;
+}
+
+.vet-note-form-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vet-note-form-submit {
+  padding: 0.625rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  background: #27a9d8;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.vet-note-form-submit:hover:not(:disabled) {
+  background: #1e8fb8;
+}
+
+.vet-note-form-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .vet-pet-profile-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .vet-pet-profile-content {
+    padding: 1rem;
+  }
+
+  .vet-pet-profile-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .vet-pet-profile-photo,
+  .vet-pet-profile-avatar {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+  }
+
+  .vet-pet-profile-tabs {
+    gap: 0.125rem;
+  }
+
+  .vet-pet-profile-tab {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
