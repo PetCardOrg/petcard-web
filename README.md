@@ -27,7 +27,7 @@ Este repositório faz parte de um conjunto de 5 repos:
 | Linguagem    | TypeScript 5.x (strict mode) |
 | Roteamento   | React Router DOM             |
 | HTTP Client  | Axios                        |
-| Autenticação | Auth0 (OAuth 2.0)            |
+| Autenticação | JWT próprio (HS256)          |
 | i18n         | i18next (pt-BR / en-US)      |
 
 ## Pré-requisitos
@@ -35,6 +35,7 @@ Este repositório faz parte de um conjunto de 5 repos:
 - Node.js >= 20 LTS
 - npm >= 10
 - Backend (petcard-api) rodando em http://localhost:3000
+- GitHub Personal Access Token com escopo `read:packages` (para baixar `@petcardorg/shared` do GitHub Packages)
 
 ## Instalação
 
@@ -43,14 +44,18 @@ Este repositório faz parte de um conjunto de 5 repos:
 git clone https://github.com/PetCardOrg/petcard-web.git
 cd petcard-web
 
-# 2. Instale as dependências
+# 2. Autentique no GitHub Packages (necessário para @petcardorg/shared)
+# Crie um token em https://github.com/settings/tokens com escopo read:packages
+export NODE_AUTH_TOKEN=<seu_personal_access_token>
+
+# 3. Instale as dependências
 npm install
 
-# 3. Configure as variáveis de ambiente
+# 4. Configure as variáveis de ambiente
 cp .env.example .env
-# Edite o .env com a URL da API e credenciais Auth0
+# Ajuste VITE_API_URL se a API não estiver em http://localhost:3000
 
-# 4. Inicie o servidor de desenvolvimento
+# 5. Inicie o servidor de desenvolvimento
 npm run dev
 # Aplicação disponível em http://localhost:5173
 ```
@@ -66,7 +71,7 @@ npm run dev
 
 ## Funcionalidades
 
-- Login do veterinário via Auth0
+- Login do veterinário via JWT próprio
 - Dashboard com lista de pets atendidos
 - Perfil do pet com histórico completo de saúde
 - Formulário de nota clínica (escrita reversa)
