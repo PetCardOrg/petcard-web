@@ -17,10 +17,8 @@ import {
   fetchPetProfile,
   createClinicalNote,
 } from "../../services/pet-profile.service";
-import type {
-  PetProfileData,
-  CreateClinicalNoteDto,
-} from "../../services/pet-profile.service";
+import type { PetProfileData } from "../../services/pet-profile.service";
+import type { CreateNotaClinicaDto } from "@petcardorg/shared";
 import { ApiError } from "../../services/api";
 import "./VetPetProfilePage.css";
 
@@ -137,7 +135,7 @@ export function VetPetProfilePage() {
   >("timeline");
 
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<CreateClinicalNoteDto>({
+  const [formData, setFormData] = useState<CreateNotaClinicaDto>({
     diagnostico: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -190,7 +188,7 @@ export function VetPetProfilePage() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const dto: CreateClinicalNoteDto = {
+      const dto: CreateNotaClinicaDto = {
         diagnostico: formData.diagnostico.trim(),
       };
       if (formData.prescricao?.trim()) {
