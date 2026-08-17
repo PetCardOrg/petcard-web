@@ -11,8 +11,11 @@ import type {
 const navigateMock = vi.fn();
 const logoutMock = vi.fn();
 
+const locationMock = { state: null as unknown };
+
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  useLocation: () => locationMock,
 }));
 
 vi.mock("../../hooks/useAuth", () => ({
@@ -58,6 +61,7 @@ describe("VetDashboardPage", () => {
     navigateMock.mockReset();
     logoutMock.mockReset();
     fetchMock.mockReset();
+    locationMock.state = null;
   });
 
   it("lista os pets atendidos retornados pela API", async () => {
@@ -135,6 +139,27 @@ describe("VetDashboardPage", () => {
         expect.objectContaining({ search: "rex", page: 1 }),
       ),
     );
+  });
+
+  it("avisa quando o cadastro terminou sem verificar o CRMV", async () => {
+    locationMock.state = { crmvVerificado: false };
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+
+    expect(
+      await screen.findByText(/Não conseguimos confirmar seu CRMV/),
+    ).toBeInTheDocument();
+  });
+
+  it("não avisa quando o CRMV saiu verificado", async () => {
+    locationMock.state = { crmvVerificado: true };
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+    await screen.findByText("Rex");
+
+    expect(
+      screen.queryByText(/Não conseguimos confirmar seu CRMV/),
+    ).not.toBeInTheDocument();
   });
 
   it("desabilita os botões de paginação numa página única", async () => {

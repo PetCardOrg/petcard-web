@@ -436,3 +436,14 @@
     min-width: 44px;
   }
 }
+
+.vet-dashboard-crmv-aviso {
+  margin: 0 0 1.25rem;
+  padding: 0.875rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  color: #92400e;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}

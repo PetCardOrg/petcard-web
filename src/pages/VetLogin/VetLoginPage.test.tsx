@@ -13,6 +13,7 @@ vi.mock("../../hooks/useAuth", () => ({
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
 
 async function fillAndSubmit(email = "vet@petcard.com", password = "senha123") {

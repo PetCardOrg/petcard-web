@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { VetUser } from "../services/auth.service";
+import type { VetRegisterRequest, VetUser } from "../services/auth.service";
 
 interface AuthState {
   token: string | null;
@@ -9,6 +9,8 @@ interface AuthState {
 
 export interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
+  /** Cadastra e já autentica. Devolve se o CRMV saiu verificado da consulta. */
+  register: (dto: VetRegisterRequest) => Promise<boolean>;
   logout: () => void;
 }
 

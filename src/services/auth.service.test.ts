@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getVeterinarioProfile, loginVeterinario } from "./auth.service";
+import {
+  getVeterinarioProfile,
+  loginVeterinario,
+  registerVeterinario,
+} from "./auth.service";
 
 const BASE = "http://localhost:3000";
 
@@ -43,6 +47,36 @@ describe("auth.service", () => {
         }),
       }),
     );
+  });
+
+  it("registerVeterinario faz POST no endpoint público de cadastro", async () => {
+    const payload = {
+      access_token: "jwt",
+      user: { id: "v1", nome: "Dr. Carlos" },
+      crmv_verificado: true,
+    };
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 201,
+      statusText: "Created",
+      json: () => Promise.resolve(payload),
+    } as Response);
+
+    const res = await registerVeterinario({
+      nome: "Dr. Carlos",
+      email: "carlos@vet.com",
+      password: "senha-forte",
+      crmv: "CRMV-SP 12345",
+    });
+
+    expect(res.crmv_verificado).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE}/auth/veterinario/register`,
+      expect.objectContaining({ method: "POST" }),
+    );
+    // O cadastro é público: nada de Authorization aqui.
+    const [, init] = fetchMock.mock.calls[0];
+    expect((init as RequestInit).headers).not.toHaveProperty("Authorization");
   });
 
   it("getVeterinarioProfile envia o token no header e usa GET", async () => {

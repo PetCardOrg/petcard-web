@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 import { PublicCardPage } from "./pages/PublicCard/PublicCardPage";
 import { VetLoginPage } from "./pages/VetLogin/VetLoginPage";
+import { VetRegisterPage } from "./pages/VetRegister/VetRegisterPage";
 import { VetDashboardPage } from "./pages/VetDashboard/VetDashboardPage";
 import { VetPetProfilePage } from "./pages/VetPetProfile/VetPetProfilePage";
 import { VetScanPage } from "./pages/VetScan/VetScanPage";
@@ -52,6 +53,7 @@ createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route path="/card/:token" element={<PublicCardPage />} />
           <Route path="/vet/login" element={<VetLoginPage />} />
+          <Route path="/vet/register" element={<VetRegisterPage />} />
           <Route
             path="/vet/dashboard"
             element={

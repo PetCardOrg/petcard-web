@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IoPaw } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
@@ -87,6 +87,11 @@ export function VetLoginPage() {
             {submitting ? t("vetLogin.submitting") : t("vetLogin.submit")}
           </button>
         </form>
+
+        <p className="vet-login-alt">
+          {t("vetLogin.noAccount")}{" "}
+          <Link to="/vet/register">{t("vetLogin.goToRegister")}</Link>
+        </p>
       </div>
     </div>
   );
