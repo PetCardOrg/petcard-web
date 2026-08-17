@@ -29,7 +29,21 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
-    throw new ApiError(res.status, res.statusText);
+    // A mensagem do corpo distingue motivos que compartilham o mesmo status —
+    // um 403 por CRMV não verificado pede ação diferente de um 403 por posse.
+    let detail: string | undefined;
+    try {
+      const body: unknown = await res.clone().json();
+      const message = (body as { message?: unknown })?.message;
+      detail = Array.isArray(message)
+        ? message.join(", ")
+        : typeof message === "string"
+          ? message
+          : undefined;
+    } catch {
+      detail = undefined;
+    }
+    throw new ApiError(res.status, res.statusText, detail);
   }
 
   if (res.status === 204) {
@@ -41,10 +55,18 @@ export async function apiFetch<T>(
 
 export class ApiError extends Error {
   readonly status: number;
+  /** Mensagem devolvida pela API, quando houver. */
+  readonly detail?: string;
 
-  constructor(status: number, statusText: string) {
-    super(`${status} ${statusText}`);
+  constructor(status: number, statusText: string, detail?: string) {
+    super(detail ?? `${status} ${statusText}`);
     this.name = "ApiError";
     this.status = status;
+    this.detail = detail;
+  }
+
+  /** 403 causado por CRMV não verificado (api#113), e não por falta de posse. */
+  get isCrmvNaoVerificado(): boolean {
+    return this.status === 403 && /CRMV/i.test(this.detail ?? "");
   }
 }

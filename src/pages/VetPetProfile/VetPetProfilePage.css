@@ -643,3 +643,11 @@
     font-size: 0.75rem;
   }
 }
+
+/* Bloqueio por CRMV não verificado (api#113) */
+.vet-crmv-message {
+  color: var(--color-muted, #6b7c85);
+  margin: 0 0 16px;
+  max-width: 42ch;
+  text-align: center;
+}
