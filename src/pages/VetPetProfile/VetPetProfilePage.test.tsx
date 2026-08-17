@@ -23,11 +23,18 @@ vi.mock("../../services/pet-profile.service", () => ({
   createClinicalNote: vi.fn(),
 }));
 
+vi.mock("../../services/crmv.service", () => ({
+  verificarCrmv: vi.fn(),
+}));
+
 import {
   createClinicalNote,
   fetchPetProfile,
 } from "../../services/pet-profile.service";
 
+import { verificarCrmv } from "../../services/crmv.service";
+
+const verificarCrmvMock = vi.mocked(verificarCrmv);
 const fetchProfileMock = vi.mocked(fetchPetProfile);
 const createNoteMock = vi.mocked(createClinicalNote);
 
@@ -165,5 +172,76 @@ describe("VetPetProfilePage", () => {
         "Erro ao salvar a nota clínica. Tente novamente.",
       ),
     ).toBeInTheDocument();
+  });
+});
+
+describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
+  const erroCrmv = new ApiError(
+    403,
+    "Forbidden",
+    "Seu CRMV precisa estar verificado para acessar dados clínicos.",
+  );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("mostra o aviso acionável em vez do erro genérico", async () => {
+    fetchProfileMock.mockRejectedValue(erroCrmv);
+
+    render(<VetPetProfilePage />);
+
+    expect(
+      await screen.findByText(/CRMV precisa estar verificado/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /verificar meu crmv/i }),
+    ).toBeInTheDocument();
+    expect(logoutMock).not.toHaveBeenCalled();
+  });
+
+  it("recarrega o perfil quando a verificação aprova", async () => {
+    fetchProfileMock.mockRejectedValueOnce(erroCrmv);
+    verificarCrmvMock.mockResolvedValue({ verified: true, situacao: "Ativo" });
+    fetchProfileMock.mockResolvedValueOnce(buildProfile());
+
+    render(<VetPetProfilePage />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /verificar meu crmv/i }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByText("Rex").length).toBeGreaterThan(0),
+    );
+    expect(fetchProfileMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("explica quando o registro é recusado", async () => {
+    fetchProfileMock.mockRejectedValue(erroCrmv);
+    verificarCrmvMock.mockResolvedValue({
+      verified: false,
+      situacao: "Suspenso",
+    });
+
+    render(<VetPetProfilePage />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /verificar meu crmv/i }),
+    );
+
+    expect(await screen.findByText(/Suspenso/)).toBeInTheDocument();
+  });
+
+  it("não confunde 403 de posse com bloqueio de CRMV", async () => {
+    fetchProfileMock.mockRejectedValue(
+      new ApiError(403, "Forbidden", "Pet de outro tutor"),
+    );
+
+    render(<VetPetProfilePage />);
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /verificar meu crmv/i }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });

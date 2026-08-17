@@ -142,6 +142,14 @@
       "submitting": "Saving...",
       "cancel": "Cancel",
       "submitError": "Failed to save clinical note. Please try again."
+    },
+    "crmv": {
+      "title": "CRMV not verified",
+      "blocked": "Your CRMV must be verified to access clinical data.",
+      "verify": "Verify my CRMV",
+      "verifying": "Verifying...",
+      "refused": "The registration was not accepted (status: {{situacao}}). Check the CRMV in your profile.",
+      "failed": "Could not verify your CRMV right now. Please try again."
     }
   },
   "vetScan": {

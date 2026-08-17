@@ -19,6 +19,7 @@ import {
 } from "../../services/pet-profile.service";
 import type { PetProfileData } from "../../services/pet-profile.service";
 import type { CreateNotaClinicaDto } from "@petcardorg/shared";
+import { verificarCrmv } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import "./VetPetProfilePage.css";
 
@@ -130,6 +131,10 @@ export function VetPetProfilePage() {
   const [data, setData] = useState<PetProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // Bloqueio por CRMV não verificado (api#113): erro acionável, não falha genérica.
+  const [crmvBloqueado, setCrmvBloqueado] = useState<string | null>(null);
+  const [verificandoCrmv, setVerificandoCrmv] = useState(false);
+  const [erroVerificacao, setErroVerificacao] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
   >("timeline");
@@ -145,6 +150,7 @@ export function VetPetProfilePage() {
     if (!token || !id) return;
     setLoading(true);
     setError(false);
+    setCrmvBloqueado(null);
     try {
       const result = await fetchPetProfile(token, id);
       setData(result);
@@ -153,11 +159,41 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
+      if (err instanceof ApiError && err.isCrmvNaoVerificado) {
+        setCrmvBloqueado(err.detail ?? t("petProfile.crmv.blocked"));
+        return;
+      }
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, [token, id, logout]);
+  }, [token, id, logout, t]);
+
+  const handleVerificarCrmv = useCallback(async () => {
+    if (!token) return;
+    setVerificandoCrmv(true);
+    setErroVerificacao(null);
+    try {
+      const status = await verificarCrmv(token);
+      if (status.verified) {
+        await load();
+      } else {
+        setErroVerificacao(
+          t("petProfile.crmv.refused", {
+            situacao: status.situacao ?? "-",
+          }),
+        );
+      }
+    } catch (err) {
+      setErroVerificacao(
+        err instanceof ApiError && err.detail
+          ? err.detail
+          : t("petProfile.crmv.failed"),
+      );
+    } finally {
+      setVerificandoCrmv(false);
+    }
+  }, [token, load, t]);
 
   useEffect(() => {
     load();
@@ -236,6 +272,28 @@ export function VetPetProfilePage() {
                 <div key={i} className="vet-pet-profile-skeleton-item" />
               ))}
             </div>
+          </div>
+        )}
+
+        {crmvBloqueado && !loading && (
+          <div className="vet-pet-profile-state-card">
+            <div className="vet-pet-profile-state-icon vet-pet-profile-error-icon">
+              <IoAlertCircle size={36} color="#e63946" />
+            </div>
+            <h3>{t("petProfile.crmv.title")}</h3>
+            <p className="vet-crmv-message">{crmvBloqueado}</p>
+            <button
+              type="button"
+              onClick={handleVerificarCrmv}
+              disabled={verificandoCrmv}
+            >
+              {verificandoCrmv
+                ? t("petProfile.crmv.verifying")
+                : t("petProfile.crmv.verify")}
+            </button>
+            {erroVerificacao && (
+              <p className="vet-note-form-error">{erroVerificacao}</p>
+            )}
           </div>
         )}
 
