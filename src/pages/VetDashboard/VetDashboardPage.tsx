@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IoPaw,
@@ -32,6 +32,12 @@ export function VetDashboardPage() {
   const { t } = useTranslation();
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+  // O cadastro (api#124) avisa aqui quando a consulta ao CFMV não liberou o
+  // acesso clínico, para o vet não descobrir só no primeiro atendimento.
+  const location = useLocation();
+  const crmvNaoVerificado =
+    (location.state as { crmvVerificado?: boolean } | null)?.crmvVerificado ===
+    false;
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -113,6 +119,12 @@ export function VetDashboardPage() {
       </header>
 
       <main className="vet-dashboard-content">
+        {crmvNaoVerificado && (
+          <p className="vet-dashboard-crmv-aviso" role="status">
+            {t("vetDashboard.crmvNaoVerificado")}
+          </p>
+        )}
+
         <div className="vet-dashboard-title-row">
           <div>
             <h2>{t("vetDashboard.title")}</h2>

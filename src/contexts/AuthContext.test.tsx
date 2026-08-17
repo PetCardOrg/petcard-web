@@ -6,15 +6,18 @@ import { useAuth } from "../hooks/useAuth";
 
 vi.mock("../services/auth.service", () => ({
   loginVeterinario: vi.fn(),
+  registerVeterinario: vi.fn(),
   getVeterinarioProfile: vi.fn(),
 }));
 
 import {
   getVeterinarioProfile,
   loginVeterinario,
+  registerVeterinario,
 } from "../services/auth.service";
 
 const loginMock = vi.mocked(loginVeterinario);
+const registerMock = vi.mocked(registerVeterinario);
 const profileMock = vi.mocked(getVeterinarioProfile);
 
 const TOKEN_KEY = "petcard-vet-token";
@@ -34,6 +37,7 @@ describe("AuthProvider / useAuth", () => {
   beforeEach(() => {
     localStorage.clear();
     loginMock.mockReset();
+    registerMock.mockReset();
     profileMock.mockReset();
   });
 
@@ -64,6 +68,30 @@ describe("AuthProvider / useAuth", () => {
     });
     expect(localStorage.getItem(TOKEN_KEY)).toBe("jwt-1");
     expect(result.current.token).toBe("jwt-1");
+    expect(result.current.user).toEqual(vetUser);
+  });
+
+  it("register autentica direto e informa se o CRMV saiu verificado", async () => {
+    registerMock.mockResolvedValue({
+      access_token: "jwt-novo",
+      user: vetUser,
+      crmv_verificado: false,
+    });
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    let verificado: boolean | undefined;
+    await act(async () => {
+      verificado = await result.current.register({
+        nome: "Dra. Camila",
+        email: "vet@petcard.com",
+        password: "senha123",
+        crmv: "CRMV-CE-1234",
+      });
+    });
+
+    // Sem verificação o vet ainda entra; o bloqueio aparece na tela do pet.
+    expect(verificado).toBe(false);
+    expect(localStorage.getItem(TOKEN_KEY)).toBe("jwt-novo");
     expect(result.current.user).toEqual(vetUser);
   });
 

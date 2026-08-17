@@ -77,7 +77,33 @@
     "submit": "Entrar",
     "submitting": "Entrando...",
     "invalidCredentials": "E-mail ou senha inválidos.",
-    "genericError": "Erro ao fazer login. Tente novamente."
+    "genericError": "Erro ao fazer login. Tente novamente.",
+    "noAccount": "Não tem conta?",
+    "goToRegister": "Criar conta"
+  },
+  "vetRegister": {
+    "subtitle": "Criar conta de veterinário",
+    "nome": "Nome completo",
+    "nomePlaceholder": "Dra. Camila Ferreira",
+    "crmv": "CRMV",
+    "crmvPlaceholder": "CRMV-SP 12345",
+    "crmvHint": "Validamos seu registro no conselho durante o cadastro.",
+    "email": "E-mail",
+    "emailPlaceholder": "seu@email.com",
+    "telefone": "Telefone (opcional)",
+    "telefonePlaceholder": "(11) 99999-0000",
+    "password": "Senha",
+    "passwordPlaceholder": "Mínimo de 6 caracteres",
+    "confirm": "Confirmar senha",
+    "confirmPlaceholder": "Digite a senha novamente",
+    "submit": "Criar conta",
+    "submitting": "Criando conta...",
+    "passwordMismatch": "As senhas não coincidem.",
+    "duplicate": "Já existe uma conta com esse e-mail ou CRMV.",
+    "invalid": "Verifique os dados informados.",
+    "genericError": "Erro ao criar a conta. Tente novamente.",
+    "hasAccount": "Já tem conta?",
+    "goToLogin": "Entrar"
   },
   "vetDashboard": {
     "title": "Pets Atendidos",
@@ -101,7 +127,8 @@
       "prev": "Anterior",
       "next": "Próxima",
       "page": "Página {{current}} de {{total}}"
-    }
+    },
+    "crmvNaoVerificado": "Não conseguimos confirmar seu CRMV agora. Você já pode usar o sistema, mas o histórico clínico dos pets só abre depois da verificação — é possível tentar de novo ao abrir um pet."
   },
   "petProfile": {
     "title": "Perfil do Pet",

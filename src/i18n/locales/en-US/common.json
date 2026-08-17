@@ -77,7 +77,33 @@
     "submit": "Sign in",
     "submitting": "Signing in...",
     "invalidCredentials": "Invalid email or password.",
-    "genericError": "Login failed. Please try again."
+    "genericError": "Login failed. Please try again.",
+    "noAccount": "No account yet?",
+    "goToRegister": "Create account"
+  },
+  "vetRegister": {
+    "subtitle": "Create veterinarian account",
+    "nome": "Full name",
+    "nomePlaceholder": "Dr. Camila Ferreira",
+    "crmv": "CRMV",
+    "crmvPlaceholder": "CRMV-SP 12345",
+    "crmvHint": "We validate your professional registry during sign-up.",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "telefone": "Phone (optional)",
+    "telefonePlaceholder": "(11) 99999-0000",
+    "password": "Password",
+    "passwordPlaceholder": "At least 6 characters",
+    "confirm": "Confirm password",
+    "confirmPlaceholder": "Type the password again",
+    "submit": "Create account",
+    "submitting": "Creating account...",
+    "passwordMismatch": "Passwords do not match.",
+    "duplicate": "An account with this email or CRMV already exists.",
+    "invalid": "Please check the information provided.",
+    "genericError": "Could not create the account. Please try again.",
+    "hasAccount": "Already have an account?",
+    "goToLogin": "Sign in"
   },
   "vetDashboard": {
     "title": "Attended Pets",
@@ -101,7 +127,8 @@
       "prev": "Previous",
       "next": "Next",
       "page": "Page {{current}} of {{total}}"
-    }
+    },
+    "crmvNaoVerificado": "We could not confirm your CRMV right now. You can use the system, but pets' clinical history only opens after verification — you can try again when opening a pet."
   },
   "petProfile": {
     "title": "Pet Profile",
