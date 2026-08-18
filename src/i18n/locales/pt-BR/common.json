@@ -41,7 +41,11 @@
       "dewormings": "Nenhuma vermifugação registrada.",
       "medications": "Nenhuma medicação registrada."
     },
-    "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar."
+    "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar.",
+    "vetAccess": {
+      "prompt": "É veterinário? Entre para ver o histórico clínico completo deste pet.",
+      "action": "Sou veterinário"
+    }
   },
   "notFoundPage": {
     "title": "Página não encontrada",

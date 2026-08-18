@@ -413,3 +413,45 @@ tbody tr:hover {
     height: 140px;
   }
 }
+
+.vet-access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #f0f9fd;
+  border: 1px solid #cbe8f4;
+  border-radius: 12px;
+}
+
+.vet-access-text {
+  margin: 0;
+  color: #34606f;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.vet-access-btn {
+  flex: none;
+  padding: 0.625rem 1.125rem;
+  border: none;
+  border-radius: 10px;
+  background: #27a9d8;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.vet-access-btn:hover {
+  opacity: 0.88;
+}
+
+.vet-access-btn:focus-visible {
+  outline: 2px solid #14708c;
+  outline-offset: 2px;
+}
