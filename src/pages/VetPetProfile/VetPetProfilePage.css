@@ -651,3 +651,12 @@
   max-width: 42ch;
   text-align: center;
 }
+
+/* Erro de validação por campo no formulário de registro clínico (web#34) */
+.vet-field-error {
+  display: block;
+  margin-top: 0.25rem;
+  color: #e63946;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}

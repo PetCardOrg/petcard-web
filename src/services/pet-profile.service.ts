@@ -1,4 +1,9 @@
-import type { CreateNotaClinicaDto } from "@petcardorg/shared";
+import type {
+  CreateDewormingRecordDto,
+  CreateMedicationRecordDto,
+  CreateNotaClinicaDto,
+  CreateVaccineRecordDto,
+} from "@petcardorg/shared";
 import { apiFetch } from "./api";
 
 export interface PetDetail {
@@ -65,6 +70,49 @@ export async function createClinicalNote(
   dto: CreateNotaClinicaDto,
 ): Promise<ClinicalNote> {
   return apiFetch<ClinicalNote>(`/pets/${petId}/clinical-notes`, {
+    method: "POST",
+    body: dto,
+    token,
+  });
+}
+
+/**
+ * Registra a medicação no prontuário do pet (web#34).
+ *
+ * A prescrição escrita na nota clínica é texto — vale como registro do que foi
+ * orientado, mas não gera lembrete nem aparece como medicação ativa no app do
+ * tutor. Só este cadastro faz a orientação virar item de saúde de verdade.
+ */
+export async function createMedication(
+  token: string,
+  petId: string,
+  dto: CreateMedicationRecordDto,
+): Promise<MedicationRecord> {
+  return apiFetch<MedicationRecord>(`/pets/${petId}/medications`, {
+    method: "POST",
+    body: dto,
+    token,
+  });
+}
+
+export async function createVaccine(
+  token: string,
+  petId: string,
+  dto: CreateVaccineRecordDto,
+): Promise<VaccineRecord> {
+  return apiFetch<VaccineRecord>(`/pets/${petId}/vaccines`, {
+    method: "POST",
+    body: dto,
+    token,
+  });
+}
+
+export async function createDeworming(
+  token: string,
+  petId: string,
+  dto: CreateDewormingRecordDto,
+): Promise<DewormingRecord> {
+  return apiFetch<DewormingRecord>(`/pets/${petId}/dewormings`, {
     method: "POST",
     body: dto,
     token,

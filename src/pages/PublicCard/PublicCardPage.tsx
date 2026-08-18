@@ -343,16 +343,8 @@ export function PublicCardPage() {
           </button>
         </section>
 
-        {/* QR Code */}
-        {card.qr_code_url && (
-          <section className="qr-section">
-            <img
-              src={card.qr_code_url}
-              alt={t("publicCard.qrCodeAlt")}
-              className="qr-image"
-            />
-          </section>
-        )}
+        {/* O QR fica só no app do tutor (web#34). Exibi-lo aqui não servia a
+            ninguém: quem chega nesta tela já leu o código para chegar. */}
 
         {/* Health records */}
         <section className="health-section">

@@ -21,6 +21,9 @@ vi.mock("../../hooks/useAuth", () => ({
 vi.mock("../../services/pet-profile.service", () => ({
   fetchPetProfile: vi.fn(),
   createClinicalNote: vi.fn(),
+  createMedication: vi.fn(),
+  createVaccine: vi.fn(),
+  createDeworming: vi.fn(),
 }));
 
 vi.mock("../../services/crmv.service", () => ({
@@ -29,6 +32,9 @@ vi.mock("../../services/crmv.service", () => ({
 
 import {
   createClinicalNote,
+  createDeworming,
+  createMedication,
+  createVaccine,
   fetchPetProfile,
 } from "../../services/pet-profile.service";
 
@@ -37,6 +43,9 @@ import { verificarCrmv } from "../../services/crmv.service";
 const verificarCrmvMock = vi.mocked(verificarCrmv);
 const fetchProfileMock = vi.mocked(fetchPetProfile);
 const createNoteMock = vi.mocked(createClinicalNote);
+const createMedicationMock = vi.mocked(createMedication);
+const createVaccineMock = vi.mocked(createVaccine);
+const createDewormingMock = vi.mocked(createDeworming);
 
 function buildProfile(overrides: Partial<PetProfileData> = {}): PetProfileData {
   return {
@@ -64,6 +73,9 @@ describe("VetPetProfilePage", () => {
     logoutMock.mockReset();
     fetchProfileMock.mockReset();
     createNoteMock.mockReset();
+    createMedicationMock.mockReset();
+    createVaccineMock.mockReset();
+    createDewormingMock.mockReset();
   });
 
   it("carrega e exibe o pet no herói", async () => {
@@ -243,5 +255,92 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
         screen.queryByRole("button", { name: /verificar meu crmv/i }),
       ).not.toBeInTheDocument(),
     );
+  });
+  describe("registro clínico pelo veterinário (web#34)", () => {
+    async function abrirAba(nome: string) {
+      fetchProfileMock.mockResolvedValue(buildProfile());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: nome }));
+    }
+
+    it("cada aba tem o próprio botão de adicionar", async () => {
+      await abrirAba("Vacinas");
+      expect(
+        screen.getByRole("button", { name: /Nova vacina/ }),
+      ).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
+      expect(
+        screen.getByRole("button", { name: /Novo medicamento/ }),
+      ).toBeInTheDocument();
+      // O botão é o da aba aberta, não o de outro tipo.
+      expect(
+        screen.queryByRole("button", { name: /Nova vacina/ }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("registra a vacina do pet", async () => {
+      await abrirAba("Vacinas");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Nova vacina/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Vacina/), "Antirrábica");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      await waitFor(() => expect(createVaccineMock).toHaveBeenCalled());
+      const [, , dto] = createVaccineMock.mock.calls[0];
+      expect(dto.vaccine_name).toBe("Antirrábica");
+      expect(dto.pet_id).toBe("p1");
+    });
+
+    it("registra a vermifugação do pet", async () => {
+      await abrirAba("Vermifugações");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Nova vermifugação/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Produto/), "Drontal");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      await waitFor(() => expect(createDewormingMock).toHaveBeenCalled());
+      const [, , dto] = createDewormingMock.mock.calls[0];
+      expect(dto.product_name).toBe("Drontal");
+    });
+
+    it("bloqueia dosagem sem quantidade e não chama a API", async () => {
+      await abrirAba("Medicações");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Novo medicamento/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Medicamento/), "Amoxicilina");
+      await userEvent.type(screen.getByLabelText(/Dosagem/), "bastante");
+      await userEvent.type(screen.getByLabelText(/Frequência/), "12/12h");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      expect(
+        await screen.findByText(/dosagem precisa indicar a quantidade/i),
+      ).toBeInTheDocument();
+      expect(createMedicationMock).not.toHaveBeenCalled();
+    });
+
+    it("prescreve o medicamento quando os campos estão válidos", async () => {
+      await abrirAba("Medicações");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Novo medicamento/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Medicamento/), "Amoxicilina");
+      await userEvent.type(screen.getByLabelText(/Dosagem/), "250mg");
+      await userEvent.type(screen.getByLabelText(/Frequência/), "12/12h");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      await waitFor(() => expect(createMedicationMock).toHaveBeenCalled());
+      const [, , dto] = createMedicationMock.mock.calls[0];
+      expect(dto.medication_name).toBe("Amoxicilina");
+      expect(dto.dosage).toBe("250mg");
+    });
   });
 });

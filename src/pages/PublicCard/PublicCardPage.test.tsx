@@ -125,4 +125,14 @@ describe("PublicCardPage", () => {
     ).toBeInTheDocument();
     expect(cardMock).not.toHaveBeenCalled();
   });
+  it("não expõe o QR nesta tela, mesmo quando a carteira traz a imagem", async () => {
+    // O QR vive só no app do tutor (web#34): quem chega aqui já leu o código.
+    cardMock.mockResolvedValue(
+      buildCard({ qr_code_url: "https://cdn.petcard/qr/p1.png" }) as never,
+    );
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    expect(screen.queryByRole("img", { name: /qr/i })).not.toBeInTheDocument();
+  });
 });

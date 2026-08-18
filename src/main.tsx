@@ -10,7 +10,6 @@ import { VetLoginPage } from "./pages/VetLogin/VetLoginPage";
 import { VetRegisterPage } from "./pages/VetRegister/VetRegisterPage";
 import { VetDashboardPage } from "./pages/VetDashboard/VetDashboardPage";
 import { VetPetProfilePage } from "./pages/VetPetProfile/VetPetProfilePage";
-import { VetScanPage } from "./pages/VetScan/VetScanPage";
 import { NotFoundPage } from "./pages/NotFound/NotFoundPage";
 
 import "./index.css";
@@ -67,14 +66,6 @@ createRoot(document.getElementById("root")!).render(
             element={
               <ProtectedRoute>
                 <VetPetProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/vet/scan"
-            element={
-              <ProtectedRoute>
-                <VetScanPage />
               </ProtectedRoute>
             }
           />

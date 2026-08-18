@@ -181,6 +181,41 @@
       "verifying": "Verificando...",
       "refused": "O registro não foi aceito (situação: {{situacao}}). Confira o CRMV no seu cadastro.",
       "failed": "Não foi possível verificar seu CRMV agora. Tente novamente."
+    },
+    "recordForm": {
+      "title": {
+        "vaccine": "Registrar vacina",
+        "deworming": "Registrar vermifugação",
+        "medication": "Prescrever medicamento"
+      },
+      "name": {
+        "vaccine": "Vacina",
+        "deworming": "Produto",
+        "medication": "Medicamento"
+      },
+      "add": {
+        "vaccine": "Nova vacina",
+        "deworming": "Nova vermifugação",
+        "medication": "Novo medicamento"
+      },
+      "appliedAt": "Data de aplicação",
+      "nextDose": "Próxima dose (opcional)",
+      "dosage": "Dosagem",
+      "dosagePlaceholder": "Ex.: 250mg",
+      "frequency": "Frequência",
+      "frequencyPlaceholder": "Ex.: 12/12h",
+      "startDate": "Início",
+      "endDate": "Término (opcional)",
+      "notes": "Observações",
+      "errors": {
+        "required": "Campo obrigatório.",
+        "invalidDate": "Informe uma data válida.",
+        "dosageNeedsNumber": "A dosagem precisa indicar a quantidade. Ex.: 250mg.",
+        "appliedInFuture": "A data de aplicação não pode ser no futuro.",
+        "nextDoseBeforeApplied": "A próxima dose precisa ser depois da aplicação.",
+        "endBeforeStart": "O término não pode ser antes do início."
+      },
+      "submitError": "Erro ao salvar o registro. Tente novamente."
     }
   },
   "vetScan": {

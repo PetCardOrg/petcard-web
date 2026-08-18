@@ -113,16 +113,6 @@ describe("VetDashboardPage", () => {
     });
   });
 
-  it("navega para o scanner pelo botão de QR", async () => {
-    fetchMock.mockResolvedValue(page([rex]));
-    render(<VetDashboardPage />);
-    await screen.findByText("Rex");
-
-    await userEvent.click(screen.getByRole("button", { name: /Escanear QR/ }));
-
-    expect(navigateMock).toHaveBeenCalledWith("/vet/scan");
-  });
-
   it("aplica o termo de busca (com debounce) na chamada da API", async () => {
     fetchMock.mockResolvedValue(page([rex]));
     render(<VetDashboardPage />);

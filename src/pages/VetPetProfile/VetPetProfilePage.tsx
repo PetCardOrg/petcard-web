@@ -16,9 +16,17 @@ import { useAuth } from "../../hooks/useAuth";
 import {
   fetchPetProfile,
   createClinicalNote,
+  createMedication,
+  createVaccine,
+  createDeworming,
 } from "../../services/pet-profile.service";
 import type { PetProfileData } from "../../services/pet-profile.service";
 import type { CreateNotaClinicaDto } from "@petcardorg/shared";
+import { HealthRecordModal } from "./HealthRecordModal";
+import type {
+  HealthRecordForm,
+  HealthRecordType,
+} from "./healthRecordValidation";
 import { verificarCrmv } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import "./VetPetProfilePage.css";
@@ -146,6 +154,12 @@ export function VetPetProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Registro clínico pelo veterinário (web#34): um modal por tipo, aberto pelo
+  // botão da própria aba.
+  const [recordType, setRecordType] = useState<HealthRecordType | null>(null);
+  const [recordSubmitting, setRecordSubmitting] = useState(false);
+  const [recordError, setRecordError] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     if (!token || !id) return;
     setLoading(true);
@@ -244,6 +258,53 @@ export function VetPetProfilePage() {
       setSubmitError(t("petProfile.form.submitError"));
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleRecordSubmit(form: HealthRecordForm) {
+    if (!token || !id || !recordType) return;
+
+    setRecordSubmitting(true);
+    setRecordError(null);
+    try {
+      const notes = form.notes.trim() || undefined;
+      if (recordType === "medication") {
+        await createMedication(token, id, {
+          pet_id: id,
+          medication_name: form.name.trim(),
+          dosage: form.dosage.trim(),
+          frequency: form.frequency.trim(),
+          start_date: form.start_date,
+          ...(form.end_date ? { end_date: form.end_date } : {}),
+          notes,
+        });
+      } else if (recordType === "vaccine") {
+        await createVaccine(token, id, {
+          pet_id: id,
+          vaccine_name: form.name.trim(),
+          applied_at: form.applied_at,
+          ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
+          notes,
+        });
+      } else {
+        await createDeworming(token, id, {
+          pet_id: id,
+          product_name: form.name.trim(),
+          applied_at: form.applied_at,
+          ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
+          notes,
+        });
+      }
+      setRecordType(null);
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        logout();
+        return;
+      }
+      setRecordError(t("petProfile.recordForm.submitError"));
+    } finally {
+      setRecordSubmitting(false);
     }
   }
 
@@ -451,6 +512,18 @@ export function VetPetProfilePage() {
 
               {activeTab === "vaccines" && (
                 <>
+                  <button
+                    type="button"
+                    className="vet-pet-profile-add-note-btn"
+                    onClick={() => {
+                      setRecordError(null);
+                      setRecordType("vaccine");
+                    }}
+                  >
+                    <IoAdd size={18} />
+                    {t("petProfile.recordForm.add.vaccine")}
+                  </button>
+
                   {data.vaccines.length === 0 ? (
                     <p className="vet-pet-profile-empty">
                       {t("petProfile.emptyVaccines")}
@@ -490,6 +563,18 @@ export function VetPetProfilePage() {
 
               {activeTab === "dewormings" && (
                 <>
+                  <button
+                    type="button"
+                    className="vet-pet-profile-add-note-btn"
+                    onClick={() => {
+                      setRecordError(null);
+                      setRecordType("deworming");
+                    }}
+                  >
+                    <IoAdd size={18} />
+                    {t("petProfile.recordForm.add.deworming")}
+                  </button>
+
                   {data.dewormings.length === 0 ? (
                     <p className="vet-pet-profile-empty">
                       {t("petProfile.emptyDewormings")}
@@ -529,6 +614,18 @@ export function VetPetProfilePage() {
 
               {activeTab === "medications" && (
                 <>
+                  <button
+                    type="button"
+                    className="vet-pet-profile-add-note-btn"
+                    onClick={() => {
+                      setRecordError(null);
+                      setRecordType("medication");
+                    }}
+                  >
+                    <IoAdd size={18} />
+                    {t("petProfile.recordForm.add.medication")}
+                  </button>
+
                   {data.medications.length === 0 ? (
                     <p className="vet-pet-profile-empty">
                       {t("petProfile.emptyMedications")}
@@ -711,6 +808,16 @@ export function VetPetProfilePage() {
               </form>
             </div>
           </div>
+        )}
+
+        {recordType && (
+          <HealthRecordModal
+            type={recordType}
+            submitting={recordSubmitting}
+            submitError={recordError}
+            onClose={() => setRecordType(null)}
+            onSubmit={handleRecordSubmit}
+          />
         )}
       </main>
     </div>
