@@ -691,3 +691,33 @@
 .vet-record-actions .vet-record-delete:hover {
   background: #fef2f2;
 }
+
+/* Histórico imutável (web#41) */
+.vet-history-intro {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-left: 3px solid #27a9d8;
+  border-radius: 4px;
+  background: #f4fafd;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #14313f;
+}
+
+.vet-section-card.vet-history-excluido {
+  border-left: 3px solid #e63946;
+  background: #fefafa;
+}
+
+.vet-history-excluido .vet-section-card-title {
+  text-decoration: line-through;
+  color: #8a97a3;
+}
+
+.vet-history-acoes {
+  margin: 0.75rem 0 0;
+  padding-left: 1.125rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #5c6b7a;
+}

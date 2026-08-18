@@ -1,4 +1,6 @@
 import type {
+  HistoricoClinicoResponseDto,
+  UpdateNotaClinicaDto,
   CreateDewormingRecordDto,
   CreateMedicationRecordDto,
   CreateNotaClinicaDto,
@@ -29,6 +31,7 @@ export interface VaccineRecord {
   veterinarian_name?: string;
   /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
   veterinario_id?: string;
+  veterinario_crmv?: string;
   notes?: string;
   /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
   created_at: string;
@@ -42,6 +45,7 @@ export interface DewormingRecord {
   veterinarian_name?: string;
   /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
   veterinario_id?: string;
+  veterinario_crmv?: string;
   notes?: string;
   /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
   created_at: string;
@@ -55,6 +59,7 @@ export interface MedicationRecord {
   veterinarian_name?: string;
   /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
   veterinario_id?: string;
+  veterinario_crmv?: string;
   start_date: string;
   end_date?: string;
   notes?: string;
@@ -64,6 +69,7 @@ export interface MedicationRecord {
 
 export interface ClinicalNote {
   id: string;
+  veterinario_id: string;
   veterinario_nome: string;
   veterinario_crmv: string;
   diagnostico: string;
@@ -185,4 +191,34 @@ export async function deleteHealthRecord(
     method: "DELETE",
     token,
   });
+}
+
+/** Histórico imutável do pet, com registros excluídos e trilha (web#41). */
+export async function fetchHistoricoClinico(
+  token: string,
+  petId: string,
+): Promise<HistoricoClinicoResponseDto> {
+  return apiFetch<HistoricoClinicoResponseDto>(
+    `/pets/${petId}/historico-clinico`,
+    { token },
+  );
+}
+
+export async function updateClinicalNote(
+  token: string,
+  id: string,
+  dto: UpdateNotaClinicaDto,
+): Promise<void> {
+  await apiFetch(`/clinical-notes/${id}`, {
+    method: "PATCH",
+    body: dto,
+    token,
+  });
+}
+
+export async function deleteClinicalNote(
+  token: string,
+  id: string,
+): Promise<void> {
+  await apiFetch(`/clinical-notes/${id}`, { method: "DELETE", token });
 }

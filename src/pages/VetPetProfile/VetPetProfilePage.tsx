@@ -21,11 +21,15 @@ import {
   createDeworming,
   updateHealthRecord,
   deleteHealthRecord,
+  updateClinicalNote,
+  deleteClinicalNote,
+  fetchHistoricoClinico,
 } from "../../services/pet-profile.service";
 import type {
   PetProfileData,
   RecordKind,
 } from "../../services/pet-profile.service";
+import type { HistoricoClinicoResponseDto } from "@petcardorg/shared";
 import type { CreateNotaClinicaDto } from "@petcardorg/shared";
 import { HealthRecordModal } from "./HealthRecordModal";
 import {
@@ -92,6 +96,12 @@ function TypeIcon({
  * anterior e a lista mostra a vacina de hoje como de ontem. Data de calendário
  * não é instante, então os componentes são passados um a um.
  */
+/** "Dra. Camila Ferreira — CRMV-SP 12345", ou só o nome quando não há CRMV. */
+function assinatura(nome?: string, crmv?: string): string | undefined {
+  if (!nome) return undefined;
+  return crmv ? `${nome} — ${crmv}` : nome;
+}
+
 function diaLocal(iso: string): Date {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return new Date(iso);
@@ -106,7 +116,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       id: `v-${v.id}`,
       type: "vaccine",
       title: v.vaccine_name,
-      subtitle: v.veterinarian_name,
+      subtitle: assinatura(v.veterinarian_name, v.veterinario_crmv),
       date: diaLocal(v.applied_at),
       registeredAt: new Date(v.created_at),
       details: v.notes,
@@ -118,7 +128,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       id: `d-${d.id}`,
       type: "deworming",
       title: d.product_name,
-      subtitle: d.veterinarian_name,
+      subtitle: assinatura(d.veterinarian_name, d.veterinario_crmv),
       date: diaLocal(d.applied_at),
       registeredAt: new Date(d.created_at),
       details: d.notes,
@@ -130,7 +140,10 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       id: `m-${m.id}`,
       type: "medication",
       title: m.medication_name,
-      subtitle: [m.veterinarian_name, `${m.dosage} — ${m.frequency}`]
+      subtitle: [
+        assinatura(m.veterinarian_name, m.veterinario_crmv),
+        `${m.dosage} — ${m.frequency}`,
+      ]
         .filter(Boolean)
         .join(" · "),
       date: diaLocal(m.start_date),
@@ -144,16 +157,24 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       id: `n-${n.id}`,
       type: "clinical_note",
       title: n.diagnostico,
-      subtitle: `${n.veterinario_nome} — CRMV ${n.veterinario_crmv}`,
+      // O valor já vem com o prefixo ("CRMV-SP 12345"); repetir o rótulo
+      // rendia "CRMV CRMV-SP 12345".
+      subtitle: `${n.veterinario_nome} — ${n.veterinario_crmv}`,
       date: new Date(n.created_at),
       registeredAt: new Date(n.created_at),
       details: [n.prescricao, n.observacoes].filter(Boolean).join(" | "),
     });
   }
 
-  // O último registrado no topo: a tela acompanha o atendimento, não a
-  // cronologia clínica — uma vacina antiga lançada agora precisa aparecer.
-  items.sort((a, b) => b.registeredAt.getTime() - a.registeredAt.getTime());
+  // Ordena pela data que aparece no item. Ordenar pela data de registro, que
+  // é invisível, fazia a lista parecer embaralhada: os registros do seed têm
+  // todos o mesmo instante de criação e datas clínicas de meses diferentes.
+  // O registro só desempata itens do mesmo dia.
+  items.sort(
+    (a, b) =>
+      b.date.getTime() - a.date.getTime() ||
+      b.registeredAt.getTime() - a.registeredAt.getTime(),
+  );
   return items;
 }
 
@@ -173,8 +194,15 @@ export function VetPetProfilePage() {
   const [verificandoCrmv, setVerificandoCrmv] = useState(false);
   const [erroVerificacao, setErroVerificacao] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
+    "timeline" | "vaccines" | "dewormings" | "medications" | "notes" | "history"
   >("timeline");
+
+  // Histórico imutável (web#41). Buscado sob demanda: é a única visão que
+  // traz registro excluído e trilha, e nem toda consulta precisa dela.
+  const [historico, setHistorico] =
+    useState<HistoricoClinicoResponseDto | null>(null);
+  const [historicoLoading, setHistoricoLoading] = useState(false);
+  const [historicoErro, setHistoricoErro] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<CreateNotaClinicaDto>({
@@ -193,6 +221,8 @@ export function VetPetProfilePage() {
     id: string;
     initial: HealthRecordForm;
   } | null>(null);
+  // Nota clínica em edição; `null` no formulário significa nota nova.
+  const [editingNote, setEditingNote] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!token || !id) return;
@@ -247,12 +277,44 @@ export function VetPetProfilePage() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (activeTab !== "history" || !token || !id) return;
+    let cancelado = false;
+    setHistoricoLoading(true);
+    setHistoricoErro(false);
+    fetchHistoricoClinico(token, id)
+      .then((h) => {
+        if (!cancelado) setHistorico(h);
+      })
+      .catch((err) => {
+        if (cancelado) return;
+        if (err instanceof ApiError && err.status === 401) {
+          logout();
+          return;
+        }
+        setHistoricoErro(true);
+      })
+      .finally(() => {
+        if (!cancelado) setHistoricoLoading(false);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [activeTab, token, id, logout]);
+
   const timeline = data ? buildTimeline(data) : [];
 
-  /** Mesma regra da timeline: o último registrado aparece primeiro. */
-  function porRegistro<T extends { created_at: string }>(itens: T[]): T[] {
+  /**
+   * Mesma regra da timeline: ordena pela data exibida no card, usando a data
+   * de registro só para desempatar o mesmo dia.
+   */
+  function porData<T extends { created_at: string }>(
+    itens: T[],
+    dataDoItem: (item: T) => string,
+  ): T[] {
     return [...itens].sort(
       (a, b) =>
+        diaLocal(dataDoItem(b)).getTime() - diaLocal(dataDoItem(a)).getTime() ||
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
   }
@@ -280,8 +342,40 @@ export function VetPetProfilePage() {
 
   function openForm() {
     setFormData({ diagnostico: "" });
+    setEditingNote(null);
     setSubmitError(null);
     setShowForm(true);
+  }
+
+  function openNoteEdit(nota: {
+    id: string;
+    diagnostico: string;
+    prescricao?: string;
+    observacoes?: string;
+  }) {
+    setFormData({
+      diagnostico: nota.diagnostico,
+      prescricao: nota.prescricao,
+      observacoes: nota.observacoes,
+    });
+    setEditingNote(nota.id);
+    setSubmitError(null);
+    setShowForm(true);
+  }
+
+  async function handleDeleteNote(notaId: string) {
+    if (!token) return;
+    if (!window.confirm(t("petProfile.recordActions.confirmDelete"))) return;
+    try {
+      await deleteClinicalNote(token, notaId);
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        logout();
+        return;
+      }
+      setRecordError(t("petProfile.recordActions.deleteError"));
+    }
   }
 
   function closeForm() {
@@ -304,8 +398,17 @@ export function VetPetProfilePage() {
       if (formData.observacoes?.trim()) {
         dto.observacoes = formData.observacoes.trim();
       }
-      await createClinicalNote(token, id, dto);
+      if (editingNote) {
+        await updateClinicalNote(token, editingNote, {
+          diagnostico: dto.diagnostico,
+          prescricao: dto.prescricao,
+          observacoes: dto.observacoes,
+        });
+      } else {
+        await createClinicalNote(token, id, dto);
+      }
       setShowForm(false);
+      setEditingNote(null);
       await load();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -580,6 +683,7 @@ export function VetPetProfilePage() {
                   "dewormings",
                   "medications",
                   "notes",
+                  "history",
                 ] as const
               ).map((tab) => (
                 <button
@@ -674,7 +778,7 @@ export function VetPetProfilePage() {
                     </p>
                   ) : (
                     <div className="vet-pet-profile-section-list">
-                      {porRegistro(data.vaccines).map((v) => (
+                      {porData(data.vaccines, (v) => v.applied_at).map((v) => (
                         <div key={v.id} className="vet-section-card">
                           <div className="vet-section-card-header">
                             <span className="vet-section-card-title">
@@ -686,7 +790,10 @@ export function VetPetProfilePage() {
                           </div>
                           {v.veterinarian_name && (
                             <span className="vet-section-card-sub">
-                              {v.veterinarian_name}
+                              {assinatura(
+                                v.veterinarian_name,
+                                v.veterinario_crmv,
+                              )}
                             </span>
                           )}
                           {v.next_dose_at && (
@@ -732,39 +839,46 @@ export function VetPetProfilePage() {
                     </p>
                   ) : (
                     <div className="vet-pet-profile-section-list">
-                      {porRegistro(data.dewormings).map((d) => (
-                        <div key={d.id} className="vet-section-card">
-                          <div className="vet-section-card-header">
-                            <span className="vet-section-card-title">
-                              {d.product_name}
-                            </span>
-                            <span className="vet-section-card-date">
-                              {formatDate(d.applied_at)}
-                            </span>
+                      {porData(data.dewormings, (d) => d.applied_at).map(
+                        (d) => (
+                          <div key={d.id} className="vet-section-card">
+                            <div className="vet-section-card-header">
+                              <span className="vet-section-card-title">
+                                {d.product_name}
+                              </span>
+                              <span className="vet-section-card-date">
+                                {formatDate(d.applied_at)}
+                              </span>
+                            </div>
+                            {d.veterinarian_name && (
+                              <span className="vet-section-card-sub">
+                                {assinatura(
+                                  d.veterinarian_name,
+                                  d.veterinario_crmv,
+                                )}
+                              </span>
+                            )}
+                            {d.next_dose_at && (
+                              <span className="vet-section-card-sub">
+                                {t("petProfile.nextDose")}:{" "}
+                                {formatDate(d.next_dose_at)}
+                              </span>
+                            )}
+                            {d.notes && (
+                              <p className="vet-section-card-notes">
+                                {d.notes}
+                              </p>
+                            )}
+                            {acoesDoRegistro("deworming", d, {
+                              ...emptyForm(),
+                              name: d.product_name,
+                              applied_at: d.applied_at,
+                              next_dose_at: d.next_dose_at ?? "",
+                              notes: d.notes ?? "",
+                            })}
                           </div>
-                          {d.veterinarian_name && (
-                            <span className="vet-section-card-sub">
-                              {d.veterinarian_name}
-                            </span>
-                          )}
-                          {d.next_dose_at && (
-                            <span className="vet-section-card-sub">
-                              {t("petProfile.nextDose")}:{" "}
-                              {formatDate(d.next_dose_at)}
-                            </span>
-                          )}
-                          {d.notes && (
-                            <p className="vet-section-card-notes">{d.notes}</p>
-                          )}
-                          {acoesDoRegistro("deworming", d, {
-                            ...emptyForm(),
-                            name: d.product_name,
-                            applied_at: d.applied_at,
-                            next_dose_at: d.next_dose_at ?? "",
-                            notes: d.notes ?? "",
-                          })}
-                        </div>
-                      ))}
+                        ),
+                      )}
                     </div>
                   )}
                 </>
@@ -790,41 +904,118 @@ export function VetPetProfilePage() {
                     </p>
                   ) : (
                     <div className="vet-pet-profile-section-list">
-                      {porRegistro(data.medications).map((m) => (
-                        <div key={m.id} className="vet-section-card">
-                          <div className="vet-section-card-header">
-                            <span className="vet-section-card-title">
-                              {m.medication_name}
-                            </span>
-                            <span className="vet-section-card-date">
-                              {formatDate(m.start_date)}
-                              {m.end_date && ` — ${formatDate(m.end_date)}`}
-                            </span>
-                          </div>
-                          <span className="vet-section-card-sub">
-                            {m.dosage} — {m.frequency}
-                          </span>
-                          {m.veterinarian_name && (
+                      {porData(data.medications, (m) => m.start_date).map(
+                        (m) => (
+                          <div key={m.id} className="vet-section-card">
+                            <div className="vet-section-card-header">
+                              <span className="vet-section-card-title">
+                                {m.medication_name}
+                              </span>
+                              <span className="vet-section-card-date">
+                                {formatDate(m.start_date)}
+                                {m.end_date && ` — ${formatDate(m.end_date)}`}
+                              </span>
+                            </div>
                             <span className="vet-section-card-sub">
-                              {m.veterinarian_name}
+                              {m.dosage} — {m.frequency}
                             </span>
-                          )}
-                          {m.notes && (
-                            <p className="vet-section-card-notes">{m.notes}</p>
-                          )}
-                          {acoesDoRegistro("medication", m, {
-                            ...emptyForm(),
-                            name: m.medication_name,
-                            dosage: m.dosage,
-                            frequency: m.frequency,
-                            start_date: m.start_date,
-                            end_date: m.end_date ?? "",
-                            notes: m.notes ?? "",
-                          })}
-                        </div>
-                      ))}
+                            {m.veterinarian_name && (
+                              <span className="vet-section-card-sub">
+                                {assinatura(
+                                  m.veterinarian_name,
+                                  m.veterinario_crmv,
+                                )}
+                              </span>
+                            )}
+                            {m.notes && (
+                              <p className="vet-section-card-notes">
+                                {m.notes}
+                              </p>
+                            )}
+                            {acoesDoRegistro("medication", m, {
+                              ...emptyForm(),
+                              name: m.medication_name,
+                              dosage: m.dosage,
+                              frequency: m.frequency,
+                              start_date: m.start_date,
+                              end_date: m.end_date ?? "",
+                              notes: m.notes ?? "",
+                            })}
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
+                </>
+              )}
+
+              {activeTab === "history" && (
+                <>
+                  {historicoLoading && (
+                    <p className="vet-pet-profile-empty">
+                      {t("petProfile.history.loading")}
+                    </p>
+                  )}
+                  {historicoErro && (
+                    <p className="vet-pet-profile-empty">
+                      {t("petProfile.history.error")}
+                    </p>
+                  )}
+                  {!historicoLoading &&
+                    !historicoErro &&
+                    historico &&
+                    (historico.itens.length === 0 ? (
+                      <p className="vet-pet-profile-empty">
+                        {t("petProfile.history.empty")}
+                      </p>
+                    ) : (
+                      <div className="vet-pet-profile-section-list">
+                        <p className="vet-history-intro">
+                          {t("petProfile.history.intro")}
+                        </p>
+                        {historico.itens.map((item) => (
+                          <div
+                            key={`${item.entidade}-${item.entidade_id}`}
+                            className={`vet-section-card ${item.excluido ? "vet-history-excluido" : ""}`}
+                          >
+                            <div className="vet-section-card-header">
+                              <span className="vet-section-card-title">
+                                {item.titulo}
+                              </span>
+                              <span className="vet-section-card-date">
+                                {formatDate(item.ocorrido_em)}
+                              </span>
+                            </div>
+                            <span className="vet-section-card-sub">
+                              {t(
+                                `petProfile.history.entidade.${item.entidade}`,
+                              )}
+                              {item.excluido &&
+                                ` · ${t("petProfile.history.excluido")}`}
+                            </span>
+                            {item.descricao && (
+                              <p className="vet-section-card-notes">
+                                {item.descricao}
+                              </p>
+                            )}
+                            <ul className="vet-history-acoes">
+                              {item.acoes.map((acao) => (
+                                <li key={acao.id}>
+                                  <strong>
+                                    {t(`petProfile.history.acao.${acao.tipo}`)}
+                                  </strong>{" "}
+                                  — {acao.autor_nome}
+                                  {acao.autor_crmv
+                                    ? ` (${acao.autor_crmv})`
+                                    : ""}{" "}
+                                  · {formatDate(acao.ocorrido_em)}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
                 </>
               )}
 
@@ -856,7 +1047,7 @@ export function VetPetProfilePage() {
                             </span>
                           </div>
                           <span className="vet-section-card-sub">
-                            {n.veterinario_nome} — CRMV {n.veterinario_crmv}
+                            {n.veterinario_nome} — {n.veterinario_crmv}
                           </span>
                           {n.prescricao && (
                             <div className="vet-section-card-field">
@@ -868,6 +1059,23 @@ export function VetPetProfilePage() {
                             <div className="vet-section-card-field">
                               <strong>{t("petProfile.observations")}:</strong>{" "}
                               {n.observacoes}
+                            </div>
+                          )}
+                          {user && n.veterinario_id === user.id && (
+                            <div className="vet-record-actions">
+                              <button
+                                type="button"
+                                onClick={() => openNoteEdit(n)}
+                              >
+                                {t("petProfile.recordActions.edit")}
+                              </button>
+                              <button
+                                type="button"
+                                className="vet-record-delete"
+                                onClick={() => void handleDeleteNote(n.id)}
+                              >
+                                {t("petProfile.recordActions.delete")}
+                              </button>
                             </div>
                           )}
                         </div>
@@ -887,7 +1095,11 @@ export function VetPetProfilePage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="vet-note-modal-header">
-                <h3>{t("petProfile.form.title")}</h3>
+                <h3>
+                  {editingNote
+                    ? t("petProfile.form.editTitle")
+                    : t("petProfile.form.title")}
+                </h3>
                 <button
                   type="button"
                   className="vet-note-modal-close"

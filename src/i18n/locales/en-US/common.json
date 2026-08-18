@@ -152,7 +152,8 @@
       "vaccines": "Vaccines",
       "dewormings": "Dewormings",
       "medications": "Medications",
-      "notes": "Clinical Notes"
+      "notes": "Clinical Notes",
+      "history": "History"
     },
     "types": {
       "vaccine": "Vaccine",
@@ -172,7 +173,8 @@
       "submit": "Save",
       "submitting": "Saving...",
       "cancel": "Cancel",
-      "submitError": "Failed to save clinical note. Please try again."
+      "submitError": "Failed to save clinical note. Please try again.",
+      "editTitle": "Edit clinical note"
     },
     "crmv": {
       "title": "CRMV not verified",
@@ -227,6 +229,24 @@
       "delete": "Delete",
       "confirmDelete": "Delete this record? It leaves the tutor's wallet but stays in the clinical history.",
       "deleteError": "Could not delete the record. Please try again."
+    },
+    "history": {
+      "loading": "Loading history...",
+      "error": "Could not load the history.",
+      "empty": "No records in the history.",
+      "intro": "Immutable record: includes what was removed from the wallet and who performed each action.",
+      "excluido": "removed from wallet",
+      "entidade": {
+        "VACINA": "Vaccine",
+        "VERMIFUGO": "Deworming",
+        "MEDICACAO": "Medication",
+        "NOTA_CLINICA": "Clinical note"
+      },
+      "acao": {
+        "CRIACAO": "Created",
+        "EDICAO": "Edited",
+        "EXCLUSAO": "Deleted"
+      }
     }
   },
   "vetScan": {

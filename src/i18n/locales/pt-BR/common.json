@@ -152,7 +152,8 @@
       "vaccines": "Vacinas",
       "dewormings": "Vermifugações",
       "medications": "Medicações",
-      "notes": "Notas Clínicas"
+      "notes": "Notas Clínicas",
+      "history": "Histórico"
     },
     "types": {
       "vaccine": "Vacina",
@@ -172,7 +173,8 @@
       "submit": "Salvar",
       "submitting": "Salvando...",
       "cancel": "Cancelar",
-      "submitError": "Erro ao salvar a nota clínica. Tente novamente."
+      "submitError": "Erro ao salvar a nota clínica. Tente novamente.",
+      "editTitle": "Editar Nota Clínica"
     },
     "crmv": {
       "title": "CRMV não verificado",
@@ -227,6 +229,24 @@
       "delete": "Apagar",
       "confirmDelete": "Apagar este registro? Ele sai da carteira do tutor, mas permanece no histórico clínico.",
       "deleteError": "Erro ao apagar o registro. Tente novamente."
+    },
+    "history": {
+      "loading": "Carregando histórico...",
+      "error": "Não foi possível carregar o histórico.",
+      "empty": "Nenhum registro no histórico.",
+      "intro": "Registro imutável: inclui o que foi excluído da carteira e quem realizou cada ação.",
+      "excluido": "excluído da carteira",
+      "entidade": {
+        "VACINA": "Vacina",
+        "VERMIFUGO": "Vermifugação",
+        "MEDICACAO": "Medicação",
+        "NOTA_CLINICA": "Nota clínica"
+      },
+      "acao": {
+        "CRIACAO": "Registrado",
+        "EDICAO": "Editado",
+        "EXCLUSAO": "Excluído"
+      }
     }
   },
   "vetScan": {
