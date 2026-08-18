@@ -43,6 +43,8 @@ interface TimelineItem {
   title: string;
   subtitle?: string;
   date: Date;
+  /** Quando foi registrado. Ordena a lista; o que aparece é `date`. */
+  registeredAt: Date;
   details?: string;
 }
 
@@ -93,6 +95,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       title: v.vaccine_name,
       subtitle: v.veterinarian_name,
       date: new Date(v.applied_at),
+      registeredAt: new Date(v.created_at),
       details: v.notes,
     });
   }
@@ -104,6 +107,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       title: d.product_name,
       subtitle: d.veterinarian_name,
       date: new Date(d.applied_at),
+      registeredAt: new Date(d.created_at),
       details: d.notes,
     });
   }
@@ -115,6 +119,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       title: m.medication_name,
       subtitle: `${m.dosage} — ${m.frequency}`,
       date: new Date(m.start_date),
+      registeredAt: new Date(m.created_at),
       details: m.notes,
     });
   }
@@ -126,11 +131,14 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       title: n.diagnostico,
       subtitle: `${n.veterinario_nome} — CRMV ${n.veterinario_crmv}`,
       date: new Date(n.created_at),
+      registeredAt: new Date(n.created_at),
       details: [n.prescricao, n.observacoes].filter(Boolean).join(" | "),
     });
   }
 
-  items.sort((a, b) => b.date.getTime() - a.date.getTime());
+  // O último registrado no topo: a tela acompanha o atendimento, não a
+  // cronologia clínica — uma vacina antiga lançada agora precisa aparecer.
+  items.sort((a, b) => b.registeredAt.getTime() - a.registeredAt.getTime());
   return items;
 }
 
@@ -225,10 +233,33 @@ export function VetPetProfilePage() {
   }, [load]);
 
   const timeline = data ? buildTimeline(data) : [];
+
+  /** Mesma regra da timeline: o último registrado aparece primeiro. */
+  function porRegistro<T extends { created_at: string }>(itens: T[]): T[] {
+    return [...itens].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+  }
   const speciesColors =
     SPECIES_COLORS[data?.pet.species ?? ""] ?? SPECIES_COLORS.OTHER;
 
+  /**
+   * `2026-08-18` é dia de calendário, não instante. Passar isso pelo `Date`
+   * faz o navegador interpretar como meia-noite UTC e, em fuso negativo,
+   * renderizar o dia anterior — a vacina registrada hoje aparecia como ontem.
+   */
   function formatDate(d: Date | string) {
+    if (typeof d === "string") {
+      const soData = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (soData) {
+        return new Date(
+          Number(soData[1]),
+          Number(soData[2]) - 1,
+          Number(soData[3]),
+        ).toLocaleDateString();
+      }
+    }
     return new Date(d).toLocaleDateString();
   }
 
@@ -628,7 +659,7 @@ export function VetPetProfilePage() {
                     </p>
                   ) : (
                     <div className="vet-pet-profile-section-list">
-                      {data.vaccines.map((v) => (
+                      {porRegistro(data.vaccines).map((v) => (
                         <div key={v.id} className="vet-section-card">
                           <div className="vet-section-card-header">
                             <span className="vet-section-card-title">
@@ -686,7 +717,7 @@ export function VetPetProfilePage() {
                     </p>
                   ) : (
                     <div className="vet-pet-profile-section-list">
-                      {data.dewormings.map((d) => (
+                      {porRegistro(data.dewormings).map((d) => (
                         <div key={d.id} className="vet-section-card">
                           <div className="vet-section-card-header">
                             <span className="vet-section-card-title">
@@ -744,7 +775,7 @@ export function VetPetProfilePage() {
                     </p>
                   ) : (
                     <div className="vet-pet-profile-section-list">
-                      {data.medications.map((m) => (
+                      {porRegistro(data.medications).map((m) => (
                         <div key={m.id} className="vet-section-card">
                           <div className="vet-section-card-header">
                             <span className="vet-section-card-title">

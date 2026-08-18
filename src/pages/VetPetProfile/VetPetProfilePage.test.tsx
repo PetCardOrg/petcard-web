@@ -135,6 +135,7 @@ describe("VetPetProfilePage", () => {
             id: "vac",
             vaccine_name: "Antirrábica",
             applied_at: "2026-01-01",
+            created_at: "2026-01-01T10:00:00Z",
           },
         ],
         clinicalNotes: [
@@ -369,6 +370,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             vaccine_name: "Antirrábica",
             applied_at: "2026-03-01",
             veterinario_id: "vet-1",
+            created_at: "2026-08-18T10:00:00Z",
           },
         ],
         dewormings: [
@@ -377,6 +379,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             product_name: "Drontal",
             applied_at: "2026-03-02",
             veterinario_id: "outro-vet",
+            created_at: "2026-08-18T11:00:00Z",
           },
         ],
         medications: [
@@ -387,6 +390,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             frequency: "12/12h",
             start_date: "2026-03-03",
             veterinario_id: "vet-1",
+            created_at: "2026-08-18T12:00:00Z",
           },
         ],
         clinicalNotes: [
@@ -478,6 +482,61 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
 
       expect(deleteRecordMock).not.toHaveBeenCalled();
       confirmSpy.mockRestore();
+    });
+  });
+  describe("ordem e data dos registros", () => {
+    const perfil = () =>
+      buildProfile({
+        vaccines: [
+          {
+            id: "antiga",
+            vaccine_name: "Vacina antiga",
+            applied_at: "2026-01-05",
+            created_at: "2026-08-18T09:00:00Z",
+          },
+          {
+            id: "recente",
+            vaccine_name: "Vacina recente",
+            applied_at: "2025-02-02",
+            created_at: "2026-08-18T18:00:00Z",
+          },
+        ],
+      });
+
+    it("põe o último registrado no topo, mesmo com data clínica mais antiga", async () => {
+      fetchProfileMock.mockResolvedValue(perfil());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+
+      const titulos = screen
+        .getAllByText(/Vacina (antiga|recente)/)
+        .map((el) => el.textContent);
+      // "recente" foi registrada depois, apesar de aplicada antes.
+      expect(titulos[0]).toBe("Vacina recente");
+    });
+
+    it("mostra o dia aplicado, sem atrasar um dia por fuso", async () => {
+      fetchProfileMock.mockResolvedValue(
+        buildProfile({
+          vaccines: [
+            {
+              id: "v1",
+              vaccine_name: "Antirrábica",
+              applied_at: "2026-08-18",
+              created_at: "2026-08-18T12:00:00Z",
+            },
+          ],
+        }),
+      );
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+
+      // `new Date("2026-08-18")` é meia-noite UTC; em fuso negativo isso
+      // renderizava 17/08.
+      const esperado = new Date(2026, 7, 18).toLocaleDateString();
+      expect(screen.getByText(esperado)).toBeInTheDocument();
     });
   });
 });

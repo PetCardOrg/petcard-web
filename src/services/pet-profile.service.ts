@@ -30,6 +30,8 @@ export interface VaccineRecord {
   /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
   veterinario_id?: string;
   notes?: string;
+  /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
+  created_at: string;
 }
 
 export interface DewormingRecord {
@@ -41,6 +43,8 @@ export interface DewormingRecord {
   /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
   veterinario_id?: string;
   notes?: string;
+  /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
+  created_at: string;
 }
 
 export interface MedicationRecord {
@@ -53,6 +57,8 @@ export interface MedicationRecord {
   start_date: string;
   end_date?: string;
   notes?: string;
+  /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
+  created_at: string;
 }
 
 export interface ClinicalNote {
