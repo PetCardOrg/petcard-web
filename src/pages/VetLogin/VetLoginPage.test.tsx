@@ -11,8 +11,11 @@ vi.mock("../../hooks/useAuth", () => ({
   useAuth: () => ({ login: loginMock }),
 }));
 
+const locationMock = { state: null as unknown };
+
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  useLocation: () => locationMock,
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
 
@@ -27,6 +30,7 @@ describe("VetLoginPage", () => {
   beforeEach(() => {
     loginMock.mockReset();
     navigateMock.mockReset();
+    locationMock.state = null;
   });
 
   it("autentica e navega para o dashboard no sucesso", async () => {
@@ -38,6 +42,20 @@ describe("VetLoginPage", () => {
     expect(loginMock).toHaveBeenCalledWith("vet@petcard.com", "senha123");
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith("/vet/dashboard", {
+        replace: true,
+      }),
+    );
+  });
+
+  it("volta para o pet quando o login veio da carteira do QR", async () => {
+    locationMock.state = { redirectTo: "/vet/pets/p1" };
+    loginMock.mockResolvedValue(undefined);
+    render(<VetLoginPage />);
+
+    await fillAndSubmit();
+
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1", {
         replace: true,
       }),
     );

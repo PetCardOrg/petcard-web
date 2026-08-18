@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type {
   CarteiraDigitalPublicResponseDto,
@@ -19,6 +19,7 @@ import {
 import { getPublicCard } from "../../services/card.service";
 import { ApiError } from "../../services/api";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
+import { useAuth } from "../../hooks/useAuth";
 import "./PublicCardPage.css";
 
 function formatDate(iso: string): string {
@@ -172,6 +173,8 @@ function MedicationTable({
 export function PublicCardPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { token: authToken } = useAuth();
   const [card, setCard] = useState<CarteiraDigitalPublicResponseDto | null>(
     null,
   );
@@ -264,6 +267,17 @@ export function PublicCardPage() {
   });
   const sexLabel = t(`sex.${card.sex}`, { defaultValue: card.sex });
 
+  // O vet já autenticado pula o login; quem não está leva o destino junto,
+  // para cair no pet que acabou de escanear em vez de no dashboard.
+  const perfilDoPet = `/vet/pets/${card.pet_id}`;
+  function handleVetAccess() {
+    if (authToken) {
+      navigate(perfilDoPet);
+    } else {
+      navigate("/vet/login", { state: { redirectTo: perfilDoPet } });
+    }
+  }
+
   return (
     <div className="card-page">
       <header className="card-header">
@@ -314,6 +328,19 @@ export function PublicCardPage() {
               <strong>{card.tutor_name}</strong>
             </p>
           </div>
+        </section>
+
+        {/* Acesso do veterinário: quem lê o QR pela câmera do celular cai
+            aqui, e sem isto não teria como chegar na área do vet. */}
+        <section className="vet-access">
+          <p className="vet-access-text">{t("publicCard.vetAccess.prompt")}</p>
+          <button
+            type="button"
+            className="vet-access-btn"
+            onClick={handleVetAccess}
+          >
+            {t("publicCard.vetAccess.action")}
+          </button>
         </section>
 
         {/* QR Code */}
