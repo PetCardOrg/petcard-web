@@ -85,6 +85,19 @@ function TypeIcon({
   }
 }
 
+/**
+ * Converte `2026-08-18` no dia correspondente no fuso local.
+ *
+ * `new Date("2026-08-18")` é meia-noite UTC: em fuso negativo isso cai no dia
+ * anterior e a lista mostra a vacina de hoje como de ontem. Data de calendário
+ * não é instante, então os componentes são passados um a um.
+ */
+function diaLocal(iso: string): Date {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return new Date(iso);
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
 function buildTimeline(data: PetProfileData): TimelineItem[] {
   const items: TimelineItem[] = [];
 
@@ -94,7 +107,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       type: "vaccine",
       title: v.vaccine_name,
       subtitle: v.veterinarian_name,
-      date: new Date(v.applied_at),
+      date: diaLocal(v.applied_at),
       registeredAt: new Date(v.created_at),
       details: v.notes,
     });
@@ -106,7 +119,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       type: "deworming",
       title: d.product_name,
       subtitle: d.veterinarian_name,
-      date: new Date(d.applied_at),
+      date: diaLocal(d.applied_at),
       registeredAt: new Date(d.created_at),
       details: d.notes,
     });
@@ -117,8 +130,10 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
       id: `m-${m.id}`,
       type: "medication",
       title: m.medication_name,
-      subtitle: `${m.dosage} — ${m.frequency}`,
-      date: new Date(m.start_date),
+      subtitle: [m.veterinarian_name, `${m.dosage} — ${m.frequency}`]
+        .filter(Boolean)
+        .join(" · "),
+      date: diaLocal(m.start_date),
       registeredAt: new Date(m.created_at),
       details: m.notes,
     });
@@ -789,6 +804,11 @@ export function VetPetProfilePage() {
                           <span className="vet-section-card-sub">
                             {m.dosage} — {m.frequency}
                           </span>
+                          {m.veterinarian_name && (
+                            <span className="vet-section-card-sub">
+                              {m.veterinarian_name}
+                            </span>
+                          )}
                           {m.notes && (
                             <p className="vet-section-card-notes">{m.notes}</p>
                           )}

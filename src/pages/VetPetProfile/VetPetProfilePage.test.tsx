@@ -516,7 +516,29 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(titulos[0]).toBe("Vacina recente");
     });
 
-    it("mostra o dia aplicado, sem atrasar um dia por fuso", async () => {
+    it("mostra o dia aplicado na timeline, sem atrasar um dia por fuso", async () => {
+      fetchProfileMock.mockResolvedValue(
+        buildProfile({
+          vaccines: [
+            {
+              id: "v1",
+              vaccine_name: "Antirrábica",
+              applied_at: "2026-08-18",
+              created_at: "2026-08-18T12:00:00Z",
+            },
+          ],
+        }),
+      );
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+
+      // A timeline abre por padrão e monta um Date antes de formatar — foi por
+      // onde o bug de fuso sobreviveu à primeira correção.
+      const esperado = new Date(2026, 7, 18).toLocaleDateString();
+      expect(await screen.findByText(esperado)).toBeInTheDocument();
+    });
+
+    it("mostra o dia aplicado na aba, sem atrasar um dia por fuso", async () => {
       fetchProfileMock.mockResolvedValue(
         buildProfile({
           vaccines: [
@@ -538,5 +560,30 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       const esperado = new Date(2026, 7, 18).toLocaleDateString();
       expect(screen.getByText(esperado)).toBeInTheDocument();
     });
+  });
+  it("mostra quem prescreveu a medicação", async () => {
+    fetchProfileMock.mockResolvedValue(
+      buildProfile({
+        medications: [
+          {
+            id: "m1",
+            medication_name: "Amoxicilina",
+            dosage: "250mg",
+            frequency: "12/12h",
+            start_date: "2026-08-18",
+            veterinarian_name: "Dra. Camila Ferreira",
+            created_at: "2026-08-18T12:00:00Z",
+          },
+        ],
+      }),
+    );
+    render(<VetPetProfilePage />);
+    await screen.findByRole("heading", { name: "Rex" });
+
+    // Medicação só tinha o FK do veterinário; sem o nome a tela não mostrava
+    // quem prescreveu.
+    expect(
+      await screen.findByText(/Dra\. Camila Ferreira/),
+    ).toBeInTheDocument();
   });
 });

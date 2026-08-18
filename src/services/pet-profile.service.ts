@@ -52,6 +52,7 @@ export interface MedicationRecord {
   medication_name: string;
   dosage: string;
   frequency: string;
+  veterinarian_name?: string;
   /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
   veterinario_id?: string;
   start_date: string;
