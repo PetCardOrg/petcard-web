@@ -148,12 +148,11 @@
     "emptyMedications": "Nenhuma medicação registrada.",
     "emptyNotes": "Nenhuma nota clínica registrada.",
     "tabs": {
-      "timeline": "Timeline",
+      "timeline": "Histórico",
       "vaccines": "Vacinas",
       "dewormings": "Vermifugações",
       "medications": "Medicações",
-      "notes": "Notas Clínicas",
-      "history": "Histórico"
+      "notes": "Notas Clínicas"
     },
     "types": {
       "vaccine": "Vacina",

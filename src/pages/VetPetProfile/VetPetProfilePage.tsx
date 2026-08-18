@@ -41,22 +41,19 @@ import { verificarCrmv } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import "./VetPetProfilePage.css";
 
-interface TimelineItem {
-  id: string;
-  type: "vaccine" | "deworming" | "medication" | "clinical_note";
-  title: string;
-  subtitle?: string;
-  date: Date;
-  /** Quando foi registrado. Ordena a lista; o que aparece é `date`. */
-  registeredAt: Date;
-  details?: string;
-}
-
 const SPECIES_COLORS: Record<string, { bg: string; text: string }> = {
   DOG: { bg: "#e6f7fc", text: "#27a9d8" },
   CAT: { bg: "#ede5fc", text: "#6b48c8" },
   BIRD: { bg: "#e5f8ee", text: "#06a77d" },
   OTHER: { bg: "#fef5e6", text: "#d4940a" },
+};
+
+/** Entidade do histórico → chave visual usada pelos ícones e cores. */
+const ENTIDADE_TIPO: Record<string, string> = {
+  VACINA: "vaccine",
+  VERMIFUGO: "deworming",
+  MEDICACAO: "medication",
+  NOTA_CLINICA: "clinical_note",
 };
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -108,76 +105,6 @@ function diaLocal(iso: string): Date {
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
 }
 
-function buildTimeline(data: PetProfileData): TimelineItem[] {
-  const items: TimelineItem[] = [];
-
-  for (const v of data.vaccines) {
-    items.push({
-      id: `v-${v.id}`,
-      type: "vaccine",
-      title: v.vaccine_name,
-      subtitle: assinatura(v.veterinarian_name, v.veterinario_crmv),
-      date: diaLocal(v.applied_at),
-      registeredAt: new Date(v.created_at),
-      details: v.notes,
-    });
-  }
-
-  for (const d of data.dewormings) {
-    items.push({
-      id: `d-${d.id}`,
-      type: "deworming",
-      title: d.product_name,
-      subtitle: assinatura(d.veterinarian_name, d.veterinario_crmv),
-      date: diaLocal(d.applied_at),
-      registeredAt: new Date(d.created_at),
-      details: d.notes,
-    });
-  }
-
-  for (const m of data.medications) {
-    items.push({
-      id: `m-${m.id}`,
-      type: "medication",
-      title: m.medication_name,
-      subtitle: [
-        assinatura(m.veterinarian_name, m.veterinario_crmv),
-        `${m.dosage} — ${m.frequency}`,
-      ]
-        .filter(Boolean)
-        .join(" · "),
-      date: diaLocal(m.start_date),
-      registeredAt: new Date(m.created_at),
-      details: m.notes,
-    });
-  }
-
-  for (const n of data.clinicalNotes) {
-    items.push({
-      id: `n-${n.id}`,
-      type: "clinical_note",
-      title: n.diagnostico,
-      // O valor já vem com o prefixo ("CRMV-SP 12345"); repetir o rótulo
-      // rendia "CRMV CRMV-SP 12345".
-      subtitle: `${n.veterinario_nome} — ${n.veterinario_crmv}`,
-      date: new Date(n.created_at),
-      registeredAt: new Date(n.created_at),
-      details: [n.prescricao, n.observacoes].filter(Boolean).join(" | "),
-    });
-  }
-
-  // Ordena pela data que aparece no item. Ordenar pela data de registro, que
-  // é invisível, fazia a lista parecer embaralhada: os registros do seed têm
-  // todos o mesmo instante de criação e datas clínicas de meses diferentes.
-  // O registro só desempata itens do mesmo dia.
-  items.sort(
-    (a, b) =>
-      b.date.getTime() - a.date.getTime() ||
-      b.registeredAt.getTime() - a.registeredAt.getTime(),
-  );
-  return items;
-}
-
 export function VetPetProfilePage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -194,7 +121,7 @@ export function VetPetProfilePage() {
   const [verificandoCrmv, setVerificandoCrmv] = useState(false);
   const [erroVerificacao, setErroVerificacao] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "timeline" | "vaccines" | "dewormings" | "medications" | "notes" | "history"
+    "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
   >("timeline");
 
   // Histórico imutável (web#41). Buscado sob demanda: é a única visão que
@@ -278,7 +205,7 @@ export function VetPetProfilePage() {
   }, [load]);
 
   useEffect(() => {
-    if (activeTab !== "history" || !token || !id) return;
+    if (activeTab !== "timeline" || !token || !id) return;
     let cancelado = false;
     setHistoricoLoading(true);
     setHistoricoErro(false);
@@ -301,8 +228,6 @@ export function VetPetProfilePage() {
       cancelado = true;
     };
   }, [activeTab, token, id, logout]);
-
-  const timeline = data ? buildTimeline(data) : [];
 
   /**
    * Mesma regra da timeline: ordena pela data exibida no card, usando a data
@@ -683,7 +608,6 @@ export function VetPetProfilePage() {
                   "dewormings",
                   "medications",
                   "notes",
-                  "history",
                 ] as const
               ).map((tab) => (
                 <button
@@ -699,65 +623,6 @@ export function VetPetProfilePage() {
 
             {/* Tab content */}
             <div className="vet-pet-profile-tab-content">
-              {activeTab === "timeline" && (
-                <>
-                  {timeline.length === 0 ? (
-                    <p className="vet-pet-profile-empty">
-                      {t("petProfile.emptyTimeline")}
-                    </p>
-                  ) : (
-                    <div className="vet-pet-profile-timeline">
-                      {timeline.map((item) => {
-                        const colors = TYPE_COLORS[item.type];
-                        return (
-                          <div key={item.id} className="vet-timeline-item">
-                            <div
-                              className="vet-timeline-icon"
-                              style={{ background: colors.bg }}
-                            >
-                              <TypeIcon
-                                type={item.type}
-                                size={16}
-                                color={colors.text}
-                              />
-                            </div>
-                            <div className="vet-timeline-body">
-                              <div className="vet-timeline-row">
-                                <span className="vet-timeline-title">
-                                  {item.title}
-                                </span>
-                                <span className="vet-timeline-date">
-                                  {formatDate(item.date)}
-                                </span>
-                              </div>
-                              {item.subtitle && (
-                                <span className="vet-timeline-subtitle">
-                                  {item.subtitle}
-                                </span>
-                              )}
-                              {item.details && (
-                                <span className="vet-timeline-details">
-                                  {item.details}
-                                </span>
-                              )}
-                              <span
-                                className="vet-timeline-type-badge"
-                                style={{
-                                  background: colors.bg,
-                                  color: colors.text,
-                                }}
-                              >
-                                {t(`petProfile.types.${item.type}`)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-
               {activeTab === "vaccines" && (
                 <>
                   <button
@@ -949,7 +814,7 @@ export function VetPetProfilePage() {
                 </>
               )}
 
-              {activeTab === "history" && (
+              {activeTab === "timeline" && (
                 <>
                   {historicoLoading && (
                     <p className="vet-pet-profile-empty">
@@ -980,6 +845,17 @@ export function VetPetProfilePage() {
                           >
                             <div className="vet-section-card-header">
                               <span className="vet-section-card-title">
+                                <TypeIcon
+                                  type={ENTIDADE_TIPO[item.entidade]}
+                                  size={16}
+                                  color={
+                                    (
+                                      TYPE_COLORS[
+                                        ENTIDADE_TIPO[item.entidade]
+                                      ] ?? TYPE_COLORS.vaccine
+                                    ).text
+                                  }
+                                />{" "}
                                 {item.titulo}
                               </span>
                               <span className="vet-section-card-date">

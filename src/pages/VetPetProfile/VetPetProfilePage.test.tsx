@@ -105,6 +105,12 @@ describe("VetPetProfilePage", () => {
     updateNoteMock.mockReset();
     deleteNoteMock.mockReset();
     historicoMock.mockReset();
+    // A aba padrão é o histórico; sem retorno padrão todo teste quebraria nele.
+    historicoMock.mockResolvedValue({
+      pet_id: "p1",
+      pet_nome: "Rex",
+      itens: [],
+    } as never);
   });
 
   it("carrega e exibe o pet no herói", async () => {
@@ -139,33 +145,39 @@ describe("VetPetProfilePage", () => {
     await waitFor(() => expect(logoutMock).toHaveBeenCalled());
   });
 
-  it("ordena a timeline da mais recente para a mais antiga", async () => {
-    fetchProfileMock.mockResolvedValue(
-      buildProfile({
-        vaccines: [
-          {
-            id: "vac",
-            vaccine_name: "Antirrábica",
-            applied_at: "2026-01-01",
-            created_at: "2026-01-01T10:00:00Z",
-          },
-        ],
-        clinicalNotes: [
-          {
-            id: "note",
-            veterinario_id: "vet-1",
-            veterinario_nome: "Dra. Camila",
-            veterinario_crmv: "CE-1",
-            diagnostico: "Otite",
-            created_at: "2026-03-01",
-          },
-        ],
-      }),
-    );
+  it("lista o histórico na ordem devolvida pela API", async () => {
+    fetchProfileMock.mockResolvedValue(buildProfile());
+    historicoMock.mockResolvedValue({
+      pet_id: "p1",
+      pet_nome: "Rex",
+      itens: [
+        {
+          entidade: "NOTA_CLINICA",
+          entidade_id: "n1",
+          titulo: "Otite",
+          ocorrido_em: "2026-08-18" as unknown as Date,
+          registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+          excluido: false,
+          acoes: [],
+        },
+        {
+          entidade: "VACINA",
+          entidade_id: "v1",
+          titulo: "Antirrábica",
+          ocorrido_em: "2026-01-10" as unknown as Date,
+          registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+          excluido: false,
+          acoes: [],
+        },
+      ],
+    } as never);
     render(<VetPetProfilePage />);
+    await screen.findByRole("heading", { name: "Rex" });
 
-    const titles = await screen.findAllByText(/Otite|Antirrábica/);
-    expect(titles.map((n) => n.textContent)).toEqual(["Otite", "Antirrábica"]);
+    const titulos = screen
+      .getAllByText(/Otite|Antirrábica/)
+      .map((el) => el.textContent);
+    expect(titulos[0]).toContain("Otite");
   });
 
   it("cria uma nota clínica pelo formulário e recarrega o perfil", async () => {
@@ -418,12 +430,53 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
         ],
       });
 
-    it("mostra os quatro tipos na timeline, não só notas clínicas", async () => {
+    it("mostra os quatro tipos no histórico, não só notas clínicas", async () => {
       fetchProfileMock.mockResolvedValue(comRegistros());
+      historicoMock.mockResolvedValue({
+        pet_id: "p1",
+        pet_nome: "Rex",
+        itens: [
+          {
+            entidade: "VACINA",
+            entidade_id: "v1",
+            titulo: "Antirrábica",
+            ocorrido_em: "2026-03-01" as unknown as Date,
+            registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+            excluido: false,
+            acoes: [],
+          },
+          {
+            entidade: "VERMIFUGO",
+            entidade_id: "d1",
+            titulo: "Drontal",
+            ocorrido_em: "2026-03-02" as unknown as Date,
+            registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+            excluido: false,
+            acoes: [],
+          },
+          {
+            entidade: "MEDICACAO",
+            entidade_id: "m1",
+            titulo: "Amoxicilina",
+            ocorrido_em: "2026-03-03" as unknown as Date,
+            registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+            excluido: false,
+            acoes: [],
+          },
+          {
+            entidade: "NOTA_CLINICA",
+            entidade_id: "n1",
+            titulo: "Otite",
+            ocorrido_em: "2026-03-04" as unknown as Date,
+            registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+            excluido: false,
+            acoes: [],
+          },
+        ],
+      } as never);
       render(<VetPetProfilePage />);
       await screen.findByRole("heading", { name: "Rex" });
 
-      // A aba timeline abre por padrão.
       expect(await screen.findByText("Antirrábica")).toBeInTheDocument();
       expect(screen.getByText("Drontal")).toBeInTheDocument();
       expect(screen.getByText("Amoxicilina")).toBeInTheDocument();
@@ -560,24 +613,26 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(titulos[0]).toBe("Vacina segunda");
     });
 
-    it("mostra o dia aplicado na timeline, sem atrasar um dia por fuso", async () => {
-      fetchProfileMock.mockResolvedValue(
-        buildProfile({
-          vaccines: [
-            {
-              id: "v1",
-              vaccine_name: "Antirrábica",
-              applied_at: "2026-08-18",
-              created_at: "2026-08-18T12:00:00Z",
-            },
-          ],
-        }),
-      );
+    it("mostra o dia aplicado no histórico, sem atrasar um dia por fuso", async () => {
+      fetchProfileMock.mockResolvedValue(buildProfile());
+      historicoMock.mockResolvedValue({
+        pet_id: "p1",
+        pet_nome: "Rex",
+        itens: [
+          {
+            entidade: "VACINA",
+            entidade_id: "v1",
+            titulo: "Antirrábica",
+            ocorrido_em: "2026-08-18" as unknown as Date,
+            registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+            excluido: false,
+            acoes: [],
+          },
+        ],
+      } as never);
       render(<VetPetProfilePage />);
       await screen.findByRole("heading", { name: "Rex" });
 
-      // A timeline abre por padrão e monta um Date antes de formatar — foi por
-      // onde o bug de fuso sobreviveu à primeira correção.
       const esperado = new Date(2026, 7, 18).toLocaleDateString();
       expect(await screen.findByText(esperado)).toBeInTheDocument();
     });
@@ -623,6 +678,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
     );
     render(<VetPetProfilePage />);
     await screen.findByRole("heading", { name: "Rex" });
+    await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
 
     // Medicação só tinha o FK do veterinário; sem o nome a tela não mostrava
     // quem prescreveu.
