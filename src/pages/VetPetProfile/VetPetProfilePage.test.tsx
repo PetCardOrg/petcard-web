@@ -15,7 +15,11 @@ vi.mock("react-router-dom", () => ({
 }));
 
 vi.mock("../../hooks/useAuth", () => ({
-  useAuth: () => ({ token: "jwt", logout: logoutMock }),
+  useAuth: () => ({
+    token: "jwt",
+    user: { id: "vet-1", nome: "Dra. Camila", crmv: "CRMV-SP 12345" },
+    logout: logoutMock,
+  }),
 }));
 
 vi.mock("../../services/pet-profile.service", () => ({
@@ -24,6 +28,13 @@ vi.mock("../../services/pet-profile.service", () => ({
   createMedication: vi.fn(),
   createVaccine: vi.fn(),
   createDeworming: vi.fn(),
+  updateHealthRecord: vi.fn(),
+  deleteHealthRecord: vi.fn(),
+  RECORD_ENDPOINT: {
+    vaccine: "vaccines",
+    deworming: "dewormings",
+    medication: "medications",
+  },
 }));
 
 vi.mock("../../services/crmv.service", () => ({
@@ -35,7 +46,9 @@ import {
   createDeworming,
   createMedication,
   createVaccine,
+  deleteHealthRecord,
   fetchPetProfile,
+  updateHealthRecord,
 } from "../../services/pet-profile.service";
 
 import { verificarCrmv } from "../../services/crmv.service";
@@ -46,6 +59,8 @@ const createNoteMock = vi.mocked(createClinicalNote);
 const createMedicationMock = vi.mocked(createMedication);
 const createVaccineMock = vi.mocked(createVaccine);
 const createDewormingMock = vi.mocked(createDeworming);
+const updateRecordMock = vi.mocked(updateHealthRecord);
+const deleteRecordMock = vi.mocked(deleteHealthRecord);
 
 function buildProfile(overrides: Partial<PetProfileData> = {}): PetProfileData {
   return {
@@ -76,6 +91,8 @@ describe("VetPetProfilePage", () => {
     createMedicationMock.mockReset();
     createVaccineMock.mockReset();
     createDewormingMock.mockReset();
+    updateRecordMock.mockReset();
+    deleteRecordMock.mockReset();
   });
 
   it("carrega e exibe o pet no herói", async () => {
@@ -341,6 +358,126 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       const [, , dto] = createMedicationMock.mock.calls[0];
       expect(dto.medication_name).toBe("Amoxicilina");
       expect(dto.dosage).toBe("250mg");
+    });
+  });
+  describe("timeline e ações no registro (web#34)", () => {
+    const comRegistros = () =>
+      buildProfile({
+        vaccines: [
+          {
+            id: "vac1",
+            vaccine_name: "Antirrábica",
+            applied_at: "2026-03-01",
+            veterinario_id: "vet-1",
+          },
+        ],
+        dewormings: [
+          {
+            id: "dew1",
+            product_name: "Drontal",
+            applied_at: "2026-03-02",
+            veterinario_id: "outro-vet",
+          },
+        ],
+        medications: [
+          {
+            id: "med1",
+            medication_name: "Amoxicilina",
+            dosage: "250mg",
+            frequency: "12/12h",
+            start_date: "2026-03-03",
+            veterinario_id: "vet-1",
+          },
+        ],
+        clinicalNotes: [
+          {
+            id: "n1",
+            veterinario_nome: "Dra. Camila",
+            veterinario_crmv: "CRMV-SP 12345",
+            diagnostico: "Otite",
+            created_at: "2026-03-04T10:00:00Z",
+          },
+        ],
+      });
+
+    it("mostra os quatro tipos na timeline, não só notas clínicas", async () => {
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+
+      // A aba timeline abre por padrão.
+      expect(await screen.findByText("Antirrábica")).toBeInTheDocument();
+      expect(screen.getByText("Drontal")).toBeInTheDocument();
+      expect(screen.getByText("Amoxicilina")).toBeInTheDocument();
+      expect(screen.getByText("Otite")).toBeInTheDocument();
+    });
+
+    it("oferece editar e apagar só no registro do próprio veterinário", async () => {
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+      expect(
+        screen.getByRole("button", { name: "Editar" }),
+      ).toBeInTheDocument();
+
+      // O vermífugo é de outro veterinário: a API recusaria, então nem aparece.
+      await userEvent.click(
+        screen.getByRole("button", { name: "Vermifugações" }),
+      );
+      expect(
+        screen.queryByRole("button", { name: "Editar" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("edita o registro do veterinário", async () => {
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+      await userEvent.click(screen.getByRole("button", { name: "Editar" }));
+
+      const campo = screen.getByLabelText(/Vacina/);
+      expect(campo).toHaveValue("Antirrábica");
+      await userEvent.clear(campo);
+      await userEvent.type(campo, "Antirrábica reforço");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      await waitFor(() => expect(updateRecordMock).toHaveBeenCalled());
+      const [, kind, recordId, dto] = updateRecordMock.mock.calls[0];
+      expect(kind).toBe("vaccine");
+      expect(recordId).toBe("vac1");
+      expect(dto).toMatchObject({ vaccine_name: "Antirrábica reforço" });
+    });
+
+    it("apaga o registro depois de confirmar", async () => {
+      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
+      await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+
+      await waitFor(() => expect(deleteRecordMock).toHaveBeenCalled());
+      expect(deleteRecordMock).toHaveBeenCalledWith(
+        "jwt",
+        "medication",
+        "med1",
+      );
+      confirmSpy.mockRestore();
+    });
+
+    it("não apaga quando a confirmação é recusada", async () => {
+      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
+      await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+
+      expect(deleteRecordMock).not.toHaveBeenCalled();
+      confirmSpy.mockRestore();
     });
   });
 });

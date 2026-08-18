@@ -19,13 +19,19 @@ import {
   createMedication,
   createVaccine,
   createDeworming,
+  updateHealthRecord,
+  deleteHealthRecord,
 } from "../../services/pet-profile.service";
-import type { PetProfileData } from "../../services/pet-profile.service";
+import type {
+  PetProfileData,
+  RecordKind,
+} from "../../services/pet-profile.service";
 import type { CreateNotaClinicaDto } from "@petcardorg/shared";
 import { HealthRecordModal } from "./HealthRecordModal";
-import type {
-  HealthRecordForm,
-  HealthRecordType,
+import {
+  emptyForm,
+  type HealthRecordForm,
+  type HealthRecordType,
 } from "./healthRecordValidation";
 import { verificarCrmv } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
@@ -131,7 +137,7 @@ function buildTimeline(data: PetProfileData): TimelineItem[] {
 export function VetPetProfilePage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const { token, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const tutorName = (location.state as { tutor_name?: string })?.tutor_name;
@@ -159,6 +165,11 @@ export function VetPetProfilePage() {
   const [recordType, setRecordType] = useState<HealthRecordType | null>(null);
   const [recordSubmitting, setRecordSubmitting] = useState(false);
   const [recordError, setRecordError] = useState<string | null>(null);
+  // Registro em edição. `null` = criando; preenchido = alterando aquele id.
+  const [editing, setEditing] = useState<{
+    id: string;
+    initial: HealthRecordForm;
+  } | null>(null);
 
   const load = useCallback(async () => {
     if (!token || !id) return;
@@ -261,12 +272,49 @@ export function VetPetProfilePage() {
     }
   }
 
+  /** Campos do registro, no formato que a API recebe. */
+  function toDto(kind: HealthRecordType, form: HealthRecordForm) {
+    const notes = form.notes.trim() || undefined;
+    if (kind === "medication") {
+      return {
+        medication_name: form.name.trim(),
+        dosage: form.dosage.trim(),
+        frequency: form.frequency.trim(),
+        start_date: form.start_date,
+        ...(form.end_date ? { end_date: form.end_date } : {}),
+        notes,
+      };
+    }
+    const nome =
+      kind === "vaccine"
+        ? { vaccine_name: form.name.trim() }
+        : { product_name: form.name.trim() };
+    return {
+      ...nome,
+      applied_at: form.applied_at,
+      ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
+      notes,
+    };
+  }
+
   async function handleRecordSubmit(form: HealthRecordForm) {
     if (!token || !id || !recordType) return;
 
     setRecordSubmitting(true);
     setRecordError(null);
     try {
+      if (editing) {
+        await updateHealthRecord(
+          token,
+          recordType as RecordKind,
+          editing.id,
+          toDto(recordType, form),
+        );
+        setRecordType(null);
+        setEditing(null);
+        await load();
+        return;
+      }
       const notes = form.notes.trim() || undefined;
       if (recordType === "medication") {
         await createMedication(token, id, {
@@ -306,6 +354,56 @@ export function VetPetProfilePage() {
     } finally {
       setRecordSubmitting(false);
     }
+  }
+
+  async function handleDelete(kind: RecordKind, recordId: string) {
+    if (!token) return;
+    if (!window.confirm(t("petProfile.recordActions.confirmDelete"))) return;
+
+    try {
+      await deleteHealthRecord(token, kind, recordId);
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        logout();
+        return;
+      }
+      setRecordError(t("petProfile.recordActions.deleteError"));
+    }
+  }
+
+  /**
+   * Ações só nos registros do próprio veterinário: a API recusa os demais
+   * (regra de autoria da petcard-api#129), e botão que falha ao ser clicado
+   * é pior que botão ausente.
+   */
+  function acoesDoRegistro(
+    kind: HealthRecordType,
+    registro: { id: string; veterinario_id?: string },
+    initial: HealthRecordForm,
+  ) {
+    if (!user || registro.veterinario_id !== user.id) return null;
+    return (
+      <div className="vet-record-actions">
+        <button
+          type="button"
+          onClick={() => {
+            setRecordError(null);
+            setEditing({ id: registro.id, initial });
+            setRecordType(kind);
+          }}
+        >
+          {t("petProfile.recordActions.edit")}
+        </button>
+        <button
+          type="button"
+          className="vet-record-delete"
+          onClick={() => void handleDelete(kind as RecordKind, registro.id)}
+        >
+          {t("petProfile.recordActions.delete")}
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -554,6 +652,13 @@ export function VetPetProfilePage() {
                           {v.notes && (
                             <p className="vet-section-card-notes">{v.notes}</p>
                           )}
+                          {acoesDoRegistro("vaccine", v, {
+                            ...emptyForm(),
+                            name: v.vaccine_name,
+                            applied_at: v.applied_at,
+                            next_dose_at: v.next_dose_at ?? "",
+                            notes: v.notes ?? "",
+                          })}
                         </div>
                       ))}
                     </div>
@@ -605,6 +710,13 @@ export function VetPetProfilePage() {
                           {d.notes && (
                             <p className="vet-section-card-notes">{d.notes}</p>
                           )}
+                          {acoesDoRegistro("deworming", d, {
+                            ...emptyForm(),
+                            name: d.product_name,
+                            applied_at: d.applied_at,
+                            next_dose_at: d.next_dose_at ?? "",
+                            notes: d.notes ?? "",
+                          })}
                         </div>
                       ))}
                     </div>
@@ -649,6 +761,15 @@ export function VetPetProfilePage() {
                           {m.notes && (
                             <p className="vet-section-card-notes">{m.notes}</p>
                           )}
+                          {acoesDoRegistro("medication", m, {
+                            ...emptyForm(),
+                            name: m.medication_name,
+                            dosage: m.dosage,
+                            frequency: m.frequency,
+                            start_date: m.start_date,
+                            end_date: m.end_date ?? "",
+                            notes: m.notes ?? "",
+                          })}
                         </div>
                       ))}
                     </div>
@@ -812,10 +933,15 @@ export function VetPetProfilePage() {
 
         {recordType && (
           <HealthRecordModal
+            key={editing?.id ?? "novo"}
             type={recordType}
             submitting={recordSubmitting}
             submitError={recordError}
-            onClose={() => setRecordType(null)}
+            initial={editing?.initial}
+            onClose={() => {
+              setRecordType(null);
+              setEditing(null);
+            }}
             onSubmit={handleRecordSubmit}
           />
         )}

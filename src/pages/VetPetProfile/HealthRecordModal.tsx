@@ -13,6 +13,8 @@ interface Props {
   type: HealthRecordType;
   submitting: boolean;
   submitError: string | null;
+  /** Preenchido para edição; ausente para criação. */
+  initial?: HealthRecordForm;
   onClose: () => void;
   onSubmit: (form: HealthRecordForm) => void;
 }
@@ -28,11 +30,12 @@ export function HealthRecordModal({
   type,
   submitting,
   submitError,
+  initial,
   onClose,
   onSubmit,
 }: Props) {
   const { t } = useTranslation();
-  const [form, setForm] = useState<HealthRecordForm>(emptyForm);
+  const [form, setForm] = useState<HealthRecordForm>(initial ?? emptyForm);
   const [errors, setErrors] = useState<FieldErrors>({});
 
   function set(campo: keyof HealthRecordForm, valor: string) {
@@ -66,7 +69,11 @@ export function HealthRecordModal({
     <div className="vet-note-modal-overlay">
       <div className="vet-note-modal" onClick={(e) => e.stopPropagation()}>
         <div className="vet-note-modal-header">
-          <h3>{t(`petProfile.recordForm.title.${type}`)}</h3>
+          <h3>
+            {initial
+              ? t(`petProfile.recordForm.editTitle.${type}`)
+              : t(`petProfile.recordForm.title.${type}`)}
+          </h3>
           <button
             type="button"
             className="vet-note-modal-close"

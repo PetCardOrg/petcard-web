@@ -215,7 +215,18 @@
         "nextDoseBeforeApplied": "A próxima dose precisa ser depois da aplicação.",
         "endBeforeStart": "O término não pode ser antes do início."
       },
-      "submitError": "Erro ao salvar o registro. Tente novamente."
+      "submitError": "Erro ao salvar o registro. Tente novamente.",
+      "editTitle": {
+        "vaccine": "Editar vacina",
+        "deworming": "Editar vermifugação",
+        "medication": "Editar medicamento"
+      }
+    },
+    "recordActions": {
+      "edit": "Editar",
+      "delete": "Apagar",
+      "confirmDelete": "Apagar este registro? Ele sai da carteira do tutor, mas permanece no histórico clínico.",
+      "deleteError": "Erro ao apagar o registro. Tente novamente."
     }
   },
   "vetScan": {

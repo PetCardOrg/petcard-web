@@ -215,7 +215,18 @@
         "nextDoseBeforeApplied": "The next dose must come after the application.",
         "endBeforeStart": "The end date cannot be before the start date."
       },
-      "submitError": "Could not save the record. Please try again."
+      "submitError": "Could not save the record. Please try again.",
+      "editTitle": {
+        "vaccine": "Edit vaccine",
+        "deworming": "Edit deworming",
+        "medication": "Edit medication"
+      }
+    },
+    "recordActions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this record? It leaves the tutor's wallet but stays in the clinical history.",
+      "deleteError": "Could not delete the record. Please try again."
     }
   },
   "vetScan": {

@@ -3,6 +3,9 @@ import type {
   CreateMedicationRecordDto,
   CreateNotaClinicaDto,
   CreateVaccineRecordDto,
+  UpdateDewormingRecordDto,
+  UpdateMedicationRecordDto,
+  UpdateVaccineRecordDto,
 } from "@petcardorg/shared";
 import { apiFetch } from "./api";
 
@@ -24,6 +27,8 @@ export interface VaccineRecord {
   applied_at: string;
   next_dose_at?: string;
   veterinarian_name?: string;
+  /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
+  veterinario_id?: string;
   notes?: string;
 }
 
@@ -33,6 +38,8 @@ export interface DewormingRecord {
   applied_at: string;
   next_dose_at?: string;
   veterinarian_name?: string;
+  /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
+  veterinario_id?: string;
   notes?: string;
 }
 
@@ -41,6 +48,8 @@ export interface MedicationRecord {
   medication_name: string;
   dosage: string;
   frequency: string;
+  /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
+  veterinario_id?: string;
   start_date: string;
   end_date?: string;
   notes?: string;
@@ -133,4 +142,40 @@ export async function fetchPetProfile(
     ]);
 
   return { pet, vaccines, dewormings, medications, clinicalNotes };
+}
+
+/** Endpoints de alteração e remoção, por tipo de registro (web#34). */
+export const RECORD_ENDPOINT = {
+  vaccine: "vaccines",
+  deworming: "dewormings",
+  medication: "medications",
+} as const;
+
+export type RecordKind = keyof typeof RECORD_ENDPOINT;
+
+export async function updateHealthRecord(
+  token: string,
+  kind: RecordKind,
+  id: string,
+  dto:
+    | UpdateVaccineRecordDto
+    | UpdateDewormingRecordDto
+    | UpdateMedicationRecordDto,
+): Promise<void> {
+  await apiFetch(`/${RECORD_ENDPOINT[kind]}/${id}`, {
+    method: "PATCH",
+    body: dto,
+    token,
+  });
+}
+
+export async function deleteHealthRecord(
+  token: string,
+  kind: RecordKind,
+  id: string,
+): Promise<void> {
+  await apiFetch(`/${RECORD_ENDPOINT[kind]}/${id}`, {
+    method: "DELETE",
+    token,
+  });
 }
