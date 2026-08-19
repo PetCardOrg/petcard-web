@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type {
   CarteiraDigitalPublicResponseDto,
@@ -17,6 +17,7 @@ import {
 } from "react-icons/io5";
 
 import { getPublicCard } from "../../services/card.service";
+import { adicionarPetAtendido } from "../../services/dashboard.service";
 import { ApiError } from "../../services/api";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
 import { useAuth } from "../../hooks/useAuth";
@@ -174,12 +175,15 @@ export function PublicCardPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { token: authToken } = useAuth();
   const [card, setCard] = useState<CarteiraDigitalPublicResponseDto | null>(
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<"not_found" | "network" | null>(null);
+  const [entrando, setEntrando] = useState(false);
+  const [erroAcesso, setErroAcesso] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -214,6 +218,50 @@ export function PublicCardPage() {
       cancelled = true;
     };
   }, [token]);
+
+  /**
+   * Põe o pet na lista do veterinário e abre o prontuário.
+   *
+   * Ter lido o QR é o que autoriza o atendimento: a lista do dashboard é um
+   * vínculo guardado, não uma dedução dos registros clínicos (api#130).
+   */
+  const entrarComoVet = useCallback(async () => {
+    if (!token || !card) return;
+    if (!authToken) {
+      // Volta para cá depois do login, não direto para o prontuário: é aqui
+      // que o vínculo é criado.
+      navigate("/vet/login", {
+        state: { redirectTo: `/card/${token}`, acessoVet: true },
+      });
+      return;
+    }
+
+    setEntrando(true);
+    setErroAcesso(null);
+    try {
+      await adicionarPetAtendido(authToken, token);
+      navigate(`/vet/pets/${card.pet_id}`);
+    } catch (err) {
+      setErroAcesso(
+        err instanceof ApiError && err.status === 403
+          ? t("publicCard.vetAccess.crmvRequired")
+          : t("publicCard.vetAccess.failed"),
+      );
+    } finally {
+      setEntrando(false);
+    }
+  }, [authToken, card, navigate, t, token]);
+
+  // Quem chegou aqui vindo do login já pediu para entrar como veterinário;
+  // repetir o clique seria só atrito.
+  const pediuAcessoVet = Boolean(
+    (location.state as { acessoVet?: boolean } | null)?.acessoVet,
+  );
+  useEffect(() => {
+    if (pediuAcessoVet && authToken && card) {
+      void entrarComoVet();
+    }
+  }, [pediuAcessoVet, authToken, card, entrarComoVet]);
 
   const age = useCalculateAge(card?.birth_date);
 
@@ -266,17 +314,6 @@ export function PublicCardPage() {
     defaultValue: card.species,
   });
   const sexLabel = t(`sex.${card.sex}`, { defaultValue: card.sex });
-
-  // O vet já autenticado pula o login; quem não está leva o destino junto,
-  // para cair no pet que acabou de escanear em vez de no dashboard.
-  const perfilDoPet = `/vet/pets/${card.pet_id}`;
-  function handleVetAccess() {
-    if (authToken) {
-      navigate(perfilDoPet);
-    } else {
-      navigate("/vet/login", { state: { redirectTo: perfilDoPet } });
-    }
-  }
 
   return (
     <div className="card-page">
@@ -337,10 +374,14 @@ export function PublicCardPage() {
           <button
             type="button"
             className="vet-access-btn"
-            onClick={handleVetAccess}
+            onClick={() => void entrarComoVet()}
+            disabled={entrando}
           >
-            {t("publicCard.vetAccess.action")}
+            {entrando
+              ? t("publicCard.vetAccess.entering")
+              : t("publicCard.vetAccess.action")}
           </button>
+          {erroAcesso && <p className="vet-access-error">{erroAcesso}</p>}
         </section>
 
         {/* O QR fica só no app do tutor (web#34). Exibi-lo aqui não servia a
