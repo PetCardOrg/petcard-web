@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { VetDashboardPage } from "./VetDashboardPage";
 import { ApiError } from "../../services/api";
 import type {
@@ -28,10 +28,15 @@ vi.mock("../../hooks/useAuth", () => ({
 
 vi.mock("../../services/dashboard.service", () => ({
   fetchDashboardPets: vi.fn(),
+  removerPetAtendido: vi.fn(),
 }));
 
-import { fetchDashboardPets } from "../../services/dashboard.service";
+import {
+  fetchDashboardPets,
+  removerPetAtendido,
+} from "../../services/dashboard.service";
 const fetchMock = vi.mocked(fetchDashboardPets);
+const removerMock = vi.mocked(removerPetAtendido);
 
 function page(
   items: DashboardPetItem[],
@@ -56,12 +61,22 @@ const rex: DashboardPetItem = {
   last_attended_at: "2026-01-10T12:00:00.000Z",
 };
 
+let confirmado = true;
+
 describe("VetDashboardPage", () => {
   beforeEach(() => {
     navigateMock.mockReset();
     logoutMock.mockReset();
     fetchMock.mockReset();
+    removerMock.mockReset();
+    removerMock.mockResolvedValue(undefined);
     locationMock.state = null;
+    confirmado = true;
+    vi.spyOn(window, "confirm").mockImplementation(() => confirmado);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("lista os pets atendidos retornados pela API", async () => {
@@ -164,5 +179,70 @@ describe("VetDashboardPage", () => {
     for (const btn of buttons) {
       expect(btn).toBeDisabled();
     }
+  });
+
+  describe("remover pet da lista", () => {
+    it("tira o pet da lista e recarrega, sem abrir o prontuário", async () => {
+      fetchMock.mockResolvedValue(page([rex]));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      const buscasAntes = fetchMock.mock.calls.length;
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      await waitFor(() =>
+        expect(removerMock).toHaveBeenCalledWith("jwt", "p1"),
+      );
+      // O card inteiro navega: o botão de remover não pode abrir o pet.
+      expect(navigateMock).not.toHaveBeenCalled();
+      await waitFor(() =>
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(buscasAntes),
+      );
+    });
+
+    it("não remove nada quando o veterinário desiste na confirmação", async () => {
+      confirmado = false;
+      fetchMock.mockResolvedValue(page([rex]));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      expect(removerMock).not.toHaveBeenCalled();
+    });
+
+    it("avisa quando a remoção falha", async () => {
+      fetchMock.mockResolvedValue(page([rex]));
+      removerMock.mockRejectedValue(new ApiError(500, "Boom"));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      expect(
+        await screen.findByText(
+          "Não foi possível tirar o pet da lista. Tente de novo.",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("desloga quando a remoção responde 401", async () => {
+      fetchMock.mockResolvedValue(page([rex]));
+      removerMock.mockRejectedValue(new ApiError(401, "Unauthorized"));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      await waitFor(() => expect(logoutMock).toHaveBeenCalled());
+    });
   });
 });

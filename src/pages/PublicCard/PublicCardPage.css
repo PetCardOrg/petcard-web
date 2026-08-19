@@ -455,3 +455,14 @@ tbody tr:hover {
   outline: 2px solid #14708c;
   outline-offset: 2px;
 }
+
+.vet-access-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vet-access-error {
+  margin: 0.5rem 0 0;
+  color: #c0392b;
+  font-size: 0.875rem;
+}

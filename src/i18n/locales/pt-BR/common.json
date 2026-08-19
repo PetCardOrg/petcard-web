@@ -44,7 +44,10 @@
     "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar.",
     "vetAccess": {
       "prompt": "É veterinário? Entre para ver o histórico clínico completo deste pet.",
-      "action": "Sou veterinário"
+      "action": "Sou veterinário",
+      "entering": "Abrindo prontuário...",
+      "failed": "Não foi possível abrir este pet. Tente de novo.",
+      "crmvRequired": "Seu CRMV precisa estar verificado para acessar dados clínicos."
     }
   },
   "notFoundPage": {
@@ -111,13 +114,13 @@
   },
   "vetDashboard": {
     "title": "Pets Atendidos",
-    "subtitle": "Pets com notas clínicas recentes",
+    "subtitle": "Pets que você atendeu",
     "logout": "Sair",
     "scanQr": "Escanear QR",
     "searchPlaceholder": "Buscar por nome do pet ou tutor...",
     "loading": "Carregando...",
     "empty": "Nenhum pet atendido ainda",
-    "emptyDescription": "Quando você registrar notas clínicas, os pets aparecerão aqui.",
+    "emptyDescription": "Leia o QR Code da carteira de um pet para adicioná-lo aqui.",
     "error": "Erro ao carregar os dados",
     "retry": "Tentar novamente",
     "table": {
@@ -132,7 +135,12 @@
       "next": "Próxima",
       "page": "Página {{current}} de {{total}}"
     },
-    "crmvNaoVerificado": "Não conseguimos confirmar seu CRMV agora. Você já pode usar o sistema, mas o histórico clínico dos pets só abre depois da verificação — é possível tentar de novo ao abrir um pet."
+    "crmvNaoVerificado": "Não conseguimos confirmar seu CRMV agora. Você já pode usar o sistema, mas o histórico clínico dos pets só abre depois da verificação — é possível tentar de novo ao abrir um pet.",
+    "remover": {
+      "rotulo": "Tirar {{nome}} da lista",
+      "confirmar": "Tirar {{nome}} da sua lista? O histórico clínico do pet continua guardado, e ler o QR Code de novo traz ele de volta.",
+      "erro": "Não foi possível tirar o pet da lista. Tente de novo."
+    }
   },
   "petProfile": {
     "title": "Perfil do Pet",

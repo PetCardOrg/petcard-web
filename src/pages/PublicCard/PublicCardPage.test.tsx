@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PublicCardPage } from "./PublicCardPage";
@@ -8,9 +8,12 @@ let params: { token?: string } = { token: "tok-123" };
 const navigateMock = vi.fn();
 let authToken: string | null = null;
 
+let locationState: Record<string, unknown> | null = null;
+
 vi.mock("react-router-dom", () => ({
   useParams: () => params,
   useNavigate: () => navigateMock,
+  useLocation: () => ({ state: locationState }),
 }));
 
 vi.mock("../../hooks/useAuth", () => ({
@@ -21,8 +24,14 @@ vi.mock("../../services/card.service", () => ({
   getPublicCard: vi.fn(),
 }));
 
+vi.mock("../../services/dashboard.service", () => ({
+  adicionarPetAtendido: vi.fn(),
+}));
+
 import { getPublicCard } from "../../services/card.service";
+import { adicionarPetAtendido } from "../../services/dashboard.service";
 const cardMock = vi.mocked(getPublicCard);
+const adicionarMock = vi.mocked(adicionarPetAtendido);
 
 function buildCard(overrides: Record<string, unknown> = {}) {
   return {
@@ -56,7 +65,10 @@ describe("PublicCardPage", () => {
     params = { token: "tok-123" };
     cardMock.mockReset();
     navigateMock.mockReset();
+    adicionarMock.mockReset();
+    adicionarMock.mockResolvedValue({} as never);
     authToken = null;
+    locationState = null;
   });
 
   it("renderiza a carteira pública com pet, tutor e vacina", async () => {
@@ -79,12 +91,15 @@ describe("PublicCardPage", () => {
       screen.getByRole("button", { name: "Sou veterinário" }),
     );
 
+    // Volta para a carteira, não para o prontuário: é aqui que o vínculo
+    // com o veterinário é criado.
     expect(navigateMock).toHaveBeenCalledWith("/vet/login", {
-      state: { redirectTo: "/vet/pets/p1" },
+      state: { redirectTo: "/card/tok-123", acessoVet: true },
     });
+    expect(adicionarMock).not.toHaveBeenCalled();
   });
 
-  it("leva o vet já autenticado direto ao perfil do pet", async () => {
+  it("adiciona o pet à lista do vet autenticado e abre o prontuário", async () => {
     authToken = "jwt-vet";
     cardMock.mockResolvedValue(buildCard() as never);
     render(<PublicCardPage />);
@@ -94,7 +109,63 @@ describe("PublicCardPage", () => {
       screen.getByRole("button", { name: "Sou veterinário" }),
     );
 
+    // Sem esta chamada o vet abriria o prontuário e o pet não estaria no
+    // dashboard dele (api#130).
+    await waitFor(() =>
+      expect(adicionarMock).toHaveBeenCalledWith("jwt-vet", "tok-123"),
+    );
     expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1");
+  });
+
+  it("entra sozinho ao voltar do login, sem pedir outro clique", async () => {
+    authToken = "jwt-vet";
+    locationState = { acessoVet: true };
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await waitFor(() =>
+      expect(adicionarMock).toHaveBeenCalledWith("jwt-vet", "tok-123"),
+    );
+    expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1");
+  });
+
+  it("explica o bloqueio quando o CRMV não está verificado", async () => {
+    authToken = "jwt-vet";
+    adicionarMock.mockRejectedValue(new ApiError(403, "Forbidden"));
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Sou veterinário" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Seu CRMV precisa estar verificado para acessar dados clínicos.",
+      ),
+    ).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("não navega quando a vinculação falha", async () => {
+    authToken = "jwt-vet";
+    adicionarMock.mockRejectedValue(new ApiError(500, "Boom"));
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Sou veterinário" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Não foi possível abrir este pet. Tente de novo.",
+      ),
+    ).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 
   it("mostra 'não encontrada' quando a API responde 404", async () => {

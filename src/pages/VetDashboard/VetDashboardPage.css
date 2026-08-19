@@ -447,3 +447,36 @@
   font-size: 0.875rem;
   line-height: 1.45;
 }
+
+.vet-pet-card-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #9caab4;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.vet-pet-card-remove:hover:not(:disabled) {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.vet-pet-card-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vet-dashboard-remove-error {
+  margin: 0 0 0.75rem;
+  color: #c0392b;
+  font-size: 0.875rem;
+}

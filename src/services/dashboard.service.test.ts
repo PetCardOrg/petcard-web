@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchDashboardPets } from "./dashboard.service";
+import {
+  adicionarPetAtendido,
+  fetchDashboardPets,
+  removerPetAtendido,
+} from "./dashboard.service";
 
 const BASE = "http://localhost:3000";
 
@@ -51,5 +55,49 @@ describe("fetchDashboardPets", () => {
     expect(fetchMock.mock.calls[0][1]).toMatchObject({
       headers: { Authorization: "Bearer jwt-xyz" },
     });
+  });
+});
+
+describe("vínculo do veterinário com o pet", () => {
+  const fetchMock = vi.fn<typeof fetch>();
+
+  beforeEach(() => {
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      json: () => Promise.resolve({ pet_id: "p1", novo: true }),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("adiciona o pet mandando o token do QR no corpo", async () => {
+    const res = await adicionarPetAtendido("jwt", "tok-do-qr");
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/veterinarios/me/pets`);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      method: "POST",
+      body: JSON.stringify({ token: "tok-do-qr" }),
+    });
+    expect(res).toMatchObject({ pet_id: "p1" });
+  });
+
+  it("remove o pet pelo id, não pelo token", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 204,
+      statusText: "No Content",
+      json: () => Promise.resolve(null),
+    } as Response);
+
+    await removerPetAtendido("jwt", "p1");
+
+    expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/veterinarios/me/pets/p1`);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "DELETE" });
   });
 });

@@ -6,10 +6,14 @@ import {
   IoAlertCircle,
   IoSearch,
   IoChevronForward,
+  IoTrashOutline,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
-import { fetchDashboardPets } from "../../services/dashboard.service";
+import {
+  fetchDashboardPets,
+  removerPetAtendido,
+} from "../../services/dashboard.service";
 import type {
   DashboardPetItem,
   PaginatedResponse,
@@ -45,6 +49,8 @@ export function VetDashboardPage() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [removendo, setRemovendo] = useState<string | null>(null);
+  const [erroRemocao, setErroRemocao] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(
@@ -86,6 +92,35 @@ export function VetDashboardPage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Tira o pet da lista do veterinário.
+   *
+   * Some só o vínculo: o pet, os registros clínicos e a trilha continuam, e
+   * ler o QR de novo traz o pet de volta.
+   */
+  async function removerPet(pet: DashboardPetItem) {
+    if (!token) return;
+    if (
+      !window.confirm(t("vetDashboard.remover.confirmar", { nome: pet.name }))
+    )
+      return;
+
+    setRemovendo(pet.id);
+    setErroRemocao(false);
+    try {
+      await removerPetAtendido(token, pet.id);
+      await load(search, page);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        logout();
+        return;
+      }
+      setErroRemocao(true);
+    } finally {
+      setRemovendo(null);
+    }
+  }
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString();
@@ -181,6 +216,11 @@ export function VetDashboardPage() {
 
         {!loading && !error && data && data.items.length > 0 && (
           <>
+            {erroRemocao && (
+              <p className="vet-dashboard-remove-error">
+                {t("vetDashboard.remover.erro")}
+              </p>
+            )}
             <div className="vet-dashboard-pet-list">
               {data.items.map((pet) => {
                 const colors = getSpeciesColors(pet.species);
@@ -239,6 +279,21 @@ export function VetDashboardPage() {
                         </span>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      className="vet-pet-card-remove"
+                      aria-label={t("vetDashboard.remover.rotulo", {
+                        nome: pet.name,
+                      })}
+                      disabled={removendo === pet.id}
+                      onClick={(e) => {
+                        // O card inteiro navega; remover não pode abrir o pet.
+                        e.stopPropagation();
+                        void removerPet(pet);
+                      }}
+                    >
+                      <IoTrashOutline size={18} />
+                    </button>
                     <IoChevronForward
                       size={18}
                       className="vet-pet-card-chevron"
