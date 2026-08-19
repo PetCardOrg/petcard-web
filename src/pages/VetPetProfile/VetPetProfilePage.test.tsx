@@ -155,7 +155,7 @@ describe("VetPetProfilePage", () => {
           entidade: "NOTA_CLINICA",
           entidade_id: "n1",
           titulo: "Otite",
-          ocorrido_em: "2026-08-18" as unknown as Date,
+          ocorrido_em: "2026-08-18",
           registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
           excluido: false,
           acoes: [],
@@ -164,7 +164,7 @@ describe("VetPetProfilePage", () => {
           entidade: "VACINA",
           entidade_id: "v1",
           titulo: "Antirrábica",
-          ocorrido_em: "2026-01-10" as unknown as Date,
+          ocorrido_em: "2026-01-10",
           registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
           excluido: false,
           acoes: [],
@@ -178,6 +178,33 @@ describe("VetPetProfilePage", () => {
       .getAllByText(/Otite|Antirrábica/)
       .map((el) => el.textContent);
     expect(titulos[0]).toContain("Otite");
+  });
+
+  it("mostra o dia de calendário do registro, sem voltar um dia", async () => {
+    fetchProfileMock.mockResolvedValue(buildProfile());
+    historicoMock.mockResolvedValue({
+      pet_id: "p1",
+      pet_nome: "Rex",
+      itens: [
+        {
+          entidade: "VACINA",
+          entidade_id: "v1",
+          titulo: "Antirrábica",
+          ocorrido_em: "2026-08-18",
+          registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
+          excluido: false,
+          acoes: [],
+        },
+      ],
+    } as never);
+    render(<VetPetProfilePage />);
+    await screen.findByRole("heading", { name: "Rex" });
+    await screen.findByText("Antirrábica");
+
+    // Data montada por componentes: em fuso negativo, passar o dia pelo
+    // construtor de instante renderiza 17/08.
+    const dia = new Date(2026, 7, 18).toLocaleDateString();
+    expect(screen.getByText(dia)).toBeInTheDocument();
   });
 
   it("cria uma nota clínica pelo formulário e recarrega o perfil", async () => {
@@ -440,7 +467,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             entidade: "VACINA",
             entidade_id: "v1",
             titulo: "Antirrábica",
-            ocorrido_em: "2026-03-01" as unknown as Date,
+            ocorrido_em: "2026-03-01",
             registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
             excluido: false,
             acoes: [],
@@ -449,7 +476,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             entidade: "VERMIFUGO",
             entidade_id: "d1",
             titulo: "Drontal",
-            ocorrido_em: "2026-03-02" as unknown as Date,
+            ocorrido_em: "2026-03-02",
             registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
             excluido: false,
             acoes: [],
@@ -458,7 +485,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             entidade: "MEDICACAO",
             entidade_id: "m1",
             titulo: "Amoxicilina",
-            ocorrido_em: "2026-03-03" as unknown as Date,
+            ocorrido_em: "2026-03-03",
             registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
             excluido: false,
             acoes: [],
@@ -467,7 +494,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             entidade: "NOTA_CLINICA",
             entidade_id: "n1",
             titulo: "Otite",
-            ocorrido_em: "2026-03-04" as unknown as Date,
+            ocorrido_em: "2026-03-04",
             registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
             excluido: false,
             acoes: [],
@@ -623,7 +650,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             entidade: "VACINA",
             entidade_id: "v1",
             titulo: "Antirrábica",
-            ocorrido_em: "2026-08-18" as unknown as Date,
+            ocorrido_em: "2026-08-18",
             registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
             excluido: false,
             acoes: [],
@@ -774,7 +801,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
             entidade: "MEDICACAO",
             entidade_id: "med1",
             titulo: "Amoxicilina",
-            ocorrido_em: "2026-08-18" as unknown as Date,
+            ocorrido_em: "2026-08-18",
             registrado_em: "2026-08-18T10:00:00Z" as unknown as Date,
             excluido: true,
             veterinario_nome: "Dra. Camila",
