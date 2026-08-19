@@ -148,7 +148,7 @@
     "emptyMedications": "No medications registered.",
     "emptyNotes": "No clinical notes registered.",
     "tabs": {
-      "timeline": "Timeline",
+      "timeline": "History",
       "vaccines": "Vaccines",
       "dewormings": "Dewormings",
       "medications": "Medications",
@@ -172,7 +172,8 @@
       "submit": "Save",
       "submitting": "Saving...",
       "cancel": "Cancel",
-      "submitError": "Failed to save clinical note. Please try again."
+      "submitError": "Failed to save clinical note. Please try again.",
+      "editTitle": "Edit clinical note"
     },
     "crmv": {
       "title": "CRMV not verified",
@@ -181,6 +182,70 @@
       "verifying": "Verifying...",
       "refused": "The registration was not accepted (status: {{situacao}}). Check the CRMV in your profile.",
       "failed": "Could not verify your CRMV right now. Please try again."
+    },
+    "recordForm": {
+      "title": {
+        "vaccine": "Add vaccine",
+        "deworming": "Add deworming",
+        "medication": "Prescribe medication"
+      },
+      "name": {
+        "vaccine": "Vaccine",
+        "deworming": "Product",
+        "medication": "Medication"
+      },
+      "add": {
+        "vaccine": "New vaccine",
+        "deworming": "New deworming",
+        "medication": "New medication"
+      },
+      "appliedAt": "Application date",
+      "nextDose": "Next dose (optional)",
+      "dosage": "Dosage",
+      "dosagePlaceholder": "e.g. 250mg",
+      "frequency": "Frequency",
+      "frequencyPlaceholder": "e.g. every 12h",
+      "startDate": "Start",
+      "endDate": "End (optional)",
+      "notes": "Notes",
+      "errors": {
+        "required": "This field is required.",
+        "invalidDate": "Enter a valid date.",
+        "dosageNeedsNumber": "Dosage must state the amount. e.g. 250mg.",
+        "appliedInFuture": "The application date cannot be in the future.",
+        "nextDoseBeforeApplied": "The next dose must come after the application.",
+        "endBeforeStart": "The end date cannot be before the start date."
+      },
+      "submitError": "Could not save the record. Please try again.",
+      "editTitle": {
+        "vaccine": "Edit vaccine",
+        "deworming": "Edit deworming",
+        "medication": "Edit medication"
+      }
+    },
+    "recordActions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this record? It leaves the tutor's wallet but stays in the clinical history.",
+      "deleteError": "Could not delete the record. Please try again."
+    },
+    "history": {
+      "loading": "Loading history...",
+      "error": "Could not load the history.",
+      "empty": "No records in the history.",
+      "intro": "Immutable record: includes what was removed from the wallet and who performed each action.",
+      "excluido": "removed from wallet",
+      "entidade": {
+        "VACINA": "Vaccine",
+        "VERMIFUGO": "Deworming",
+        "MEDICACAO": "Medication",
+        "NOTA_CLINICA": "Clinical note"
+      },
+      "acao": {
+        "CRIACAO": "Created",
+        "EDICAO": "Edited",
+        "EXCLUSAO": "Deleted"
+      }
     }
   },
   "vetScan": {

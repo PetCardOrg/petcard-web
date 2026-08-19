@@ -8,6 +8,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // Fuso do usuário, não o UTC do CI: data de calendário lida como instante
+    // volta um dia só em fuso negativo, e em UTC o bug passa despercebido.
+    env: { TZ: "America/Sao_Paulo" },
     setupFiles: "./src/test/setup.ts",
     css: false,
     coverage: {

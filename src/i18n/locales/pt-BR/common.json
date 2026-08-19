@@ -148,7 +148,7 @@
     "emptyMedications": "Nenhuma medicação registrada.",
     "emptyNotes": "Nenhuma nota clínica registrada.",
     "tabs": {
-      "timeline": "Timeline",
+      "timeline": "Histórico",
       "vaccines": "Vacinas",
       "dewormings": "Vermifugações",
       "medications": "Medicações",
@@ -172,7 +172,8 @@
       "submit": "Salvar",
       "submitting": "Salvando...",
       "cancel": "Cancelar",
-      "submitError": "Erro ao salvar a nota clínica. Tente novamente."
+      "submitError": "Erro ao salvar a nota clínica. Tente novamente.",
+      "editTitle": "Editar Nota Clínica"
     },
     "crmv": {
       "title": "CRMV não verificado",
@@ -181,6 +182,70 @@
       "verifying": "Verificando...",
       "refused": "O registro não foi aceito (situação: {{situacao}}). Confira o CRMV no seu cadastro.",
       "failed": "Não foi possível verificar seu CRMV agora. Tente novamente."
+    },
+    "recordForm": {
+      "title": {
+        "vaccine": "Registrar vacina",
+        "deworming": "Registrar vermifugação",
+        "medication": "Prescrever medicamento"
+      },
+      "name": {
+        "vaccine": "Vacina",
+        "deworming": "Produto",
+        "medication": "Medicamento"
+      },
+      "add": {
+        "vaccine": "Nova vacina",
+        "deworming": "Nova vermifugação",
+        "medication": "Novo medicamento"
+      },
+      "appliedAt": "Data de aplicação",
+      "nextDose": "Próxima dose (opcional)",
+      "dosage": "Dosagem",
+      "dosagePlaceholder": "Ex.: 250mg",
+      "frequency": "Frequência",
+      "frequencyPlaceholder": "Ex.: 12/12h",
+      "startDate": "Início",
+      "endDate": "Término (opcional)",
+      "notes": "Observações",
+      "errors": {
+        "required": "Campo obrigatório.",
+        "invalidDate": "Informe uma data válida.",
+        "dosageNeedsNumber": "A dosagem precisa indicar a quantidade. Ex.: 250mg.",
+        "appliedInFuture": "A data de aplicação não pode ser no futuro.",
+        "nextDoseBeforeApplied": "A próxima dose precisa ser depois da aplicação.",
+        "endBeforeStart": "O término não pode ser antes do início."
+      },
+      "submitError": "Erro ao salvar o registro. Tente novamente.",
+      "editTitle": {
+        "vaccine": "Editar vacina",
+        "deworming": "Editar vermifugação",
+        "medication": "Editar medicamento"
+      }
+    },
+    "recordActions": {
+      "edit": "Editar",
+      "delete": "Apagar",
+      "confirmDelete": "Apagar este registro? Ele sai da carteira do tutor, mas permanece no histórico clínico.",
+      "deleteError": "Erro ao apagar o registro. Tente novamente."
+    },
+    "history": {
+      "loading": "Carregando histórico...",
+      "error": "Não foi possível carregar o histórico.",
+      "empty": "Nenhum registro no histórico.",
+      "intro": "Registro imutável: inclui o que foi excluído da carteira e quem realizou cada ação.",
+      "excluido": "excluído da carteira",
+      "entidade": {
+        "VACINA": "Vacina",
+        "VERMIFUGO": "Vermifugação",
+        "MEDICACAO": "Medicação",
+        "NOTA_CLINICA": "Nota clínica"
+      },
+      "acao": {
+        "CRIACAO": "Registrado",
+        "EDICAO": "Editado",
+        "EXCLUSAO": "Excluído"
+      }
     }
   },
   "vetScan": {

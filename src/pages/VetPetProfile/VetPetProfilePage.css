@@ -651,3 +651,73 @@
   max-width: 42ch;
   text-align: center;
 }
+
+/* Erro de validação por campo no formulário de registro clínico (web#34) */
+.vet-field-error {
+  display: block;
+  margin-top: 0.25rem;
+  color: #e63946;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* Editar/apagar no registro do próprio veterinário (web#34) */
+.vet-record-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.vet-record-actions button {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d8eef6;
+  border-radius: 6px;
+  background: #fff;
+  color: #107fa8;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vet-record-actions button:hover {
+  background: #f4fafd;
+}
+
+.vet-record-actions .vet-record-delete {
+  border-color: #f7d4d7;
+  color: #e63946;
+}
+
+.vet-record-actions .vet-record-delete:hover {
+  background: #fef2f2;
+}
+
+/* Histórico imutável (web#41) */
+.vet-history-intro {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-left: 3px solid #27a9d8;
+  border-radius: 4px;
+  background: #f4fafd;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #14313f;
+}
+
+.vet-section-card.vet-history-excluido {
+  border-left: 3px solid #e63946;
+  background: #fefafa;
+}
+
+.vet-history-excluido .vet-section-card-title {
+  text-decoration: line-through;
+  color: #8a97a3;
+}
+
+.vet-history-acoes {
+  margin: 0.75rem 0 0;
+  padding-left: 1.125rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #5c6b7a;
+}
