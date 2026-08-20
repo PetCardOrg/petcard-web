@@ -1,16 +1,23 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IoPaw } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../services/api";
+import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "../VetLogin/VetLoginPage.css";
 
 export function VetRegisterPage() {
   const { t } = useTranslation();
   const { register } = useAuth();
   const navigate = useNavigate();
+  // Quem veio da carteira do QR chegou aqui pelo link do login: o cadastro
+  // devolve o vet para o pet que ele escaneou, não para o dashboard.
+  const location = useLocation();
+  const { redirectTo = "/vet/dashboard", acessoVet } = lerRedirecionamentoVet(
+    location.state,
+  );
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -33,18 +40,18 @@ export function VetRegisterPage() {
     setSubmitting(true);
 
     try {
-      const verificado = await register({
+      await register({
         nome,
         email,
         crmv,
         password,
         telefone: telefone.trim() === "" ? undefined : telefone,
       });
-      // Quem entra sem verificação vê o aviso com o botão de verificar na
-      // tela do pet (api#113), então o cadastro não precisa travar aqui.
-      navigate("/vet/dashboard", {
+      // Quem entra sem verificação vê o aviso com o botão de verificar já no
+      // destino (api#113), então o cadastro não precisa travar aqui.
+      navigate(redirectTo, {
         replace: true,
-        state: { crmvVerificado: verificado },
+        state: acessoVet ? { acessoVet: true } : undefined,
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
@@ -172,7 +179,9 @@ export function VetRegisterPage() {
 
         <p className="vet-login-alt">
           {t("vetRegister.hasAccount")}{" "}
-          <Link to="/vet/login">{t("vetRegister.goToLogin")}</Link>
+          <Link to="/vet/login" state={location.state}>
+            {t("vetRegister.goToLogin")}
+          </Link>
         </p>
       </div>
     </div>

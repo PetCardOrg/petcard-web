@@ -43,20 +43,24 @@ describe("VetLoginPage", () => {
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith("/vet/dashboard", {
         replace: true,
+        state: undefined,
       }),
     );
   });
 
-  it("volta para o pet quando o login veio da carteira do QR", async () => {
-    locationMock.state = { redirectTo: "/vet/pets/p1" };
+  it("volta para a carteira do QR mantendo o acesso de veterinário pedido", async () => {
+    // Perder `acessoVet` aqui não quebra nada visivelmente: a carteira só
+    // deixa de entrar sozinha e obriga um segundo clique em "Sou veterinário".
+    locationMock.state = { redirectTo: "/card/tok-123", acessoVet: true };
     loginMock.mockResolvedValue(undefined);
     render(<VetLoginPage />);
 
     await fillAndSubmit();
 
     await waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1", {
+      expect(navigateMock).toHaveBeenCalledWith("/card/tok-123", {
         replace: true,
+        state: { acessoVet: true },
       }),
     );
   });

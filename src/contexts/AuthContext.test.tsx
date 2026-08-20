@@ -71,7 +71,7 @@ describe("AuthProvider / useAuth", () => {
     expect(result.current.user).toEqual(vetUser);
   });
 
-  it("register autentica direto e informa se o CRMV saiu verificado", async () => {
+  it("register já deixa o vet autenticado, mesmo sem o CRMV verificado", async () => {
     registerMock.mockResolvedValue({
       access_token: "jwt-novo",
       user: vetUser,
@@ -79,9 +79,8 @@ describe("AuthProvider / useAuth", () => {
     });
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    let verificado: boolean | undefined;
     await act(async () => {
-      verificado = await result.current.register({
+      await result.current.register({
         nome: "Dra. Camila",
         email: "vet@petcard.com",
         password: "senha123",
@@ -89,8 +88,8 @@ describe("AuthProvider / useAuth", () => {
       });
     });
 
-    // Sem verificação o vet ainda entra; o bloqueio aparece na tela do pet.
-    expect(verificado).toBe(false);
+    // Verificação pendente não barra a entrada: o aviso acionável aparece
+    // no destino (api#113).
     expect(localStorage.getItem(TOKEN_KEY)).toBe("jwt-novo");
     expect(result.current.user).toEqual(vetUser);
   });

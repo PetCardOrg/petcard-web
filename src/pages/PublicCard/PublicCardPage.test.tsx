@@ -28,6 +28,10 @@ vi.mock("../../services/dashboard.service", () => ({
   adicionarPetAtendido: vi.fn(),
 }));
 
+vi.mock("../../services/crmv.service", () => ({
+  verificarCrmv: vi.fn(),
+}));
+
 import { getPublicCard } from "../../services/card.service";
 import { adicionarPetAtendido } from "../../services/dashboard.service";
 const cardMock = vi.mocked(getPublicCard);
@@ -130,9 +134,11 @@ describe("PublicCardPage", () => {
     expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1");
   });
 
-  it("explica o bloqueio quando o CRMV não está verificado", async () => {
+  it("oferece a verificação quando o CRMV barra o acesso", async () => {
     authToken = "jwt-vet";
-    adicionarMock.mockRejectedValue(new ApiError(403, "Forbidden"));
+    adicionarMock.mockRejectedValue(
+      new ApiError(403, "Forbidden", "CRMV não verificado"),
+    );
     cardMock.mockResolvedValue(buildCard() as never);
     render(<PublicCardPage />);
     await screen.findByText("Rex");
@@ -145,6 +151,11 @@ describe("PublicCardPage", () => {
       await screen.findByText(
         "Seu CRMV precisa estar verificado para acessar dados clínicos.",
       ),
+    ).toBeInTheDocument();
+    // O vet chegou aqui com o pet na frente: mandá-lo procurar a verificação
+    // em outra tela é perder o atendimento.
+    expect(
+      screen.getByRole("button", { name: "Verificar meu CRMV" }),
     ).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
   });

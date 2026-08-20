@@ -448,6 +448,11 @@
   line-height: 1.45;
 }
 
+.vet-dashboard-crmv-aviso .crmv-aviso-botao {
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
 .vet-pet-card-remove {
   display: flex;
   align-items: center;

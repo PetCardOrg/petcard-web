@@ -466,3 +466,12 @@ tbody tr:hover {
   color: #c0392b;
   font-size: 0.875rem;
 }
+
+/* CRMV pendente (api#113): ocupa a linha inteira do bloco, abaixo do botão. */
+.vet-access-crmv {
+  flex: 1 0 100%;
+  padding-top: 0.75rem;
+  border-top: 1px solid #cbe8f4;
+  color: #34606f;
+  font-size: 0.875rem;
+}

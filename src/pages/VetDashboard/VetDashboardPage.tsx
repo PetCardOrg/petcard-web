@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IoPaw,
@@ -10,6 +10,7 @@ import {
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
+import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
 import {
   fetchDashboardPets,
   removerPetAtendido,
@@ -18,6 +19,7 @@ import type {
   DashboardPetItem,
   PaginatedResponse,
 } from "../../services/dashboard.service";
+import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import "./VetDashboardPage.css";
 
@@ -35,12 +37,9 @@ export function VetDashboardPage() {
   const { t } = useTranslation();
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
-  // O cadastro (api#124) avisa aqui quando a consulta ao CFMV não liberou o
-  // acesso clínico, para o vet não descobrir só no primeiro atendimento.
-  const location = useLocation();
-  const crmvNaoVerificado =
-    (location.state as { crmvVerificado?: boolean } | null)?.crmvVerificado ===
-    false;
+  // O dashboard é a primeira tela do vet: é aqui que ele precisa descobrir
+  // que o CRMV não passou, e não no primeiro atendimento (api#113).
+  const [crmvVerificado, setCrmvVerificado] = useState<boolean | null>(null);
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -77,6 +76,21 @@ export function VetDashboardPage() {
     },
     [token, logout],
   );
+
+  const carregarStatusCrmv = useCallback(async () => {
+    if (!token) return;
+    try {
+      const status = await fetchCrmvStatus(token);
+      setCrmvVerificado(status.verified);
+    } catch {
+      // O aviso é secundário: falhar a consulta não pode esconder a lista.
+      setCrmvVerificado(null);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void carregarStatusCrmv();
+  }, [carregarStatusCrmv]);
 
   useEffect(() => {
     load(search, page);
@@ -153,10 +167,13 @@ export function VetDashboardPage() {
       </header>
 
       <main className="vet-dashboard-content">
-        {crmvNaoVerificado && (
-          <p className="vet-dashboard-crmv-aviso" role="status">
-            {t("vetDashboard.crmvNaoVerificado")}
-          </p>
+        {crmvVerificado === false && (
+          <CrmvAviso
+            token={token}
+            mensagem={t("crmv.pending")}
+            onVerificado={() => void carregarStatusCrmv()}
+            className="vet-dashboard-crmv-aviso"
+          />
         )}
 
         <div className="vet-dashboard-title-row">

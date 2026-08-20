@@ -20,7 +20,9 @@ import { getPublicCard } from "../../services/card.service";
 import { adicionarPetAtendido } from "../../services/dashboard.service";
 import { ApiError } from "../../services/api";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
+import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
 import { useAuth } from "../../hooks/useAuth";
+import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "./PublicCardPage.css";
 
 function formatDate(iso: string): string {
@@ -184,6 +186,7 @@ export function PublicCardPage() {
   const [error, setError] = useState<"not_found" | "network" | null>(null);
   const [entrando, setEntrando] = useState(false);
   const [erroAcesso, setErroAcesso] = useState<string | null>(null);
+  const [crmvBloqueado, setCrmvBloqueado] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -238,24 +241,27 @@ export function PublicCardPage() {
 
     setEntrando(true);
     setErroAcesso(null);
+    setCrmvBloqueado(false);
     try {
       await adicionarPetAtendido(authToken, token);
       navigate(`/vet/pets/${card.pet_id}`);
     } catch (err) {
-      setErroAcesso(
-        err instanceof ApiError && err.status === 403
-          ? t("publicCard.vetAccess.crmvRequired")
-          : t("publicCard.vetAccess.failed"),
-      );
+      // CRMV pendente não é falha: é um passo que falta, e o vet resolve
+      // sem sair da tela.
+      if (err instanceof ApiError && err.isCrmvNaoVerificado) {
+        setCrmvBloqueado(true);
+        return;
+      }
+      setErroAcesso(t("publicCard.vetAccess.failed"));
     } finally {
       setEntrando(false);
     }
   }, [authToken, card, navigate, t, token]);
 
-  // Quem chegou aqui vindo do login já pediu para entrar como veterinário;
-  // repetir o clique seria só atrito.
+  // Quem chegou aqui vindo do login ou do cadastro já pediu para entrar como
+  // veterinário; repetir o clique seria só atrito.
   const pediuAcessoVet = Boolean(
-    (location.state as { acessoVet?: boolean } | null)?.acessoVet,
+    lerRedirecionamentoVet(location.state).acessoVet,
   );
   useEffect(() => {
     if (pediuAcessoVet && authToken && card) {
@@ -382,6 +388,14 @@ export function PublicCardPage() {
               : t("publicCard.vetAccess.action")}
           </button>
           {erroAcesso && <p className="vet-access-error">{erroAcesso}</p>}
+          {crmvBloqueado && (
+            <CrmvAviso
+              token={authToken}
+              mensagem={t("publicCard.vetAccess.crmvRequired")}
+              onVerificado={() => void entrarComoVet()}
+              className="vet-access-crmv"
+            />
+          )}
         </section>
 
         {/* O QR fica só no app do tutor (web#34). Exibi-lo aqui não servia a
