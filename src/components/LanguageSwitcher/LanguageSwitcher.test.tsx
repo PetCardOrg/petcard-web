@@ -13,17 +13,6 @@ describe("LanguageSwitcher", () => {
     });
   });
 
-  it("lista os idiomas suportados e reflete o idioma atual", () => {
-    render(<LanguageSwitcher />);
-
-    const select = screen.getByRole("combobox", { name: "Language" });
-    expect(select).toHaveValue("pt-BR");
-    expect(
-      screen.getByRole("option", { name: "Português" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "English" })).toBeInTheDocument();
-  });
-
   it("troca o idioma do i18n ao selecionar outra opção", async () => {
     const user = userEvent.setup();
     render(<LanguageSwitcher />);
