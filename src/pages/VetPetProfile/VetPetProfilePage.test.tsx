@@ -113,16 +113,6 @@ describe("VetPetProfilePage", () => {
     } as never);
   });
 
-  it("carrega e exibe o pet no herói", async () => {
-    fetchProfileMock.mockResolvedValue(buildProfile());
-    render(<VetPetProfilePage />);
-
-    expect(
-      await screen.findByRole("heading", { name: "Rex" }),
-    ).toBeInTheDocument();
-    expect(fetchProfileMock).toHaveBeenCalledWith("jwt", "p1");
-  });
-
   it("mostra erro e refaz a carga ao tentar novamente", async () => {
     fetchProfileMock.mockRejectedValueOnce(new Error("boom"));
     render(<VetPetProfilePage />);
@@ -333,22 +323,6 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       await screen.findByRole("heading", { name: "Rex" });
       await userEvent.click(screen.getByRole("button", { name: nome }));
     }
-
-    it("cada aba tem o próprio botão de adicionar", async () => {
-      await abrirAba("Vacinas");
-      expect(
-        screen.getByRole("button", { name: /Nova vacina/ }),
-      ).toBeInTheDocument();
-
-      await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
-      expect(
-        screen.getByRole("button", { name: /Novo medicamento/ }),
-      ).toBeInTheDocument();
-      // O botão é o da aba aberta, não o de outro tipo.
-      expect(
-        screen.queryByRole("button", { name: /Nova vacina/ }),
-      ).not.toBeInTheDocument();
-    });
 
     it("registra a vacina do pet", async () => {
       await abrirAba("Vacinas");

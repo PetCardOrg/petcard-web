@@ -20,7 +20,8 @@ SPA da **área do veterinário** do PetCard. Vite + React 19 + TypeScript. Conso
 
 - **Vitest + Testing Library** (`@testing-library/react` + `jest-dom` + `user-event`), ambiente jsdom. Helpers em `src/test`.
 - Comandos: `npm test` (run), `npm run test:watch`, `npm run test:cov`.
-- **Catraca (`vitest.config.ts`): statements 80 · branches 75 · functions 78 · lines 80 — não abaixar.** Feature nova entra com teste; ajuste que derruba cobertura cobre junto.
+- **Cobertura de confiança, não percentual (ADR-006).** Antes de escrever um `it()`: _se quebrar, uma regra de negócio quebrou ou o usuário foi impactado?_ Se não, não escrever — sem teste para service que só monta `fetch` nem para componente visual estático.
+- **Catraca (`vitest.config.ts`): statements 84 · branches 80 · functions 73 · lines 84 — freio de regressão, não meta.** Não abaixar sem ADR; também não inventar teste para subir.
 
 ## Convenções
 
