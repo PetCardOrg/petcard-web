@@ -146,9 +146,18 @@
     "blocked": "Your CRMV must be verified to access clinical data.",
     "verify": "Verify my CRMV",
     "verifying": "Verifying...",
-    "refused": "The registration was not accepted (status: {{situacao}}). Check the CRMV in your profile.",
+    "refused": "The registration was not accepted (status: {{situacao}}). Fix the CRMV and try again.",
     "failed": "Could not verify your CRMV right now. Please try again.",
-    "pending": "We could not confirm your CRMV. You can already use the system, but pets' clinical history only opens after verification."
+    "pending": "We could not confirm your CRMV. You can already use the system, but pets' clinical history only opens after verification.",
+    "fix": "Fix my CRMV",
+    "fixLabel": "CRMV",
+    "fixPlaceholder": "CRMV-SP 12345",
+    "fixHint": "Check the number and state code exactly as in your professional registry.",
+    "save": "Save and verify",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "duplicate": "An account with this CRMV already exists.",
+    "saveFailed": "Could not save the CRMV right now. Please try again."
   },
   "petProfile": {
     "title": "Pet Profile",

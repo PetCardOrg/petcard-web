@@ -42,6 +42,7 @@ vi.mock("../../services/pet-profile.service", () => ({
 
 vi.mock("../../services/crmv.service", () => ({
   verificarCrmv: vi.fn(),
+  corrigirMeuCrmv: vi.fn(),
 }));
 
 import {

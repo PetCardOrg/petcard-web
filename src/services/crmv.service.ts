@@ -25,3 +25,17 @@ export function verificarCrmv(
     { method: "POST", token },
   );
 }
+
+/**
+ * Corrige o CRMV do próprio veterinário (`PATCH /veterinarios/me`).
+ *
+ * A API zera a verificação junto com a troca, então salvar sozinho não
+ * destrava nada — quem chama precisa verificar em seguida.
+ */
+export function corrigirMeuCrmv(token: string, crmv: string): Promise<void> {
+  return apiFetch("/veterinarios/me", {
+    method: "PATCH",
+    body: { crmv },
+    token,
+  });
+}

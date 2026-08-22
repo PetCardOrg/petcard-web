@@ -178,7 +178,7 @@ export function PublicCardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { token: authToken } = useAuth();
+  const { token: authToken, user } = useAuth();
   const [card, setCard] = useState<CarteiraDigitalPublicResponseDto | null>(
     null,
   );
@@ -392,6 +392,7 @@ export function PublicCardPage() {
             <CrmvAviso
               token={authToken}
               mensagem={t("publicCard.vetAccess.crmvRequired")}
+              crmvAtual={user?.crmv}
               onVerificado={() => void entrarComoVet()}
               className="vet-access-crmv"
             />
