@@ -30,6 +30,7 @@ vi.mock("../../services/dashboard.service", () => ({
 
 vi.mock("../../services/crmv.service", () => ({
   verificarCrmv: vi.fn(),
+  corrigirMeuCrmv: vi.fn(),
 }));
 
 import { getPublicCard } from "../../services/card.service";

@@ -171,6 +171,7 @@ export function VetDashboardPage() {
           <CrmvAviso
             token={token}
             mensagem={t("crmv.pending")}
+            crmvAtual={user?.crmv}
             onVerificado={() => void carregarStatusCrmv()}
             className="vet-dashboard-crmv-aviso"
           />

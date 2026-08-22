@@ -31,6 +31,7 @@ vi.mock("../../services/dashboard.service", () => ({
 vi.mock("../../services/crmv.service", () => ({
   fetchCrmvStatus: vi.fn(),
   verificarCrmv: vi.fn(),
+  corrigirMeuCrmv: vi.fn(),
 }));
 
 import {

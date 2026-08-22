@@ -489,6 +489,7 @@ export function VetPetProfilePage() {
             <CrmvAviso
               token={token}
               mensagem={crmvBloqueado}
+              crmvAtual={user?.crmv}
               onVerificado={() => void load()}
             />
           </div>

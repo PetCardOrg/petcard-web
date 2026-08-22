@@ -5,6 +5,13 @@
   line-height: 1.45;
 }
 
+.crmv-aviso-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .crmv-aviso-botao {
   padding: 0.5rem 1rem;
   border: 1px solid #d8eef6;
@@ -16,9 +23,59 @@
   cursor: pointer;
 }
 
-.crmv-aviso-botao:disabled {
+.crmv-aviso-botao:disabled,
+.crmv-aviso-secundario:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+.crmv-aviso-secundario {
+  padding: 0.5rem 0.25rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Correção do CRMV: o veterinário arruma o registro onde o bloqueio apareceu,
+   sem precisar de uma tela de perfil que não existe. */
+.crmv-aviso-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+  max-width: 22rem;
+}
+
+.crmv-aviso-form label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.crmv-aviso-form input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbe8f4;
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  font-size: 0.9375rem;
+}
+
+.crmv-aviso-form input:disabled {
+  opacity: 0.6;
+}
+
+.crmv-aviso-dica {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.crmv-aviso-form .crmv-aviso-acoes {
+  margin-top: 0.25rem;
 }
 
 .crmv-aviso-erro {

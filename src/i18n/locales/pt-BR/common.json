@@ -146,9 +146,18 @@
     "blocked": "Seu CRMV precisa estar verificado para acessar dados clínicos.",
     "verify": "Verificar meu CRMV",
     "verifying": "Verificando...",
-    "refused": "O registro não foi aceito (situação: {{situacao}}). Confira o CRMV no seu cadastro.",
+    "refused": "O registro não foi aceito (situação: {{situacao}}). Corrija o CRMV e tente de novo.",
     "failed": "Não foi possível verificar seu CRMV agora. Tente novamente.",
-    "pending": "Não conseguimos confirmar seu CRMV. Você já pode usar o sistema, mas o histórico clínico dos pets só abre depois da verificação."
+    "pending": "Não conseguimos confirmar seu CRMV. Você já pode usar o sistema, mas o histórico clínico dos pets só abre depois da verificação.",
+    "fix": "Corrigir meu CRMV",
+    "fixLabel": "CRMV",
+    "fixPlaceholder": "CRMV-SP 12345",
+    "fixHint": "Confira o número e a UF, como constam no seu registro no conselho.",
+    "save": "Salvar e verificar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "duplicate": "Já existe uma conta com esse CRMV.",
+    "saveFailed": "Não foi possível salvar o CRMV agora. Tente novamente."
   },
   "petProfile": {
     "title": "Perfil do Pet",
