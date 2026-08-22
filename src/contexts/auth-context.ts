@@ -9,8 +9,13 @@ interface AuthState {
 
 export interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  /** Cadastra e já autentica. Devolve se o CRMV saiu verificado da consulta. */
-  register: (dto: VetRegisterRequest) => Promise<boolean>;
+  /**
+   * Cadastra e já autentica.
+   *
+   * A situação do CRMV não sai daqui: quem precisa dela consulta
+   * `GET /veterinarios/me/crmv`, que continua valendo depois do cadastro.
+   */
+  register: (dto: VetRegisterRequest) => Promise<void>;
   logout: () => void;
 }
 

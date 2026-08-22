@@ -135,12 +135,20 @@
       "next": "Next",
       "page": "Page {{current}} of {{total}}"
     },
-    "crmvNaoVerificado": "We could not confirm your CRMV right now. You can use the system, but pets' clinical history only opens after verification — you can try again when opening a pet.",
     "remover": {
       "rotulo": "Remove {{nome}} from the list",
       "confirmar": "Remove {{nome}} from your list? The pet clinical history is kept, and scanning the QR Code again brings it back.",
       "erro": "Could not remove the pet from the list. Please try again."
     }
+  },
+  "crmv": {
+    "title": "CRMV not verified",
+    "blocked": "Your CRMV must be verified to access clinical data.",
+    "verify": "Verify my CRMV",
+    "verifying": "Verifying...",
+    "refused": "The registration was not accepted (status: {{situacao}}). Check the CRMV in your profile.",
+    "failed": "Could not verify your CRMV right now. Please try again.",
+    "pending": "We could not confirm your CRMV. You can already use the system, but pets' clinical history only opens after verification."
   },
   "petProfile": {
     "title": "Pet Profile",
@@ -182,14 +190,6 @@
       "cancel": "Cancel",
       "submitError": "Failed to save clinical note. Please try again.",
       "editTitle": "Edit clinical note"
-    },
-    "crmv": {
-      "title": "CRMV not verified",
-      "blocked": "Your CRMV must be verified to access clinical data.",
-      "verify": "Verify my CRMV",
-      "verifying": "Verifying...",
-      "refused": "The registration was not accepted (status: {{situacao}}). Check the CRMV in your profile.",
-      "failed": "Could not verify your CRMV right now. Please try again."
     },
     "recordForm": {
       "title": {

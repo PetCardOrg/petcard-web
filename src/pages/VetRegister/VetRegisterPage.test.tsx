@@ -11,8 +11,11 @@ vi.mock("../../hooks/useAuth", () => ({
   useAuth: () => ({ register: registerMock }),
 }));
 
+const locationMock = { state: null as unknown };
+
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  useLocation: () => locationMock,
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
 
@@ -38,10 +41,11 @@ describe("VetRegisterPage", () => {
   beforeEach(() => {
     registerMock.mockReset();
     navigateMock.mockReset();
+    locationMock.state = null;
   });
 
   it("cadastra e navega para o dashboard", async () => {
-    registerMock.mockResolvedValue(true);
+    registerMock.mockResolvedValue(undefined);
     render(<VetRegisterPage />);
 
     await preencher();
@@ -56,13 +60,13 @@ describe("VetRegisterPage", () => {
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith("/vet/dashboard", {
         replace: true,
-        state: { crmvVerificado: true },
+        state: undefined,
       }),
     );
   });
 
   it("envia o telefone quando preenchido", async () => {
-    registerMock.mockResolvedValue(true);
+    registerMock.mockResolvedValue(undefined);
     render(<VetRegisterPage />);
 
     const user = userEvent.setup();
@@ -77,16 +81,19 @@ describe("VetRegisterPage", () => {
     );
   });
 
-  it("entra mesmo sem o CRMV verificado — o aviso aparece na tela do pet", async () => {
-    registerMock.mockResolvedValue(false);
+  it("devolve para a carteira do QR quando o cadastro veio de lá", async () => {
+    // Sem carregar o redirecionamento, o vet cadastrado cairia no dashboard e
+    // teria de escanear o QR de novo para abrir o pet que já tinha na mão.
+    locationMock.state = { redirectTo: "/card/tok-123", acessoVet: true };
+    registerMock.mockResolvedValue(undefined);
     render(<VetRegisterPage />);
 
     await preencher();
 
     await waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith("/vet/dashboard", {
+      expect(navigateMock).toHaveBeenCalledWith("/card/tok-123", {
         replace: true,
-        state: { crmvVerificado: false },
+        state: { acessoVet: true },
       }),
     );
   });

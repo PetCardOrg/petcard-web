@@ -58,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: response.user,
       loading: false,
     });
-    return response.crmv_verificado;
   }, []);
 
   const logout = useCallback(() => {

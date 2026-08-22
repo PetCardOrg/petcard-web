@@ -37,7 +37,7 @@ import {
   type HealthRecordForm,
   type HealthRecordType,
 } from "./healthRecordValidation";
-import { verificarCrmv } from "../../services/crmv.service";
+import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
 import { ApiError } from "../../services/api";
 import "./VetPetProfilePage.css";
 
@@ -118,8 +118,6 @@ export function VetPetProfilePage() {
   const [error, setError] = useState(false);
   // Bloqueio por CRMV não verificado (api#113): erro acionável, não falha genérica.
   const [crmvBloqueado, setCrmvBloqueado] = useState<string | null>(null);
-  const [verificandoCrmv, setVerificandoCrmv] = useState(false);
-  const [erroVerificacao, setErroVerificacao] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
   >("timeline");
@@ -165,7 +163,7 @@ export function VetPetProfilePage() {
         return;
       }
       if (err instanceof ApiError && err.isCrmvNaoVerificado) {
-        setCrmvBloqueado(err.detail ?? t("petProfile.crmv.blocked"));
+        setCrmvBloqueado(err.detail ?? t("crmv.blocked"));
         return;
       }
       setError(true);
@@ -173,32 +171,6 @@ export function VetPetProfilePage() {
       setLoading(false);
     }
   }, [token, id, logout, t]);
-
-  const handleVerificarCrmv = useCallback(async () => {
-    if (!token) return;
-    setVerificandoCrmv(true);
-    setErroVerificacao(null);
-    try {
-      const status = await verificarCrmv(token);
-      if (status.verified) {
-        await load();
-      } else {
-        setErroVerificacao(
-          t("petProfile.crmv.refused", {
-            situacao: status.situacao ?? "-",
-          }),
-        );
-      }
-    } catch (err) {
-      setErroVerificacao(
-        err instanceof ApiError && err.detail
-          ? err.detail
-          : t("petProfile.crmv.failed"),
-      );
-    } finally {
-      setVerificandoCrmv(false);
-    }
-  }, [token, load, t]);
 
   useEffect(() => {
     load();
@@ -513,20 +485,12 @@ export function VetPetProfilePage() {
             <div className="vet-pet-profile-state-icon vet-pet-profile-error-icon">
               <IoAlertCircle size={36} color="#e63946" />
             </div>
-            <h3>{t("petProfile.crmv.title")}</h3>
-            <p className="vet-crmv-message">{crmvBloqueado}</p>
-            <button
-              type="button"
-              onClick={handleVerificarCrmv}
-              disabled={verificandoCrmv}
-            >
-              {verificandoCrmv
-                ? t("petProfile.crmv.verifying")
-                : t("petProfile.crmv.verify")}
-            </button>
-            {erroVerificacao && (
-              <p className="vet-note-form-error">{erroVerificacao}</p>
-            )}
+            <h3>{t("crmv.title")}</h3>
+            <CrmvAviso
+              token={token}
+              mensagem={crmvBloqueado}
+              onVerificado={() => void load()}
+            />
           </div>
         )}
 

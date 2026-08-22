@@ -11,11 +11,8 @@ import type {
 const navigateMock = vi.fn();
 const logoutMock = vi.fn();
 
-const locationMock = { state: null as unknown };
-
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
-  useLocation: () => locationMock,
 }));
 
 vi.mock("../../hooks/useAuth", () => ({
@@ -31,12 +28,19 @@ vi.mock("../../services/dashboard.service", () => ({
   removerPetAtendido: vi.fn(),
 }));
 
+vi.mock("../../services/crmv.service", () => ({
+  fetchCrmvStatus: vi.fn(),
+  verificarCrmv: vi.fn(),
+}));
+
 import {
   fetchDashboardPets,
   removerPetAtendido,
 } from "../../services/dashboard.service";
+import { fetchCrmvStatus } from "../../services/crmv.service";
 const fetchMock = vi.mocked(fetchDashboardPets);
 const removerMock = vi.mocked(removerPetAtendido);
+const crmvStatusMock = vi.mocked(fetchCrmvStatus);
 
 function page(
   items: DashboardPetItem[],
@@ -70,7 +74,9 @@ describe("VetDashboardPage", () => {
     fetchMock.mockReset();
     removerMock.mockReset();
     removerMock.mockResolvedValue(undefined);
-    locationMock.state = null;
+    // Padrão do resto da suíte: CRMV em dia, sem aviso na tela.
+    crmvStatusMock.mockReset();
+    crmvStatusMock.mockResolvedValue({ verified: true });
     confirmado = true;
     vi.spyOn(window, "confirm").mockImplementation(() => confirmado);
   });
@@ -146,18 +152,23 @@ describe("VetDashboardPage", () => {
     );
   });
 
-  it("avisa quando o cadastro terminou sem verificar o CRMV", async () => {
-    locationMock.state = { crmvVerificado: false };
+  it("avisa e oferece a verificação quando o CRMV está pendente", async () => {
+    // Sem o botão o vet leria o aviso e não teria o que fazer com ele: é a
+    // primeira tela dele, e o histórico clínico fica barrado até verificar.
+    crmvStatusMock.mockResolvedValue({ verified: false });
     fetchMock.mockResolvedValue(page([rex]));
     render(<VetDashboardPage />);
 
     expect(
       await screen.findByText(/Não conseguimos confirmar seu CRMV/),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Verificar meu CRMV" }),
+    ).toBeInTheDocument();
   });
 
-  it("não avisa quando o CRMV saiu verificado", async () => {
-    locationMock.state = { crmvVerificado: true };
+  it("não avisa quando o CRMV está verificado", async () => {
+    crmvStatusMock.mockResolvedValue({ verified: true });
     fetchMock.mockResolvedValue(page([rex]));
     render(<VetDashboardPage />);
     await screen.findByText("Rex");

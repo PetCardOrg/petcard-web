@@ -1,0 +1,29 @@
+/* Aviso acionável de CRMV não verificado (api#113). O layout do bloco fica
+   com a tela que o usa; aqui só o que é comum aos três lugares. */
+.crmv-aviso-mensagem {
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+}
+
+.crmv-aviso-botao {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d8eef6;
+  border-radius: 8px;
+  background: #fff;
+  color: #107fa8;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crmv-aviso-botao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.crmv-aviso-erro {
+  margin: 0.625rem 0 0;
+  color: #e63946;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
