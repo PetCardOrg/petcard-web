@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import type {
   CarteiraDigitalPublicResponseDto,
   DewormingRecordResponseDto,
@@ -370,6 +370,20 @@ export function PublicCardPage() {
               {t("publicCard.petProfile.tutor")}:{" "}
               <strong>{card.tutor_name}</strong>
             </p>
+
+            {/* O telefone é o que torna o QR da coleira acionável: quem achou
+                o pet liga daqui mesmo. Só aparece se o tutor cadastrou. */}
+            {card.tutor_phone && (
+              <p className="tutor-info">
+                {t("publicCard.petProfile.phone")}:{" "}
+                <a
+                  className="tutor-phone"
+                  href={`tel:${card.tutor_phone.replace(/[^+\d]/g, "")}`}
+                >
+                  {card.tutor_phone}
+                </a>
+              </p>
+            )}
           </div>
         </section>
 
@@ -432,7 +446,15 @@ export function PublicCardPage() {
       </main>
 
       <footer className="card-footer">
-        <p dangerouslySetInnerHTML={{ __html: t("publicCard.footer") }} />
+        {/* <Trans> monta o <strong> como elemento React. Injetar a tradução
+            como HTML abria um caminho de XSS que só não era explorável porque
+            a string é nossa — e continuaria aberto se um dia deixasse de ser. */}
+        <p>
+          <Trans
+            i18nKey="publicCard.footer"
+            components={{ strong: <strong /> }}
+          />
+        </p>
       </footer>
     </div>
   );

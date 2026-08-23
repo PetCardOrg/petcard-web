@@ -18,7 +18,7 @@
     "*.{ts,tsx,json,css,md}": "prettier --write"
   },
   "dependencies": {
-    "@petcardorg/shared": "^0.16.0",
+    "@petcardorg/shared": "^0.18.0",
     "html5-qrcode": "^2.3.8",
     "i18next": "^26.2.0",
     "i18next-browser-languagedetector": "^8.2.1",

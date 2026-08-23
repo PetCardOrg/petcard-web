@@ -475,3 +475,14 @@ tbody tr:hover {
   color: #34606f;
   font-size: 0.875rem;
 }
+
+.tutor-phone {
+  color: var(--color-primary, #107fa8);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tutor-phone:hover,
+.tutor-phone:focus-visible {
+  text-decoration: underline;
+}
