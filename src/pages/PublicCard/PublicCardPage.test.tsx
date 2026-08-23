@@ -218,4 +218,24 @@ describe("PublicCardPage", () => {
 
     expect(screen.queryByRole("img", { name: /qr/i })).not.toBeInTheDocument();
   });
+
+  it("mostra o telefone do tutor como link de ligação", async () => {
+    // É o que torna o QR da coleira útil para quem achou o pet.
+    cardMock.mockResolvedValue(
+      buildCard({ tutor_phone: "+55 85 99999-0000" }) as never,
+    );
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    const link = screen.getByRole("link", { name: "+55 85 99999-0000" });
+    expect(link).toHaveAttribute("href", "tel:+5585999990000");
+  });
+
+  it("não mostra a linha de telefone quando o tutor não cadastrou", async () => {
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    expect(screen.queryByText(/Telefone:/)).not.toBeInTheDocument();
+  });
 });

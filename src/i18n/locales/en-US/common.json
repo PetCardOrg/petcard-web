@@ -15,7 +15,8 @@
       "retry": "Try again"
     },
     "petProfile": {
-      "tutor": "Owner"
+      "tutor": "Owner",
+      "phone": "Phone"
     },
     "qrCodeAlt": "Digital card QR Code",
     "sections": {

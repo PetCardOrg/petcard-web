@@ -15,7 +15,8 @@
       "retry": "Tentar novamente"
     },
     "petProfile": {
-      "tutor": "Tutor"
+      "tutor": "Tutor",
+      "phone": "Telefone"
     },
     "qrCodeAlt": "QR Code da carteira digital",
     "sections": {
