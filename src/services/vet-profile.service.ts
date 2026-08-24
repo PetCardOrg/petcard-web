@@ -4,6 +4,7 @@ export interface UpdateVeterinarioRequest {
   nome?: string;
   email?: string;
   telefone?: string;
+  crmv?: string;
   foto_url?: string;
 }
 

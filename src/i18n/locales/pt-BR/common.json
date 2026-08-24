@@ -298,13 +298,15 @@
     },
     "form": {
       "nome": "Nome completo",
+      "crmv": "CRMV",
+      "crmvHint": "Alterar o CRMV zera a verificação atual — você vai precisar verificar de novo.",
       "email": "E-mail",
       "telefone": "Telefone",
       "telefonePlaceholder": "(11) 99999-0000",
       "submit": "Salvar alterações",
       "submitting": "Salvando...",
       "success": "Perfil atualizado.",
-      "duplicateEmail": "Já existe uma conta com esse e-mail.",
+      "duplicate": "Já existe uma conta com esse e-mail ou CRMV.",
       "invalid": "Confira os dados informados.",
       "genericError": "Não foi possível salvar. Tente de novo."
     },

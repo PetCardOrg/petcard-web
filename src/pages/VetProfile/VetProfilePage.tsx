@@ -24,6 +24,7 @@ export function VetProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nome, setNome] = useState(user?.nome ?? "");
+  const [crmv, setCrmv] = useState(user?.crmv ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [telefone, setTelefone] = useState(user?.telefone ?? "");
   const [saving, setSaving] = useState(false);
@@ -69,6 +70,7 @@ export function VetProfilePage() {
     try {
       await updateVeterinario(token, {
         nome: nome.trim(),
+        crmv: crmv.trim(),
         email: email.trim(),
         telefone: telefone.trim() === "" ? undefined : telefone.trim(),
       });
@@ -80,7 +82,7 @@ export function VetProfilePage() {
         return;
       }
       if (err instanceof ApiError && err.status === 409) {
-        setSaveError(t("vetProfile.form.duplicateEmail"));
+        setSaveError(t("vetProfile.form.duplicate"));
       } else if (err instanceof ApiError && err.status === 400) {
         setSaveError(err.detail ?? t("vetProfile.form.invalid"));
       } else {
@@ -178,6 +180,23 @@ export function VetProfilePage() {
               autoComplete="name"
               disabled={saving}
             />
+          </div>
+
+          <div className="vet-profile-field">
+            <label htmlFor="crmv">{t("vetProfile.form.crmv")}</label>
+            <input
+              id="crmv"
+              type="text"
+              value={crmv}
+              onChange={(e) => setCrmv(e.target.value)}
+              required
+              minLength={3}
+              maxLength={30}
+              disabled={saving}
+            />
+            <small className="vet-profile-hint">
+              {t("vetProfile.form.crmvHint")}
+            </small>
           </div>
 
           <div className="vet-profile-field">

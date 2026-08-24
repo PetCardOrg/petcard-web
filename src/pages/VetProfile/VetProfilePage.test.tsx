@@ -61,8 +61,18 @@ describe("VetProfilePage", () => {
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Dra. Camila Ferreira",
     );
+    expect(screen.getByLabelText("CRMV")).toHaveValue("CRMV-SP 12345");
     expect(screen.getByLabelText("E-mail")).toHaveValue("camila@vet.com");
     expect(screen.getByLabelText("Telefone")).toHaveValue("11999990000");
+  });
+
+  it("mostra a foto salva em vez do ícone padrão quando há foto_url", () => {
+    authUser.foto_url = "https://s3/vets/foto.png";
+    render(<VetProfilePage />);
+
+    expect(
+      screen.getByRole("img", { name: "Dra. Camila Ferreira" }),
+    ).toHaveAttribute("src", "https://s3/vets/foto.png");
   });
 
   it("volta ao dashboard ao clicar em voltar", async () => {
@@ -87,7 +97,7 @@ describe("VetProfilePage", () => {
     expect(clickSpy).toHaveBeenCalled();
   });
 
-  it("salva nome, e-mail e telefone e mostra sucesso", async () => {
+  it("salva nome, crmv, e-mail e telefone e mostra sucesso", async () => {
     updateVeterinarioMock.mockResolvedValue(undefined);
     refreshUserMock.mockResolvedValue(undefined);
     render(<VetProfilePage />);
@@ -95,6 +105,8 @@ describe("VetProfilePage", () => {
     const user = userEvent.setup();
     await user.clear(screen.getByLabelText("Nome completo"));
     await user.type(screen.getByLabelText("Nome completo"), "Dra. Camila S.");
+    await user.clear(screen.getByLabelText("CRMV"));
+    await user.type(screen.getByLabelText("CRMV"), "CRMV-SP 54321");
     await user.clear(screen.getByLabelText("E-mail"));
     await user.type(screen.getByLabelText("E-mail"), "camila.s@vet.com");
     await user.clear(screen.getByLabelText("Telefone"));
@@ -104,6 +116,7 @@ describe("VetProfilePage", () => {
     await waitFor(() =>
       expect(updateVeterinarioMock).toHaveBeenCalledWith("jwt-123", {
         nome: "Dra. Camila S.",
+        crmv: "CRMV-SP 54321",
         email: "camila.s@vet.com",
         telefone: "11888887777",
       }),
@@ -129,7 +142,7 @@ describe("VetProfilePage", () => {
     );
   });
 
-  it("avisa sobre e-mail duplicado no 409", async () => {
+  it("avisa sobre e-mail ou CRMV duplicado no 409", async () => {
     updateVeterinarioMock.mockRejectedValue(new ApiError(409, "Conflict"));
     render(<VetProfilePage />);
 
@@ -137,7 +150,7 @@ describe("VetProfilePage", () => {
     await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
 
     expect(
-      await screen.findByText("Já existe uma conta com esse e-mail."),
+      await screen.findByText("Já existe uma conta com esse e-mail ou CRMV."),
     ).toBeInTheDocument();
   });
 

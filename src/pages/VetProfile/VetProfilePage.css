@@ -158,6 +158,12 @@
   cursor: not-allowed;
 }
 
+.vet-profile-hint {
+  color: #607d8b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 .vet-profile-error {
   margin: 0.5rem 0 0;
   padding: 1rem;
