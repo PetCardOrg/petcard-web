@@ -12,6 +12,7 @@ export interface VetUser {
   crmv: string;
   role: string;
   telefone?: string;
+  foto_url?: string;
 }
 
 export interface VetLoginResponse {

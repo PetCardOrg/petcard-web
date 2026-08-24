@@ -46,6 +46,12 @@
   font-size: 0.875rem;
   color: #14313f;
   font-weight: 500;
+  text-decoration: none;
+}
+
+.vet-dashboard-username:hover {
+  color: #107fa8;
+  text-decoration: underline;
 }
 
 .vet-dashboard-logout {

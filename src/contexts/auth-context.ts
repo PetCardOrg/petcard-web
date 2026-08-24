@@ -17,6 +17,8 @@ export interface AuthContextValue extends AuthState {
    */
   register: (dto: VetRegisterRequest) => Promise<void>;
   logout: () => void;
+  /** Reconsulta `GET /auth/veterinario/profile` para atualizar nome/foto exibidos. */
+  refreshUser: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

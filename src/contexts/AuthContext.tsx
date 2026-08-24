@@ -65,9 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ token: null, user: null, loading: false });
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!state.token) return;
+    const user = await getVeterinarioProfile(state.token);
+    setState((prev) => ({ ...prev, user }));
+  }, [state.token]);
+
   const value = useMemo(
-    () => ({ ...state, login, register, logout }),
-    [state, login, register, logout],
+    () => ({ ...state, login, register, logout, refreshUser }),
+    [state, login, register, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

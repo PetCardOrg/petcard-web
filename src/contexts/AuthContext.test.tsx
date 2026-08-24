@@ -120,6 +120,37 @@ describe("AuthProvider / useAuth", () => {
     expect(result.current.loading).toBe(false);
   });
 
+  it("refreshUser reconsulta o perfil e atualiza o usuário exibido", async () => {
+    loginMock.mockResolvedValue({ access_token: "jwt-1", user: vetUser });
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.login("vet@petcard.com", "senha123");
+    });
+
+    const vetAtualizado = { ...vetUser, nome: "Dra. Camila Ferreira" };
+    profileMock.mockResolvedValue(vetAtualizado);
+
+    await act(async () => {
+      await result.current.refreshUser();
+    });
+
+    expect(profileMock).toHaveBeenCalledWith("jwt-1");
+    expect(result.current.user).toEqual(vetAtualizado);
+    // Token não deve ser afetado por uma simples atualização de perfil.
+    expect(result.current.token).toBe("jwt-1");
+  });
+
+  it("refreshUser não chama a API sem token (deslogado)", async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.refreshUser();
+    });
+
+    expect(profileMock).not.toHaveBeenCalled();
+  });
+
   it("descarta o token salvo quando o perfil falha (token inválido)", async () => {
     localStorage.setItem(TOKEN_KEY, "jwt-stale");
     profileMock.mockRejectedValue(new Error("401"));

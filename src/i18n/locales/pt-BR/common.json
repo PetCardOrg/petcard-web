@@ -284,5 +284,40 @@
     "noCameraTitle": "Câmera indisponível",
     "noCameraDescription": "Nenhuma câmera foi encontrada neste dispositivo.",
     "backToDashboard": "Voltar ao dashboard"
+  },
+  "vetProfile": {
+    "title": "Meu perfil",
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "error": "Erro ao carregar o perfil",
+    "retry": "Tentar novamente",
+    "photo": {
+      "change": "Trocar foto",
+      "uploading": "Enviando foto...",
+      "error": "Não foi possível enviar a foto. Tente de novo."
+    },
+    "form": {
+      "nome": "Nome completo",
+      "email": "E-mail",
+      "telefone": "Telefone",
+      "telefonePlaceholder": "(11) 99999-0000",
+      "submit": "Salvar alterações",
+      "submitting": "Salvando...",
+      "success": "Perfil atualizado.",
+      "duplicateEmail": "Já existe uma conta com esse e-mail.",
+      "invalid": "Confira os dados informados.",
+      "genericError": "Não foi possível salvar. Tente de novo."
+    },
+    "danger": {
+      "title": "Excluir conta",
+      "description": "Excluir sua conta remove seu acesso ao PetCard. Essa ação não pode ser desfeita.",
+      "button": "Excluir conta",
+      "confirmTitle": "Tem certeza?",
+      "confirmDescription": "Seu cadastro de veterinário será apagado definitivamente. Não é possível recuperar o acesso depois.",
+      "confirmButton": "Sim, excluir definitivamente",
+      "cancel": "Cancelar",
+      "deleting": "Excluindo...",
+      "error": "Não foi possível excluir a conta. Tente de novo."
+    }
   }
 }

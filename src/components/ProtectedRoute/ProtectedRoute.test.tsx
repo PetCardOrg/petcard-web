@@ -14,6 +14,7 @@ function renderWithAuth(auth: Partial<AuthContextValue>) {
     login: async () => {},
     register: async () => {},
     logout: () => {},
+    refreshUser: async () => {},
     ...auth,
   };
 

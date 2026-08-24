@@ -13,6 +13,9 @@ const logoutMock = vi.fn();
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 vi.mock("../../hooks/useAuth", () => ({
