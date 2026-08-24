@@ -7,6 +7,7 @@ import {
   IoSearch,
   IoChevronForward,
   IoTrashOutline,
+  IoPersonCircleOutline,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
@@ -155,8 +156,20 @@ export function VetDashboardPage() {
         </div>
         <div className="vet-dashboard-user">
           <LanguageSwitcher />
-          <Link to="/vet/profile" className="vet-dashboard-username">
-            {user?.nome}
+          <Link to="/vet/profile" className="vet-dashboard-user-link">
+            {user?.foto_url ? (
+              <img
+                src={user.foto_url}
+                alt={user.nome}
+                className="vet-dashboard-avatar"
+              />
+            ) : (
+              <IoPersonCircleOutline
+                size={28}
+                className="vet-dashboard-avatar-fallback"
+              />
+            )}
+            <span className="vet-dashboard-username">{user?.nome}</span>
           </Link>
           <button
             type="button"
