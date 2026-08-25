@@ -284,5 +284,42 @@
     "noCameraTitle": "Camera unavailable",
     "noCameraDescription": "No camera was found on this device.",
     "backToDashboard": "Back to dashboard"
+  },
+  "vetProfile": {
+    "title": "My profile",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Failed to load profile",
+    "retry": "Try again",
+    "photo": {
+      "change": "Change photo",
+      "uploading": "Uploading photo...",
+      "error": "Could not upload the photo. Please try again."
+    },
+    "form": {
+      "nome": "Full name",
+      "crmv": "CRMV",
+      "crmvHint": "Changing the CRMV resets the current verification — you'll need to verify again.",
+      "email": "Email",
+      "telefone": "Phone",
+      "telefonePlaceholder": "(11) 99999-0000",
+      "submit": "Save changes",
+      "submitting": "Saving...",
+      "success": "Profile updated.",
+      "duplicate": "An account with this email or CRMV already exists.",
+      "invalid": "Please check the information provided.",
+      "genericError": "Could not save. Please try again."
+    },
+    "danger": {
+      "title": "Delete account",
+      "description": "Deleting your account removes your access to PetCard. This action cannot be undone.",
+      "button": "Delete account",
+      "confirmTitle": "Are you sure?",
+      "confirmDescription": "Your veterinarian account will be permanently deleted. Access cannot be recovered afterward.",
+      "confirmButton": "Yes, delete permanently",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "error": "Could not delete the account. Please try again."
+    }
   }
 }

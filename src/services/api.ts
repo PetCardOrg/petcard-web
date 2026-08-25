@@ -2,6 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 export interface ApiFetchOptions {
   method?: string;
+  /** `FormData` vai direto no fetch, sem JSON.stringify nem Content-Type manual. */
   body?: unknown;
   token?: string;
 }
@@ -11,10 +12,14 @@ export async function apiFetch<T>(
   options: ApiFetchOptions = {},
 ): Promise<T> {
   const { method = "GET", body, token } = options;
+  const isFormData = body instanceof FormData;
 
   const headers: Record<string, string> = {};
 
-  if (body !== undefined) {
+  // Para FormData o browser define Content-Type sozinho, com o boundary do
+  // multipart — setar aqui manda a requisição sem boundary e a api não
+  // consegue parsear as partes.
+  if (body !== undefined && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -25,7 +30,11 @@ export async function apiFetch<T>(
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: isFormData
+      ? body
+      : body !== undefined
+        ? JSON.stringify(body)
+        : undefined,
   });
 
   if (!res.ok) {

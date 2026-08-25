@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IoPaw,
@@ -7,6 +7,7 @@ import {
   IoSearch,
   IoChevronForward,
   IoTrashOutline,
+  IoPersonCircleOutline,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
@@ -155,7 +156,21 @@ export function VetDashboardPage() {
         </div>
         <div className="vet-dashboard-user">
           <LanguageSwitcher />
-          <span className="vet-dashboard-username">{user?.nome}</span>
+          <Link to="/vet/profile" className="vet-dashboard-user-link">
+            {user?.foto_url ? (
+              <img
+                src={user.foto_url}
+                alt={user.nome}
+                className="vet-dashboard-avatar"
+              />
+            ) : (
+              <IoPersonCircleOutline
+                size={28}
+                className="vet-dashboard-avatar-fallback"
+              />
+            )}
+            <span className="vet-dashboard-username">{user?.nome}</span>
+          </Link>
           <button
             type="button"
             className="vet-dashboard-logout"
