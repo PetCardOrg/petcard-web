@@ -32,5 +32,7 @@ SPA da **área do veterinário** do PetCard. Vite + React 19 + TypeScript. Conso
 
 ## M7 nesta repo
 
-- **web#34** (Fase 1, grupo C): remover QR da tela do vet; vet escreve observações que aparecem no app do tutor. Épico cross-repo — precisa de endpoint de observações na api. Ver ordem completa em `../CLAUDE.md`.
+- **web#34 fechada (2026-08-19).** Vet registra vacina/vermifugação/medicação/nota pela própria tela; edita e apaga os próprios registros; timeline e histórico viraram uma visão só. Escopo cresceu durante a implementação: vet agora entra na área dele direto pela carteira lida no QR (web#38/#39) e o pet entra/sai da lista de atendidos dele pelo QR (web#42/#43) — ver nota no Grupo C de `../CLAUDE.md`.
+- **web#48 fechada (2026-08-24, fora das 16 originais):** tela de perfil do veterinário — editar CRMV, foto ao lado do nome no dashboard. Acompanha o CRUD de perfil do tutor feito no mobile (mobile#57).
 - Deploy Vercel é parte da PC-105; screenshots/README é PC-096.
+- Sem issue aberta pendente neste repo no momento — conferir com `gh issue list --repo PetCardOrg/petcard-web --state open` antes de assumir isso continua assim.
