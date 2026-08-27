@@ -101,7 +101,7 @@
     "telefone": "Telefone (opcional)",
     "telefonePlaceholder": "(11) 99999-0000",
     "password": "Senha",
-    "passwordPlaceholder": "Mínimo de 6 caracteres",
+    "passwordPlaceholder": "Mínimo de 8 caracteres",
     "confirm": "Confirmar senha",
     "confirmPlaceholder": "Digite a senha novamente",
     "submit": "Criar conta",

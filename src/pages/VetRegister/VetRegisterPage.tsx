@@ -89,25 +89,10 @@ export function VetRegisterPage() {
               placeholder={t("vetRegister.nomePlaceholder")}
               required
               minLength={2}
+              maxLength={120}
               autoComplete="name"
               disabled={submitting}
             />
-          </div>
-
-          <div className="vet-login-field">
-            <label htmlFor="crmv">{t("vetRegister.crmv")}</label>
-            <input
-              id="crmv"
-              type="text"
-              value={crmv}
-              onChange={(e) => setCrmv(e.target.value)}
-              placeholder={t("vetRegister.crmvPlaceholder")}
-              required
-              disabled={submitting}
-            />
-            <small className="vet-login-hint">
-              {t("vetRegister.crmvHint")}
-            </small>
           </div>
 
           <div className="vet-login-field">
@@ -119,6 +104,7 @@ export function VetRegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t("vetRegister.emailPlaceholder")}
               required
+              maxLength={254}
               autoComplete="email"
               disabled={submitting}
             />
@@ -132,6 +118,7 @@ export function VetRegisterPage() {
               value={telefone}
               onChange={(e) => setTelefone(e.target.value)}
               placeholder={t("vetRegister.telefonePlaceholder")}
+              maxLength={20}
               autoComplete="tel"
               disabled={submitting}
             />
@@ -146,7 +133,8 @@ export function VetRegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t("vetRegister.passwordPlaceholder")}
               required
-              minLength={6}
+              minLength={8}
+              maxLength={72}
               autoComplete="new-password"
               disabled={submitting}
             />
@@ -161,9 +149,28 @@ export function VetRegisterPage() {
               onChange={(e) => setConfirmacao(e.target.value)}
               placeholder={t("vetRegister.confirmPlaceholder")}
               required
+              maxLength={72}
               autoComplete="new-password"
               disabled={submitting}
             />
+          </div>
+
+          <div className="vet-login-field">
+            <label htmlFor="crmv">{t("vetRegister.crmv")}</label>
+            <input
+              id="crmv"
+              type="text"
+              value={crmv}
+              onChange={(e) => setCrmv(e.target.value)}
+              placeholder={t("vetRegister.crmvPlaceholder")}
+              required
+              minLength={3}
+              maxLength={30}
+              disabled={submitting}
+            />
+            <small className="vet-login-hint">
+              {t("vetRegister.crmvHint")}
+            </small>
           </div>
 
           {error && <p className="vet-login-error">{error}</p>}
