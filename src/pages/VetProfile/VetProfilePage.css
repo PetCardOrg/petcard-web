@@ -108,6 +108,66 @@
   font-size: 0.8125rem;
 }
 
+/* ── View (read-only) ── */
+
+.vet-profile-view {
+  position: relative;
+  background: #fff;
+  border: 1px solid #d8eef6;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.vet-profile-edit-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d8eef6;
+  border-radius: 8px;
+  background: #fff;
+  color: #107fa8;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.vet-profile-edit-button:hover {
+  background: #e6f7fc;
+  border-color: #27a9d8;
+}
+
+.vet-profile-view-list {
+  margin: 0;
+}
+
+.vet-profile-view-item {
+  padding: 0.625rem 0;
+  border-bottom: 1px solid #f0f7fa;
+}
+
+.vet-profile-view-item:last-child {
+  border-bottom: none;
+}
+
+.vet-profile-view-item dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #607d8b;
+}
+
+.vet-profile-view-item dd {
+  margin: 0.125rem 0 0;
+  font-size: 1rem;
+  color: #14313f;
+}
+
 /* ── Form ── */
 
 .vet-profile-form {
@@ -164,6 +224,12 @@
   line-height: 1.4;
 }
 
+.vet-profile-field-error {
+  color: #e63946;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 .vet-profile-error {
   margin: 0.5rem 0 0;
   padding: 1rem;
@@ -186,8 +252,31 @@
   line-height: 1.4;
 }
 
-.vet-profile-submit {
+.vet-profile-edit-actions {
+  display: flex;
+  gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.vet-profile-cancel {
+  flex: 1;
+  padding: 0.875rem;
+  border: 1px solid #d8eef6;
+  border-radius: 12px;
+  background: #fff;
+  color: #14313f;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vet-profile-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vet-profile-submit {
+  flex: 1;
   padding: 0.875rem;
   border: none;
   border-radius: 12px;

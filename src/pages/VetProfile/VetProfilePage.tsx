@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   IoArrowBack,
   IoCameraOutline,
+  IoCreateOutline,
   IoPersonCircleOutline,
   IoWarningOutline,
 } from "react-icons/io5";
@@ -15,6 +16,11 @@ import {
   updateVeterinario,
   deleteVeterinario,
 } from "../../services/vet-profile.service";
+import {
+  formatPhoneBR,
+  isValidPhoneBR,
+  unformatPhone,
+} from "../../utils/phoneMask";
 import "./VetProfilePage.css";
 
 export function VetProfilePage() {
@@ -23,13 +29,38 @@ export function VetProfilePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isEditing, setIsEditing] = useState(false);
+
   const [nome, setNome] = useState(user?.nome ?? "");
   const [crmv, setCrmv] = useState(user?.crmv ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [telefone, setTelefone] = useState(user?.telefone ?? "");
+  const [telefone, setTelefone] = useState(formatPhoneBR(user?.telefone ?? ""));
+  const [telefoneError, setTelefoneError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  function handleStartEditing() {
+    setNome(user?.nome ?? "");
+    setCrmv(user?.crmv ?? "");
+    setEmail(user?.email ?? "");
+    setTelefone(formatPhoneBR(user?.telefone ?? ""));
+    setTelefoneError(null);
+    setSaveError(null);
+    setSaveSuccess(false);
+    setIsEditing(true);
+  }
+
+  function handleCancelEditing() {
+    setIsEditing(false);
+    setTelefoneError(null);
+    setSaveError(null);
+  }
+
+  function handleTelefoneChange(e: ChangeEvent<HTMLInputElement>) {
+    setTelefone(formatPhoneBR(e.target.value));
+    setTelefoneError(null);
+  }
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -64,6 +95,13 @@ export function VetProfilePage() {
     e.preventDefault();
     if (!token) return;
 
+    if (!isValidPhoneBR(telefone)) {
+      setTelefoneError(t("vetProfile.form.telefoneInvalid"));
+      return;
+    }
+
+    const telefoneDigits = unformatPhone(telefone);
+
     setSaveError(null);
     setSaveSuccess(false);
     setSaving(true);
@@ -72,10 +110,11 @@ export function VetProfilePage() {
         nome: nome.trim(),
         crmv: crmv.trim(),
         email: email.trim(),
-        telefone: telefone.trim() === "" ? undefined : telefone.trim(),
+        telefone: telefoneDigits === "" ? undefined : telefoneDigits,
       });
       await refreshUser();
       setSaveSuccess(true);
+      setIsEditing(false);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         logout();
@@ -166,84 +205,139 @@ export function VetProfilePage() {
           )}
         </div>
 
-        <form className="vet-profile-form" onSubmit={handleSubmit}>
-          <div className="vet-profile-field">
-            <label htmlFor="nome">{t("vetProfile.form.nome")}</label>
-            <input
-              id="nome"
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-              minLength={2}
-              maxLength={120}
-              autoComplete="name"
-              disabled={saving}
-            />
+        {!isEditing ? (
+          <div className="vet-profile-view">
+            <button
+              type="button"
+              className="vet-profile-edit-button"
+              aria-label={t("vetProfile.editAccessibility")}
+              onClick={handleStartEditing}
+            >
+              <IoCreateOutline size={18} />
+              {t("vetProfile.edit")}
+            </button>
+
+            <dl className="vet-profile-view-list">
+              <div className="vet-profile-view-item">
+                <dt>{t("vetProfile.form.nome")}</dt>
+                <dd>{user?.nome}</dd>
+              </div>
+              <div className="vet-profile-view-item">
+                <dt>{t("vetProfile.form.crmv")}</dt>
+                <dd>{user?.crmv}</dd>
+              </div>
+              <div className="vet-profile-view-item">
+                <dt>{t("vetProfile.form.email")}</dt>
+                <dd>{user?.email}</dd>
+              </div>
+              <div className="vet-profile-view-item">
+                <dt>{t("vetProfile.form.telefone")}</dt>
+                <dd>
+                  {user?.telefone
+                    ? formatPhoneBR(user.telefone)
+                    : t("vetProfile.form.telefoneEmpty")}
+                </dd>
+              </div>
+            </dl>
+
+            {saveSuccess && (
+              <p className="vet-profile-success">
+                {t("vetProfile.form.success")}
+              </p>
+            )}
           </div>
+        ) : (
+          <form className="vet-profile-form" onSubmit={handleSubmit}>
+            <div className="vet-profile-field">
+              <label htmlFor="nome">{t("vetProfile.form.nome")}</label>
+              <input
+                id="nome"
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+                minLength={2}
+                maxLength={120}
+                autoComplete="name"
+                disabled={saving}
+              />
+            </div>
 
-          <div className="vet-profile-field">
-            <label htmlFor="crmv">{t("vetProfile.form.crmv")}</label>
-            <input
-              id="crmv"
-              type="text"
-              value={crmv}
-              onChange={(e) => setCrmv(e.target.value)}
-              required
-              minLength={3}
-              maxLength={30}
-              disabled={saving}
-            />
-            <small className="vet-profile-hint">
-              {t("vetProfile.form.crmvHint")}
-            </small>
-          </div>
+            <div className="vet-profile-field">
+              <label htmlFor="crmv">{t("vetProfile.form.crmv")}</label>
+              <input
+                id="crmv"
+                type="text"
+                value={crmv}
+                onChange={(e) => setCrmv(e.target.value)}
+                required
+                minLength={3}
+                maxLength={30}
+                disabled={saving}
+              />
+              <small className="vet-profile-hint">
+                {t("vetProfile.form.crmvHint")}
+              </small>
+            </div>
 
-          <div className="vet-profile-field">
-            <label htmlFor="email">{t("vetProfile.form.email")}</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              maxLength={254}
-              autoComplete="email"
-              disabled={saving}
-            />
-          </div>
+            <div className="vet-profile-field">
+              <label htmlFor="email">{t("vetProfile.form.email")}</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                maxLength={254}
+                autoComplete="email"
+                disabled={saving}
+              />
+            </div>
 
-          <div className="vet-profile-field">
-            <label htmlFor="telefone">{t("vetProfile.form.telefone")}</label>
-            <input
-              id="telefone"
-              type="tel"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              placeholder={t("vetProfile.form.telefonePlaceholder")}
-              maxLength={20}
-              autoComplete="tel"
-              disabled={saving}
-            />
-          </div>
+            <div className="vet-profile-field">
+              <label htmlFor="telefone">{t("vetProfile.form.telefone")}</label>
+              <input
+                id="telefone"
+                type="tel"
+                inputMode="tel"
+                value={telefone}
+                onChange={handleTelefoneChange}
+                placeholder={t("vetProfile.form.telefonePlaceholder")}
+                maxLength={15}
+                autoComplete="tel"
+                disabled={saving}
+                aria-invalid={telefoneError !== null}
+              />
+              {telefoneError && (
+                <small className="vet-profile-field-error">
+                  {telefoneError}
+                </small>
+              )}
+            </div>
 
-          {saveError && <p className="vet-profile-error">{saveError}</p>}
-          {saveSuccess && (
-            <p className="vet-profile-success">
-              {t("vetProfile.form.success")}
-            </p>
-          )}
+            {saveError && <p className="vet-profile-error">{saveError}</p>}
 
-          <button
-            type="submit"
-            className="vet-profile-submit"
-            disabled={saving}
-          >
-            {saving
-              ? t("vetProfile.form.submitting")
-              : t("vetProfile.form.submit")}
-          </button>
-        </form>
+            <div className="vet-profile-edit-actions">
+              <button
+                type="button"
+                className="vet-profile-cancel"
+                disabled={saving}
+                onClick={handleCancelEditing}
+              >
+                {t("vetProfile.form.cancel")}
+              </button>
+              <button
+                type="submit"
+                className="vet-profile-submit"
+                disabled={saving}
+              >
+                {saving
+                  ? t("vetProfile.form.submitting")
+                  : t("vetProfile.form.submit")}
+              </button>
+            </div>
+          </form>
+        )}
 
         <div className="vet-profile-danger">
           <h3>

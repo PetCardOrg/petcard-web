@@ -43,6 +43,12 @@ vi.mock("../../services/vet-profile.service", () => ({
   deleteVeterinario: (...args: unknown[]) => deleteVeterinarioMock(...args),
 }));
 
+async function openEditMode() {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Editar perfil" }));
+  return user;
+}
+
 describe("VetProfilePage", () => {
   beforeEach(() => {
     navigateMock.mockReset();
@@ -55,15 +61,48 @@ describe("VetProfilePage", () => {
     authUser.telefone = "11999990000";
   });
 
-  it("pré-preenche o formulário com os dados do veterinário logado", () => {
+  it("abre em modo de visualização, com os dados do veterinário logado", () => {
     render(<VetProfilePage />);
+
+    expect(screen.getByText("Dra. Camila Ferreira")).toBeInTheDocument();
+    expect(screen.getByText("CRMV-SP 12345")).toBeInTheDocument();
+    expect(screen.getByText("camila@vet.com")).toBeInTheDocument();
+    expect(screen.getByText("(11) 99999-0000")).toBeInTheDocument();
+
+    expect(screen.queryByLabelText("Nome completo")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Salvar alterações" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("mostra 'Não informado' quando o veterinário não tem telefone cadastrado", () => {
+    authUser.telefone = "";
+    render(<VetProfilePage />);
+
+    expect(screen.getByText("Não informado")).toBeInTheDocument();
+  });
+
+  it("entra no modo de edição ao clicar no botão de editar", async () => {
+    render(<VetProfilePage />);
+    await openEditMode();
 
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Dra. Camila Ferreira",
     );
     expect(screen.getByLabelText("CRMV")).toHaveValue("CRMV-SP 12345");
     expect(screen.getByLabelText("E-mail")).toHaveValue("camila@vet.com");
-    expect(screen.getByLabelText("Telefone")).toHaveValue("11999990000");
+    expect(screen.getByLabelText("Telefone")).toHaveValue("(11) 99999-0000");
+  });
+
+  it("cancelar a edição volta para a visualização sem salvar", async () => {
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(screen.queryByLabelText("Nome completo")).not.toBeInTheDocument();
+    expect(screen.getByText("Dra. Camila Ferreira")).toBeInTheDocument();
+    expect(updateVeterinarioMock).not.toHaveBeenCalled();
   });
 
   it("mostra a foto salva em vez do ícone padrão quando há foto_url", () => {
@@ -97,12 +136,38 @@ describe("VetProfilePage", () => {
     expect(clickSpy).toHaveBeenCalled();
   });
 
-  it("salva nome, crmv, e-mail e telefone e mostra sucesso", async () => {
+  it("aplica a máscara de telefone (BR) enquanto o usuário digita", async () => {
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    const telefoneInput = screen.getByLabelText("Telefone");
+    await user.clear(telefoneInput);
+    await user.type(telefoneInput, "11988887777");
+
+    expect(telefoneInput).toHaveValue("(11) 98888-7777");
+  });
+
+  it("rejeita telefone incompleto e não chama a api", async () => {
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    const telefoneInput = screen.getByLabelText("Telefone");
+    await user.clear(telefoneInput);
+    await user.type(telefoneInput, "119999");
+    await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    expect(
+      screen.getByText("Telefone inválido. Informe DDD + número."),
+    ).toBeInTheDocument();
+    expect(updateVeterinarioMock).not.toHaveBeenCalled();
+  });
+
+  it("salva nome, crmv, e-mail e telefone, volta pra visualização e mostra sucesso", async () => {
     updateVeterinarioMock.mockResolvedValue(undefined);
     refreshUserMock.mockResolvedValue(undefined);
     render(<VetProfilePage />);
+    const user = await openEditMode();
 
-    const user = userEvent.setup();
     await user.clear(screen.getByLabelText("Nome completo"));
     await user.type(screen.getByLabelText("Nome completo"), "Dra. Camila S.");
     await user.clear(screen.getByLabelText("CRMV"));
@@ -123,6 +188,7 @@ describe("VetProfilePage", () => {
     );
     expect(refreshUserMock).toHaveBeenCalled();
     expect(await screen.findByText("Perfil atualizado.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Nome completo")).not.toBeInTheDocument();
   });
 
   it("envia telefone vazio como indefinido", async () => {
@@ -130,8 +196,8 @@ describe("VetProfilePage", () => {
     refreshUserMock.mockResolvedValue(undefined);
     authUser.telefone = "";
     render(<VetProfilePage />);
+    const user = await openEditMode();
 
-    const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
 
     await waitFor(() =>
@@ -145,8 +211,8 @@ describe("VetProfilePage", () => {
   it("avisa sobre e-mail ou CRMV duplicado no 409", async () => {
     updateVeterinarioMock.mockRejectedValue(new ApiError(409, "Conflict"));
     render(<VetProfilePage />);
+    const user = await openEditMode();
 
-    const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
 
     expect(
@@ -157,8 +223,8 @@ describe("VetProfilePage", () => {
   it("desloga em 401 ao salvar", async () => {
     updateVeterinarioMock.mockRejectedValue(new ApiError(401, "Unauthorized"));
     render(<VetProfilePage />);
+    const user = await openEditMode();
 
-    const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
 
     await waitFor(() => expect(logoutMock).toHaveBeenCalled());
