@@ -43,6 +43,16 @@
       "medications": "Nenhuma medicação registrada."
     },
     "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar.",
+    "foundPet": {
+      "title": "Encontrou {{name}}?",
+      "description": "Avise o tutor. Se você permitir, enviamos junto a sua localização atual para ele saber onde o pet está.",
+      "action": "Avisar o tutor",
+      "sending": "Enviando...",
+      "sentTitle": "O tutor de {{name}} foi avisado",
+      "sentWithLocation": "Sua localização foi enviada junto. Obrigado por ajudar!",
+      "sentWithoutLocation": "Sem a localização, mas o tutor já sabe que o pet foi encontrado. Se puder, ligue para ele.",
+      "failed": "Não foi possível avisar o tutor. Tente novamente."
+    },
     "vetAccess": {
       "prompt": "É veterinário? Entre para ver o histórico clínico completo deste pet.",
       "action": "Sou veterinário",
