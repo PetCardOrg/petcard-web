@@ -21,7 +21,6 @@ import { adicionarPetAtendido } from "../../services/dashboard.service";
 import { ApiError } from "../../services/api";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
 import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
-import { FoundPetPanel } from "../../components/FoundPetPanel/FoundPetPanel";
 import { useAuth } from "../../hooks/useAuth";
 import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "./PublicCardPage.css";
@@ -387,11 +386,6 @@ export function PublicCardPage() {
             )}
           </div>
         </section>
-
-        {/* Vem antes do acesso do veterinário porque o caso urgente é o do
-            pet perdido: quem achou o animal na rua abre esta página e precisa
-            agir sem rolar atrás do botão. O vet já sabe o que procura. */}
-        {token && <FoundPetPanel token={token} petName={card.pet_name} />}
 
         {/* Acesso do veterinário: quem lê o QR pela câmera do celular cai
             aqui, e sem isto não teria como chegar na área do vet. */}

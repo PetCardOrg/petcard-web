@@ -43,16 +43,6 @@
       "medications": "Nenhuma medicação registrada."
     },
     "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar.",
-    "foundPet": {
-      "title": "Encontrou {{name}}?",
-      "description": "Avise o tutor. Se você permitir, enviamos junto a sua localização atual para ele saber onde o pet está.",
-      "action": "Avisar o tutor",
-      "sending": "Enviando...",
-      "sentTitle": "O tutor de {{name}} foi avisado",
-      "sentWithLocation": "Sua localização foi enviada junto. Obrigado por ajudar!",
-      "sentWithoutLocation": "Sem a localização, mas o tutor já sabe que o pet foi encontrado. Se puder, ligue para ele.",
-      "failed": "Não foi possível avisar o tutor. Tente novamente."
-    },
     "vetAccess": {
       "prompt": "É veterinário? Entre para ver o histórico clínico completo deste pet.",
       "action": "Sou veterinário",
@@ -60,6 +50,39 @@
       "failed": "Não foi possível abrir este pet. Tente de novo.",
       "crmvRequired": "Seu CRMV precisa estar verificado para acessar dados clínicos."
     }
+  },
+  "lostPet": {
+    "loading": "Carregando...",
+    "notFound": {
+      "title": "Coleira não encontrada",
+      "description": "Este código não corresponde a nenhum pet cadastrado. Verifique se leu o QR corretamente."
+    },
+    "networkError": {
+      "title": "Erro ao carregar",
+      "description": "Não foi possível carregar os dados agora. Tente de novo em alguns instantes."
+    },
+    "hero": {
+      "title": "Você encontrou {{name}}!",
+      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo — ela já foi avisada de que {{name}} foi encontrado."
+    },
+    "contact": {
+      "label": "Tutor: {{name}}",
+      "call": "Ligar para {{phone}}",
+      "noPhone": "O tutor não cadastrou telefone. Ele já foi avisado pelo aplicativo e deve entrar em contato em breve."
+    },
+    "location": {
+      "asking": "Permita o acesso à localização para o tutor saber onde o pet está.",
+      "sent": "Pronto! {{name}} recebeu um aviso com a sua localização.",
+      "denied": "{{name}} foi avisado de que o pet foi encontrado, mas sem a localização. Se puder, compartilhe — ajuda muito.",
+      "retry": "Compartilhar minha localização"
+    },
+    "steps": {
+      "title": "O que fazer agora",
+      "one": "Ligue para o tutor pelo botão acima.",
+      "two": "Combine um ponto de encontro seguro para a entrega.",
+      "three": "Se não conseguir falar, mantenha o pet em local seguro — o tutor já foi notificado e vai te procurar."
+    },
+    "footer": "Coleira digital PetCard."
   },
   "notFoundPage": {
     "title": "Página não encontrada",

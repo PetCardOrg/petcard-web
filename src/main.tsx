@@ -6,6 +6,7 @@ import "./i18n";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 import { PublicCardPage } from "./pages/PublicCard/PublicCardPage";
+import { LostPetPage } from "./pages/LostPet/LostPetPage";
 import { VetLoginPage } from "./pages/VetLogin/VetLoginPage";
 import { VetRegisterPage } from "./pages/VetRegister/VetRegisterPage";
 import { VetDashboardPage } from "./pages/VetDashboard/VetDashboardPage";
@@ -52,6 +53,10 @@ createRoot(document.getElementById("root")!).render(
       <AuthProvider>
         <Routes>
           <Route path="/card/:token" element={<PublicCardPage />} />
+          {/* QR da coleira: rota própria porque o público é outro — quem
+              achou o pet na rua, não o tutor nem o veterinário. Precisa vir
+              antes do catch-all "/:token", que cai na carteira. */}
+          <Route path="/achei/:token" element={<LostPetPage />} />
           <Route path="/vet/login" element={<VetLoginPage />} />
           <Route path="/vet/register" element={<VetRegisterPage />} />
           <Route
