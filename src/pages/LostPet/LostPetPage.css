@@ -1,0 +1,238 @@
+/* Página de quem encontrou o pet. Desenhada para uma mão só, na rua, com
+   pressa: fonte grande, uma ação óbvia (ligar) e nada que exija rolar para
+   entender o que está acontecendo. */
+.lost-page {
+  max-width: 34rem;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2.5rem;
+  background: #fff;
+  color: #23303a;
+}
+
+.lost-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.lost-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #27a9d8;
+  font-weight: 700;
+}
+
+.lost-loading,
+.lost-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 25vh;
+  color: #5b6b77;
+  text-align: center;
+}
+
+.lost-error h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #23303a;
+}
+
+.lost-error p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Chamada principal: âmbar de urgência, não o azul institucional. */
+.lost-hero {
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  background: #fff8ec;
+  border: 1px solid #f2d9a8;
+  border-radius: 14px;
+}
+
+.lost-title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: #7b5410;
+}
+
+.lost-lead {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #8a6522;
+}
+
+.lost-pet {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.lost-photo {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #e8f4fa;
+}
+
+.lost-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8f4fa;
+  color: #27a9d8;
+}
+
+.lost-pet-name {
+  margin: 0 0 0.5rem;
+  font-size: 1.375rem;
+}
+
+.lost-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.lost-pill {
+  padding: 0.25rem 0.625rem;
+  background: #f0f9fd;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: #34606f;
+}
+
+/* Ligar é a ação que resolve a situação — ocupa a linha inteira e é o único
+   elemento verde da página, para não competir com nada. */
+.lost-contact {
+  margin: 0.5rem 0 1rem;
+}
+
+.lost-contact-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  color: #5b6b77;
+}
+
+.lost-call-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 1rem;
+  background: #2f855a;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lost-call-btn:active {
+  opacity: 0.85;
+}
+
+.lost-no-phone {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  background: #f7f9fa;
+  border-radius: 10px;
+  color: #5b6b77;
+  line-height: 1.45;
+}
+
+.lost-location {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.lost-location p {
+  margin: 0;
+}
+
+.lost-location-pedindo {
+  background: #f0f9fd;
+  color: #34606f;
+}
+
+.lost-location-enviada {
+  background: #f0fbf4;
+  color: #276749;
+}
+
+.lost-location-sem_permissao {
+  background: #fdf6f5;
+  color: #8a4b41;
+}
+
+.lost-location-retry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.lost-location-retry-text {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.lost-location-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #e0c3bd;
+  border-radius: 8px;
+  color: #8a4b41;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lost-steps {
+  padding: 1rem 1.25rem;
+  background: #f7f9fa;
+  border-radius: 12px;
+}
+
+.lost-steps-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.lost-steps-list {
+  margin: 0;
+  padding-left: 1.125rem;
+  color: #4a5a66;
+  line-height: 1.6;
+}
+
+.lost-footer {
+  margin-top: 1.5rem;
+  color: #8b9aa5;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+.lost-footer p {
+  margin: 0;
+}

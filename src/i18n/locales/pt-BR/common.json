@@ -51,6 +51,39 @@
       "crmvRequired": "Seu CRMV precisa estar verificado para acessar dados clínicos."
     }
   },
+  "lostPet": {
+    "loading": "Carregando...",
+    "notFound": {
+      "title": "Coleira não encontrada",
+      "description": "Este código não corresponde a nenhum pet cadastrado. Verifique se leu o QR corretamente."
+    },
+    "networkError": {
+      "title": "Erro ao carregar",
+      "description": "Não foi possível carregar os dados agora. Tente de novo em alguns instantes."
+    },
+    "hero": {
+      "title": "Você encontrou {{name}}!",
+      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo. Ela já foi avisada de que {{name}} foi encontrado."
+    },
+    "contact": {
+      "label": "Tutor: {{name}}",
+      "call": "Ligar para {{phone}}",
+      "noPhone": "O tutor não cadastrou telefone. Ele já foi avisado pelo aplicativo e deve entrar em contato em breve."
+    },
+    "location": {
+      "asking": "Permita o acesso à localização para o tutor saber onde o pet está.",
+      "sent": "Pronto! {{name}} recebeu um aviso com a sua localização.",
+      "denied": "{{name}} foi avisado de que o pet foi encontrado, mas sem a localização. Se puder, compartilhe. Ajuda muito.",
+      "retry": "Compartilhar minha localização"
+    },
+    "steps": {
+      "title": "O que fazer agora",
+      "one": "Ligue para o tutor pelo botão acima.",
+      "two": "Combine um ponto de encontro seguro para a entrega.",
+      "three": "Se não conseguir falar, mantenha o pet em local seguro. O tutor já foi notificado e vai te procurar."
+    },
+    "footer": "Coleira digital PetCard."
+  },
   "notFoundPage": {
     "title": "Página não encontrada",
     "description": "O endereço acessado não existe."

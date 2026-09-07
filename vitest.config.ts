@@ -10,7 +10,16 @@ export default defineConfig({
     globals: true,
     // Fuso do usuário, não o UTC do CI: data de calendário lida como instante
     // volta um dia só em fuso negativo, e em UTC o bug passa despercebido.
-    env: { TZ: "America/Sao_Paulo" },
+    // TZ: fuso do usuário, não o UTC do CI — data de calendário lida como
+    // instante volta um dia só em fuso negativo, e em UTC o bug passaria.
+    //
+    // VITE_API_URL fixo: sem isto a suíte lê o .env do desenvolvedor, e quem
+    // apontasse a API para outro lugar (um proxy, um túnel) via os testes de
+    // service quebrarem por um motivo que nada tem a ver com o código.
+    env: {
+      TZ: "America/Sao_Paulo",
+      VITE_API_URL: "http://localhost:3000",
+    },
     setupFiles: "./src/test/setup.ts",
     css: false,
     coverage: {
