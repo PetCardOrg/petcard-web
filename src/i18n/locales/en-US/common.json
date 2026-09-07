@@ -63,7 +63,7 @@
     },
     "hero": {
       "title": "You found {{name}}!",
-      "lead": "This pet has an owner and is being looked for. Call the person below — they have already been notified that {{name}} was found."
+      "lead": "This pet has an owner and is being looked for. Call the person below. They have already been notified that {{name}} was found."
     },
     "contact": {
       "label": "Owner: {{name}}",
@@ -73,14 +73,14 @@
     "location": {
       "asking": "Allow location access so the owner knows where the pet is.",
       "sent": "Done! {{name}} received a notice with your location.",
-      "denied": "{{name}} was told the pet was found, but without the location. If you can, share it — it helps a lot.",
+      "denied": "{{name}} was told the pet was found, but without the location. If you can, share it. It helps a lot.",
       "retry": "Share my location"
     },
     "steps": {
       "title": "What to do now",
       "one": "Call the owner using the button above.",
       "two": "Agree on a safe place to hand the pet over.",
-      "three": "If you cannot reach them, keep the pet somewhere safe — the owner has been notified and will look for you."
+      "three": "If you cannot reach them, keep the pet somewhere safe. The owner has been notified and will look for you."
     },
     "footer": "PetCard digital collar."
   },

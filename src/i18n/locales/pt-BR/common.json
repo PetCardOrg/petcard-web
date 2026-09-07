@@ -63,7 +63,7 @@
     },
     "hero": {
       "title": "Você encontrou {{name}}!",
-      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo — ela já foi avisada de que {{name}} foi encontrado."
+      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo. Ela já foi avisada de que {{name}} foi encontrado."
     },
     "contact": {
       "label": "Tutor: {{name}}",
@@ -73,14 +73,14 @@
     "location": {
       "asking": "Permita o acesso à localização para o tutor saber onde o pet está.",
       "sent": "Pronto! {{name}} recebeu um aviso com a sua localização.",
-      "denied": "{{name}} foi avisado de que o pet foi encontrado, mas sem a localização. Se puder, compartilhe — ajuda muito.",
+      "denied": "{{name}} foi avisado de que o pet foi encontrado, mas sem a localização. Se puder, compartilhe. Ajuda muito.",
       "retry": "Compartilhar minha localização"
     },
     "steps": {
       "title": "O que fazer agora",
       "one": "Ligue para o tutor pelo botão acima.",
       "two": "Combine um ponto de encontro seguro para a entrega.",
-      "three": "Se não conseguir falar, mantenha o pet em local seguro — o tutor já foi notificado e vai te procurar."
+      "three": "Se não conseguir falar, mantenha o pet em local seguro. O tutor já foi notificado e vai te procurar."
     },
     "footer": "Coleira digital PetCard."
   },
