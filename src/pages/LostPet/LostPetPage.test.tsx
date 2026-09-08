@@ -110,6 +110,38 @@ describe("LostPetPage", () => {
     expect(leituraMock.mock.calls[1][1]).toMatchObject({ latitude: -3.73 });
   });
 
+  // Clicar várias vezes tentando liberar o GPS não pode virar vários avisos
+  // para o tutor — só a trava automática do primeiro disparo não cobria o
+  // botão de resgate.
+  it("ignora cliques repetidos no botão de resgate enquanto o envio está em andamento", async () => {
+    comGeolocation(permissaoNegada);
+    renderizar();
+    const botao = await screen.findByRole("button", {
+      name: /compartilhar minha/i,
+    });
+    expect(leituraMock).toHaveBeenCalledTimes(1);
+
+    let liberarEnvio: (() => void) | undefined;
+    leituraMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          liberarEnvio = () => resolve({ id: "scan-1" });
+        }),
+    );
+
+    await userEvent.click(botao);
+    expect(botao).toBeDisabled();
+    // Clique num botão desabilitado não deveria nem chegar ao handler — mas o
+    // que protege de verdade é a trava dentro de avisarTutor, não o atributo.
+    await userEvent.click(botao, { pointerEventsCheck: 0 });
+    await userEvent.click(botao, { pointerEventsCheck: 0 });
+
+    expect(leituraMock).toHaveBeenCalledTimes(2);
+
+    liberarEnvio?.();
+    await waitFor(() => expect(botao).not.toBeDisabled());
+  });
+
   it("mostra o telefone do tutor como link de chamada", async () => {
     renderizar();
 
