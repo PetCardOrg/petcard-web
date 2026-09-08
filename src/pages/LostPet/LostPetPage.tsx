@@ -74,6 +74,14 @@ export function LostPetPage() {
   // React em dev monta o efeito duas vezes e o tutor receberia dois avisos.
   const jaAvisou = useRef(false);
 
+  // Trava contra chamada concorrente, compartilhada pelo disparo automático e
+  // pelo botão "tentar de novo". Ref, não state: state é assíncrono e clique
+  // duplo antes do primeiro re-render passaria pela checagem duas vezes —
+  // quem achou o pet clicando várias vezes tentando liberar o GPS não pode
+  // virar várias notificações e linhas de histórico para o tutor.
+  const enviandoRef = useRef(false);
+  const [enviando, setEnviando] = useState(false);
+
   useEffect(() => {
     if (!token) {
       setError("not_found");
@@ -105,17 +113,25 @@ export function LostPetPage() {
   }, [token]);
 
   const avisarTutor = useCallback(async () => {
-    if (!token) return;
-    const coordenadas = await obterLocalizacao();
+    if (!token || enviandoRef.current) return;
+    enviandoRef.current = true;
+    setEnviando(true);
 
     try {
-      await registrarLeitura(token, coordenadas);
-    } catch {
-      // O aviso é secundário para quem está com o animal na mão: o telefone do
-      // tutor continua na tela e é o que resolve. Empurrar um erro técnico
-      // para cima de quem quer ajudar não melhora nada.
+      const coordenadas = await obterLocalizacao();
+
+      try {
+        await registrarLeitura(token, coordenadas);
+      } catch {
+        // O aviso é secundário para quem está com o animal na mão: o telefone do
+        // tutor continua na tela e é o que resolve. Empurrar um erro técnico
+        // para cima de quem quer ajudar não melhora nada.
+      }
+      setLocalizacao(coordenadas ? "enviada" : "sem_permissao");
+    } finally {
+      enviandoRef.current = false;
+      setEnviando(false);
     }
-    setLocalizacao(coordenadas ? "enviada" : "sem_permissao");
   }, [token]);
 
   // Dispara assim que a página carrega, sem botão: quem está com o animal na
@@ -247,6 +263,7 @@ export function LostPetPage() {
               type="button"
               className="lost-location-btn"
               onClick={() => void avisarTutor()}
+              disabled={enviando}
             >
               {t("lostPet.location.retry")}
             </button>
