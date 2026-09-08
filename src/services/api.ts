@@ -1,5 +1,8 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
+/** Mesmo teto usado pelo cliente axios do mobile (src/services/api.ts). */
+const API_TIMEOUT_MS = 10000;
+
 export interface ApiFetchOptions {
   method?: string;
   /** `FormData` vai direto no fetch, sem JSON.stringify nem Content-Type manual. */
@@ -27,15 +30,35 @@ export async function apiFetch<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: isFormData
-      ? body
-      : body !== undefined
-        ? JSON.stringify(body)
-        : undefined,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: isFormData
+        ? body
+        : body !== undefined
+          ? JSON.stringify(body)
+          : undefined,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    // Sem isso, uma api lenta deixava a tela em "carregando" para sempre, sem
+    // erro nem opção de recomeçar.
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError(
+        0,
+        "Timeout",
+        "Tempo de resposta excedido. Tente novamente.",
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
     // A mensagem do corpo distingue motivos que compartilham o mesmo status —

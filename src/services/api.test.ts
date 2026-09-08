@@ -34,6 +34,7 @@ describe("apiFetch", () => {
       method: "GET",
       headers: {},
       body: undefined,
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -53,6 +54,7 @@ describe("apiFetch", () => {
         Authorization: "Bearer jwt-123",
       },
       body: JSON.stringify({ name: "Rex" }),
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -84,5 +86,28 @@ describe("apiFetch", () => {
       status: 401,
     });
     await expect(apiFetch("/auth/profile")).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("lança ApiError em vez de travar quando a requisição estoura o timeout", async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementation(
+      (_url, init) =>
+        new Promise((_resolve, reject) => {
+          const signal = (init as RequestInit).signal;
+          signal?.addEventListener("abort", () => {
+            reject(
+              new DOMException("The user aborted a request.", "AbortError"),
+            );
+          });
+        }),
+    );
+
+    const pending = expect(apiFetch("/clinicas")).rejects.toMatchObject({
+      name: "ApiError",
+      status: 0,
+    });
+    await vi.advanceTimersByTimeAsync(10000);
+    await pending;
+    vi.useRealTimers();
   });
 });
