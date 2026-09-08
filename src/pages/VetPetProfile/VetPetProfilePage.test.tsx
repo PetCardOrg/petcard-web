@@ -340,6 +340,30 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(dto.pet_id).toBe("p1");
     });
 
+    it("mostra o motivo da API quando o servidor recusa o registro", async () => {
+      createVaccineMock.mockRejectedValue(
+        new ApiError(
+          400,
+          "Bad Request",
+          "next_dose_at deve ser posterior a applied_at.",
+        ),
+      );
+
+      await abrirAba("Vacinas");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Nova vacina/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Vacina/), "Antirrábica");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      expect(
+        await screen.findByText(
+          "next_dose_at deve ser posterior a applied_at.",
+        ),
+      ).toBeInTheDocument();
+    });
+
     it("registra a vermifugação do pet", async () => {
       await abrirAba("Vermifugações");
       await userEvent.click(
