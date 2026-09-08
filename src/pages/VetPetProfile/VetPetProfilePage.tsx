@@ -396,7 +396,8 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
-      setRecordError(t("petProfile.recordForm.submitError"));
+      const detail = err instanceof ApiError ? err.detail : undefined;
+      setRecordError(detail ?? t("petProfile.recordForm.submitError"));
     } finally {
       setRecordSubmitting(false);
     }
