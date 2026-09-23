@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { VetUser } from "../services/auth.service";
+import type { VetRegisterRequest, VetUser } from "../services/auth.service";
 import {
   loginVeterinario,
+  registerVeterinario,
   getVeterinarioProfile,
 } from "../services/auth.service";
 import { AuthContext } from "./auth-context";
@@ -49,14 +50,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const register = useCallback(async (dto: VetRegisterRequest) => {
+    const response = await registerVeterinario(dto);
+    localStorage.setItem(TOKEN_KEY, response.access_token);
+    setState({
+      token: response.access_token,
+      user: response.user,
+      loading: false,
+    });
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setState({ token: null, user: null, loading: false });
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!state.token) return;
+    const user = await getVeterinarioProfile(state.token);
+    setState((prev) => ({ ...prev, user }));
+  }, [state.token]);
+
   const value = useMemo(
-    () => ({ ...state, login, logout }),
-    [state, login, logout],
+    () => ({ ...state, login, register, logout, refreshUser }),
+    [state, login, register, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

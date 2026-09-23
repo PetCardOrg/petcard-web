@@ -1,7 +1,11 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
+/** Mesmo teto usado pelo cliente axios do mobile (src/services/api.ts). */
+const API_TIMEOUT_MS = 10000;
+
 export interface ApiFetchOptions {
   method?: string;
+  /** `FormData` vai direto no fetch, sem JSON.stringify nem Content-Type manual. */
   body?: unknown;
   token?: string;
 }
@@ -11,10 +15,14 @@ export async function apiFetch<T>(
   options: ApiFetchOptions = {},
 ): Promise<T> {
   const { method = "GET", body, token } = options;
+  const isFormData = body instanceof FormData;
 
   const headers: Record<string, string> = {};
 
-  if (body !== undefined) {
+  // Para FormData o browser define Content-Type sozinho, com o boundary do
+  // multipart — setar aqui manda a requisição sem boundary e a api não
+  // consegue parsear as partes.
+  if (body !== undefined && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -22,14 +30,52 @@ export async function apiFetch<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: isFormData
+        ? body
+        : body !== undefined
+          ? JSON.stringify(body)
+          : undefined,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    // Sem isso, uma api lenta deixava a tela em "carregando" para sempre, sem
+    // erro nem opção de recomeçar.
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError(
+        0,
+        "Timeout",
+        "Tempo de resposta excedido. Tente novamente.",
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
-    throw new ApiError(res.status, res.statusText);
+    // A mensagem do corpo distingue motivos que compartilham o mesmo status —
+    // um 403 por CRMV não verificado pede ação diferente de um 403 por posse.
+    let detail: string | undefined;
+    try {
+      const body: unknown = await res.clone().json();
+      const message = (body as { message?: unknown })?.message;
+      detail = Array.isArray(message)
+        ? message.join(", ")
+        : typeof message === "string"
+          ? message
+          : undefined;
+    } catch {
+      detail = undefined;
+    }
+    throw new ApiError(res.status, res.statusText, detail);
   }
 
   if (res.status === 204) {
@@ -41,10 +87,18 @@ export async function apiFetch<T>(
 
 export class ApiError extends Error {
   readonly status: number;
+  /** Mensagem devolvida pela API, quando houver. */
+  readonly detail?: string;
 
-  constructor(status: number, statusText: string) {
-    super(`${status} ${statusText}`);
+  constructor(status: number, statusText: string, detail?: string) {
+    super(detail ?? `${status} ${statusText}`);
     this.name = "ApiError";
     this.status = status;
+    this.detail = detail;
+  }
+
+  /** 403 causado por CRMV não verificado (api#113), e não por falta de posse. */
+  get isCrmvNaoVerificado(): boolean {
+    return this.status === 403 && /CRMV/i.test(this.detail ?? "");
   }
 }

@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { VetDashboardPage } from "./VetDashboardPage";
 import { ApiError } from "../../services/api";
 import type {
@@ -13,6 +13,9 @@ const logoutMock = vi.fn();
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 vi.mock("../../hooks/useAuth", () => ({
@@ -25,10 +28,23 @@ vi.mock("../../hooks/useAuth", () => ({
 
 vi.mock("../../services/dashboard.service", () => ({
   fetchDashboardPets: vi.fn(),
+  removerPetAtendido: vi.fn(),
 }));
 
-import { fetchDashboardPets } from "../../services/dashboard.service";
+vi.mock("../../services/crmv.service", () => ({
+  fetchCrmvStatus: vi.fn(),
+  verificarCrmv: vi.fn(),
+  corrigirMeuCrmv: vi.fn(),
+}));
+
+import {
+  fetchDashboardPets,
+  removerPetAtendido,
+} from "../../services/dashboard.service";
+import { fetchCrmvStatus } from "../../services/crmv.service";
 const fetchMock = vi.mocked(fetchDashboardPets);
+const removerMock = vi.mocked(removerPetAtendido);
+const crmvStatusMock = vi.mocked(fetchCrmvStatus);
 
 function page(
   items: DashboardPetItem[],
@@ -53,11 +69,24 @@ const rex: DashboardPetItem = {
   last_attended_at: "2026-01-10T12:00:00.000Z",
 };
 
+let confirmado = true;
+
 describe("VetDashboardPage", () => {
   beforeEach(() => {
     navigateMock.mockReset();
     logoutMock.mockReset();
     fetchMock.mockReset();
+    removerMock.mockReset();
+    removerMock.mockResolvedValue(undefined);
+    // Padrão do resto da suíte: CRMV em dia, sem aviso na tela.
+    crmvStatusMock.mockReset();
+    crmvStatusMock.mockResolvedValue({ verified: true });
+    confirmado = true;
+    vi.spyOn(window, "confirm").mockImplementation(() => confirmado);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("lista os pets atendidos retornados pela API", async () => {
@@ -109,16 +138,6 @@ describe("VetDashboardPage", () => {
     });
   });
 
-  it("navega para o scanner pelo botão de QR", async () => {
-    fetchMock.mockResolvedValue(page([rex]));
-    render(<VetDashboardPage />);
-    await screen.findByText("Rex");
-
-    await userEvent.click(screen.getByRole("button", { name: /Escanear QR/ }));
-
-    expect(navigateMock).toHaveBeenCalledWith("/vet/scan");
-  });
-
   it("aplica o termo de busca (com debounce) na chamada da API", async () => {
     fetchMock.mockResolvedValue(page([rex]));
     render(<VetDashboardPage />);
@@ -137,6 +156,32 @@ describe("VetDashboardPage", () => {
     );
   });
 
+  it("avisa e oferece a verificação quando o CRMV está pendente", async () => {
+    // Sem o botão o vet leria o aviso e não teria o que fazer com ele: é a
+    // primeira tela dele, e o histórico clínico fica barrado até verificar.
+    crmvStatusMock.mockResolvedValue({ verified: false });
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+
+    expect(
+      await screen.findByText(/Não conseguimos confirmar seu CRMV/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Verificar meu CRMV" }),
+    ).toBeInTheDocument();
+  });
+
+  it("não avisa quando o CRMV está verificado", async () => {
+    crmvStatusMock.mockResolvedValue({ verified: true });
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+    await screen.findByText("Rex");
+
+    expect(
+      screen.queryByText(/Não conseguimos confirmar seu CRMV/),
+    ).not.toBeInTheDocument();
+  });
+
   it("desabilita os botões de paginação numa página única", async () => {
     fetchMock.mockResolvedValue(page([rex], { totalPages: 1, page: 1 }));
     render(<VetDashboardPage />);
@@ -149,5 +194,70 @@ describe("VetDashboardPage", () => {
     for (const btn of buttons) {
       expect(btn).toBeDisabled();
     }
+  });
+
+  describe("remover pet da lista", () => {
+    it("tira o pet da lista e recarrega, sem abrir o prontuário", async () => {
+      fetchMock.mockResolvedValue(page([rex]));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      const buscasAntes = fetchMock.mock.calls.length;
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      await waitFor(() =>
+        expect(removerMock).toHaveBeenCalledWith("jwt", "p1"),
+      );
+      // O card inteiro navega: o botão de remover não pode abrir o pet.
+      expect(navigateMock).not.toHaveBeenCalled();
+      await waitFor(() =>
+        expect(fetchMock.mock.calls.length).toBeGreaterThan(buscasAntes),
+      );
+    });
+
+    it("não remove nada quando o veterinário desiste na confirmação", async () => {
+      confirmado = false;
+      fetchMock.mockResolvedValue(page([rex]));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      expect(removerMock).not.toHaveBeenCalled();
+    });
+
+    it("avisa quando a remoção falha", async () => {
+      fetchMock.mockResolvedValue(page([rex]));
+      removerMock.mockRejectedValue(new ApiError(500, "Boom"));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      expect(
+        await screen.findByText(
+          "Não foi possível tirar o pet da lista. Tente de novo.",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it("desloga quando a remoção responde 401", async () => {
+      fetchMock.mockResolvedValue(page([rex]));
+      removerMock.mockRejectedValue(new ApiError(401, "Unauthorized"));
+      render(<VetDashboardPage />);
+      await screen.findByText("Rex");
+
+      await userEvent.click(
+        screen.getByRole("button", { name: "Tirar Rex da lista" }),
+      );
+
+      await waitFor(() => expect(logoutMock).toHaveBeenCalled());
+    });
   });
 });

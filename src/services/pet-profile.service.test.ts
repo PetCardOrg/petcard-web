@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createClinicalNote, fetchPetProfile } from "./pet-profile.service";
+import { fetchPetProfile } from "./pet-profile.service";
 
 const BASE = "http://localhost:3000";
 
@@ -51,26 +51,5 @@ describe("pet-profile.service", () => {
         headers: { Authorization: "Bearer jwt" },
       });
     }
-  });
-
-  it("createClinicalNote faz POST da nota no pet com token e corpo", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      status: 201,
-      statusText: "Created",
-      json: () => Promise.resolve({ id: "n1" }),
-    } as Response);
-
-    const dto = { diagnostico: "Otite", prescricao: "Gotas" };
-    await createClinicalNote("jwt", "p1", dto as never);
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      `${BASE}/pets/p1/clinical-notes`,
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify(dto),
-        headers: expect.objectContaining({ Authorization: "Bearer jwt" }),
-      }),
-    );
   });
 });

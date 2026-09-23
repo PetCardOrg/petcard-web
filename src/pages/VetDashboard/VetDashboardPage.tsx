@@ -1,20 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   IoPaw,
   IoAlertCircle,
   IoSearch,
   IoChevronForward,
-  IoQrCode,
+  IoTrashOutline,
+  IoPersonCircleOutline,
 } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
-import { fetchDashboardPets } from "../../services/dashboard.service";
+import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
+import {
+  fetchDashboardPets,
+  removerPetAtendido,
+} from "../../services/dashboard.service";
 import type {
   DashboardPetItem,
   PaginatedResponse,
 } from "../../services/dashboard.service";
+import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import "./VetDashboardPage.css";
 
@@ -32,6 +38,9 @@ export function VetDashboardPage() {
   const { t } = useTranslation();
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+  // O dashboard é a primeira tela do vet: é aqui que ele precisa descobrir
+  // que o CRMV não passou, e não no primeiro atendimento (api#113).
+  const [crmvVerificado, setCrmvVerificado] = useState<boolean | null>(null);
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -40,6 +49,8 @@ export function VetDashboardPage() {
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [removendo, setRemovendo] = useState<string | null>(null);
+  const [erroRemocao, setErroRemocao] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(
@@ -67,6 +78,21 @@ export function VetDashboardPage() {
     [token, logout],
   );
 
+  const carregarStatusCrmv = useCallback(async () => {
+    if (!token) return;
+    try {
+      const status = await fetchCrmvStatus(token);
+      setCrmvVerificado(status.verified);
+    } catch {
+      // O aviso é secundário: falhar a consulta não pode esconder a lista.
+      setCrmvVerificado(null);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void carregarStatusCrmv();
+  }, [carregarStatusCrmv]);
+
   useEffect(() => {
     load(search, page);
   }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -81,6 +107,35 @@ export function VetDashboardPage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Tira o pet da lista do veterinário.
+   *
+   * Some só o vínculo: o pet, os registros clínicos e a trilha continuam, e
+   * ler o QR de novo traz o pet de volta.
+   */
+  async function removerPet(pet: DashboardPetItem) {
+    if (!token) return;
+    if (
+      !window.confirm(t("vetDashboard.remover.confirmar", { nome: pet.name }))
+    )
+      return;
+
+    setRemovendo(pet.id);
+    setErroRemocao(false);
+    try {
+      await removerPetAtendido(token, pet.id);
+      await load(search, page);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        logout();
+        return;
+      }
+      setErroRemocao(true);
+    } finally {
+      setRemovendo(null);
+    }
+  }
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString();
@@ -101,7 +156,21 @@ export function VetDashboardPage() {
         </div>
         <div className="vet-dashboard-user">
           <LanguageSwitcher />
-          <span className="vet-dashboard-username">{user?.nome}</span>
+          <Link to="/vet/profile" className="vet-dashboard-user-link">
+            {user?.foto_url ? (
+              <img
+                src={user.foto_url}
+                alt={user.nome}
+                className="vet-dashboard-avatar"
+              />
+            ) : (
+              <IoPersonCircleOutline
+                size={28}
+                className="vet-dashboard-avatar-fallback"
+              />
+            )}
+            <span className="vet-dashboard-username">{user?.nome}</span>
+          </Link>
           <button
             type="button"
             className="vet-dashboard-logout"
@@ -113,6 +182,16 @@ export function VetDashboardPage() {
       </header>
 
       <main className="vet-dashboard-content">
+        {crmvVerificado === false && (
+          <CrmvAviso
+            token={token}
+            mensagem={t("crmv.pending")}
+            crmvAtual={user?.crmv}
+            onVerificado={() => void carregarStatusCrmv()}
+            className="vet-dashboard-crmv-aviso"
+          />
+        )}
+
         <div className="vet-dashboard-title-row">
           <div>
             <h2>{t("vetDashboard.title")}</h2>
@@ -120,14 +199,6 @@ export function VetDashboardPage() {
               {t("vetDashboard.subtitle")}
             </p>
           </div>
-          <button
-            type="button"
-            className="vet-dashboard-scan-btn"
-            onClick={() => navigate("/vet/scan")}
-          >
-            <IoQrCode size={18} />
-            {t("vetDashboard.scanQr")}
-          </button>
         </div>
 
         <div className="vet-dashboard-search">
@@ -178,6 +249,11 @@ export function VetDashboardPage() {
 
         {!loading && !error && data && data.items.length > 0 && (
           <>
+            {erroRemocao && (
+              <p className="vet-dashboard-remove-error">
+                {t("vetDashboard.remover.erro")}
+              </p>
+            )}
             <div className="vet-dashboard-pet-list">
               {data.items.map((pet) => {
                 const colors = getSpeciesColors(pet.species);
@@ -236,6 +312,21 @@ export function VetDashboardPage() {
                         </span>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      className="vet-pet-card-remove"
+                      aria-label={t("vetDashboard.remover.rotulo", {
+                        nome: pet.name,
+                      })}
+                      disabled={removendo === pet.id}
+                      onClick={(e) => {
+                        // O card inteiro navega; remover não pode abrir o pet.
+                        e.stopPropagation();
+                        void removerPet(pet);
+                      }}
+                    >
+                      <IoTrashOutline size={18} />
+                    </button>
                     <IoChevronForward
                       size={18}
                       className="vet-pet-card-chevron"

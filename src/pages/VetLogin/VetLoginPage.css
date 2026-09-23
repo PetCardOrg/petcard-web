@@ -128,3 +128,26 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.vet-login-hint {
+  color: #607d8b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.vet-login-alt {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  color: #607d8b;
+  font-size: 0.875rem;
+}
+
+.vet-login-alt a {
+  color: #27a9d8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.vet-login-alt a:hover {
+  text-decoration: underline;
+}

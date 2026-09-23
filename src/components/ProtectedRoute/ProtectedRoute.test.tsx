@@ -12,7 +12,9 @@ function renderWithAuth(auth: Partial<AuthContextValue>) {
     user: null,
     loading: false,
     login: async () => {},
+    register: async () => {},
     logout: () => {},
+    refreshUser: async () => {},
     ...auth,
   };
 

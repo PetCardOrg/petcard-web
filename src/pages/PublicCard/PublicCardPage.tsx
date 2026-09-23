@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import type {
   CarteiraDigitalPublicResponseDto,
   DewormingRecordResponseDto,
@@ -17,8 +17,12 @@ import {
 } from "react-icons/io5";
 
 import { getPublicCard } from "../../services/card.service";
+import { adicionarPetAtendido } from "../../services/dashboard.service";
 import { ApiError } from "../../services/api";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
+import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
+import { useAuth } from "../../hooks/useAuth";
+import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "./PublicCardPage.css";
 
 function formatDate(iso: string): string {
@@ -172,11 +176,17 @@ function MedicationTable({
 export function PublicCardPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { token: authToken, user } = useAuth();
   const [card, setCard] = useState<CarteiraDigitalPublicResponseDto | null>(
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<"not_found" | "network" | null>(null);
+  const [entrando, setEntrando] = useState(false);
+  const [erroAcesso, setErroAcesso] = useState<string | null>(null);
+  const [crmvBloqueado, setCrmvBloqueado] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -211,6 +221,53 @@ export function PublicCardPage() {
       cancelled = true;
     };
   }, [token]);
+
+  /**
+   * Põe o pet na lista do veterinário e abre o prontuário.
+   *
+   * Ter lido o QR é o que autoriza o atendimento: a lista do dashboard é um
+   * vínculo guardado, não uma dedução dos registros clínicos (api#130).
+   */
+  const entrarComoVet = useCallback(async () => {
+    if (!token || !card) return;
+    if (!authToken) {
+      // Volta para cá depois do login, não direto para o prontuário: é aqui
+      // que o vínculo é criado.
+      navigate("/vet/login", {
+        state: { redirectTo: `/card/${token}`, acessoVet: true },
+      });
+      return;
+    }
+
+    setEntrando(true);
+    setErroAcesso(null);
+    setCrmvBloqueado(false);
+    try {
+      await adicionarPetAtendido(authToken, token);
+      navigate(`/vet/pets/${card.pet_id}`);
+    } catch (err) {
+      // CRMV pendente não é falha: é um passo que falta, e o vet resolve
+      // sem sair da tela.
+      if (err instanceof ApiError && err.isCrmvNaoVerificado) {
+        setCrmvBloqueado(true);
+        return;
+      }
+      setErroAcesso(t("publicCard.vetAccess.failed"));
+    } finally {
+      setEntrando(false);
+    }
+  }, [authToken, card, navigate, t, token]);
+
+  // Quem chegou aqui vindo do login ou do cadastro já pediu para entrar como
+  // veterinário; repetir o clique seria só atrito.
+  const pediuAcessoVet = Boolean(
+    lerRedirecionamentoVet(location.state).acessoVet,
+  );
+  useEffect(() => {
+    if (pediuAcessoVet && authToken && card) {
+      void entrarComoVet();
+    }
+  }, [pediuAcessoVet, authToken, card, entrarComoVet]);
 
   const age = useCalculateAge(card?.birth_date);
 
@@ -313,19 +370,51 @@ export function PublicCardPage() {
               {t("publicCard.petProfile.tutor")}:{" "}
               <strong>{card.tutor_name}</strong>
             </p>
+
+            {/* O telefone é o que torna o QR da coleira acionável: quem achou
+                o pet liga daqui mesmo. Só aparece se o tutor cadastrou. */}
+            {card.tutor_phone && (
+              <p className="tutor-info">
+                {t("publicCard.petProfile.phone")}:{" "}
+                <a
+                  className="tutor-phone"
+                  href={`tel:${card.tutor_phone.replace(/[^+\d]/g, "")}`}
+                >
+                  {card.tutor_phone}
+                </a>
+              </p>
+            )}
           </div>
         </section>
 
-        {/* QR Code */}
-        {card.qr_code_url && (
-          <section className="qr-section">
-            <img
-              src={card.qr_code_url}
-              alt={t("publicCard.qrCodeAlt")}
-              className="qr-image"
+        {/* Acesso do veterinário: quem lê o QR pela câmera do celular cai
+            aqui, e sem isto não teria como chegar na área do vet. */}
+        <section className="vet-access">
+          <p className="vet-access-text">{t("publicCard.vetAccess.prompt")}</p>
+          <button
+            type="button"
+            className="vet-access-btn"
+            onClick={() => void entrarComoVet()}
+            disabled={entrando}
+          >
+            {entrando
+              ? t("publicCard.vetAccess.entering")
+              : t("publicCard.vetAccess.action")}
+          </button>
+          {erroAcesso && <p className="vet-access-error">{erroAcesso}</p>}
+          {crmvBloqueado && (
+            <CrmvAviso
+              token={authToken}
+              mensagem={t("publicCard.vetAccess.crmvRequired")}
+              crmvAtual={user?.crmv}
+              onVerificado={() => void entrarComoVet()}
+              className="vet-access-crmv"
             />
-          </section>
-        )}
+          )}
+        </section>
+
+        {/* O QR fica só no app do tutor (web#34). Exibi-lo aqui não servia a
+            ninguém: quem chega nesta tela já leu o código para chegar. */}
 
         {/* Health records */}
         <section className="health-section">
@@ -357,7 +446,15 @@ export function PublicCardPage() {
       </main>
 
       <footer className="card-footer">
-        <p dangerouslySetInnerHTML={{ __html: t("publicCard.footer") }} />
+        {/* <Trans> monta o <strong> como elemento React. Injetar a tradução
+            como HTML abria um caminho de XSS que só não era explorável porque
+            a string é nossa — e continuaria aberto se um dia deixasse de ser. */}
+        <p>
+          <Trans
+            i18nKey="publicCard.footer"
+            components={{ strong: <strong /> }}
+          />
+        </p>
       </footer>
     </div>
   );

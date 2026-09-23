@@ -11,8 +11,12 @@ vi.mock("../../hooks/useAuth", () => ({
   useAuth: () => ({ login: loginMock }),
 }));
 
+const locationMock = { state: null as unknown };
+
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigateMock,
+  useLocation: () => locationMock,
+  Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
 
 async function fillAndSubmit(email = "vet@petcard.com", password = "senha123") {
@@ -26,6 +30,7 @@ describe("VetLoginPage", () => {
   beforeEach(() => {
     loginMock.mockReset();
     navigateMock.mockReset();
+    locationMock.state = null;
   });
 
   it("autentica e navega para o dashboard no sucesso", async () => {
@@ -38,6 +43,24 @@ describe("VetLoginPage", () => {
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith("/vet/dashboard", {
         replace: true,
+        state: undefined,
+      }),
+    );
+  });
+
+  it("volta para a carteira do QR mantendo o acesso de veterinário pedido", async () => {
+    // Perder `acessoVet` aqui não quebra nada visivelmente: a carteira só
+    // deixa de entrar sozinha e obriga um segundo clique em "Sou veterinário".
+    locationMock.state = { redirectTo: "/card/tok-123", acessoVet: true };
+    loginMock.mockResolvedValue(undefined);
+    render(<VetLoginPage />);
+
+    await fillAndSubmit();
+
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith("/card/tok-123", {
+        replace: true,
+        state: { acessoVet: true },
       }),
     );
   });

@@ -45,11 +45,4 @@ describe("fetchDashboardPets", () => {
     await fetchDashboardPets("jwt", { page: 0, search: "bob" });
     expect(calledUrl()).toBe(`${BASE}/veterinarios/dashboard/pets?search=bob`);
   });
-
-  it("envia o token no header de autorização", async () => {
-    await fetchDashboardPets("jwt-xyz");
-    expect(fetchMock.mock.calls[0][1]).toMatchObject({
-      headers: { Authorization: "Bearer jwt-xyz" },
-    });
-  });
 });

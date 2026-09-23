@@ -1,6 +1,7 @@
 # 🐾 PetCard Web
 
 [![CI](https://github.com/PetCardOrg/petcard-web/actions/workflows/ci.yml/badge.svg)](https://github.com/PetCardOrg/petcard-web/actions)
+[![Coverage](.github/badges/coverage.svg)](https://github.com/PetCardOrg/petcard-web/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Painel web do veterinário no ecossistema PetCard. Interface construída com React.js e Vite para gerenciamento de pacientes, notas clínicas e acesso à carteira digital de saúde pet.

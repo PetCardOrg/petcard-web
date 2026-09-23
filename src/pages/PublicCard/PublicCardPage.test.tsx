@@ -1,23 +1,46 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PublicCardPage } from "./PublicCardPage";
 import { ApiError } from "../../services/api";
 
 let params: { token?: string } = { token: "tok-123" };
+const navigateMock = vi.fn();
+let authToken: string | null = null;
+
+let locationState: Record<string, unknown> | null = null;
 
 vi.mock("react-router-dom", () => ({
   useParams: () => params,
+  useNavigate: () => navigateMock,
+  useLocation: () => ({ state: locationState }),
+}));
+
+vi.mock("../../hooks/useAuth", () => ({
+  useAuth: () => ({ token: authToken }),
 }));
 
 vi.mock("../../services/card.service", () => ({
   getPublicCard: vi.fn(),
 }));
 
+vi.mock("../../services/dashboard.service", () => ({
+  adicionarPetAtendido: vi.fn(),
+}));
+
+vi.mock("../../services/crmv.service", () => ({
+  verificarCrmv: vi.fn(),
+  corrigirMeuCrmv: vi.fn(),
+}));
+
 import { getPublicCard } from "../../services/card.service";
+import { adicionarPetAtendido } from "../../services/dashboard.service";
 const cardMock = vi.mocked(getPublicCard);
+const adicionarMock = vi.mocked(adicionarPetAtendido);
 
 function buildCard(overrides: Record<string, unknown> = {}) {
   return {
+    pet_id: "p1",
     pet_name: "Rex",
     species: "DOG",
     sex: "MALE",
@@ -46,6 +69,11 @@ describe("PublicCardPage", () => {
   beforeEach(() => {
     params = { token: "tok-123" };
     cardMock.mockReset();
+    navigateMock.mockReset();
+    adicionarMock.mockReset();
+    adicionarMock.mockResolvedValue({} as never);
+    authToken = null;
+    locationState = null;
   });
 
   it("renderiza a carteira pública com pet, tutor e vacina", async () => {
@@ -57,6 +85,99 @@ describe("PublicCardPage", () => {
     expect(screen.getByText("Cachorro")).toBeInTheDocument();
     expect(screen.getByText("Antirrábica")).toBeInTheDocument();
     expect(cardMock).toHaveBeenCalledWith("tok-123");
+  });
+
+  it("manda o vet deslogado para o login, guardando o pet do QR", async () => {
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Sou veterinário" }),
+    );
+
+    // Volta para a carteira, não para o prontuário: é aqui que o vínculo
+    // com o veterinário é criado.
+    expect(navigateMock).toHaveBeenCalledWith("/vet/login", {
+      state: { redirectTo: "/card/tok-123", acessoVet: true },
+    });
+    expect(adicionarMock).not.toHaveBeenCalled();
+  });
+
+  it("adiciona o pet à lista do vet autenticado e abre o prontuário", async () => {
+    authToken = "jwt-vet";
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Sou veterinário" }),
+    );
+
+    // Sem esta chamada o vet abriria o prontuário e o pet não estaria no
+    // dashboard dele (api#130).
+    await waitFor(() =>
+      expect(adicionarMock).toHaveBeenCalledWith("jwt-vet", "tok-123"),
+    );
+    expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1");
+  });
+
+  it("entra sozinho ao voltar do login, sem pedir outro clique", async () => {
+    authToken = "jwt-vet";
+    locationState = { acessoVet: true };
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await waitFor(() =>
+      expect(adicionarMock).toHaveBeenCalledWith("jwt-vet", "tok-123"),
+    );
+    expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1");
+  });
+
+  it("oferece a verificação quando o CRMV barra o acesso", async () => {
+    authToken = "jwt-vet";
+    adicionarMock.mockRejectedValue(
+      new ApiError(403, "Forbidden", "CRMV não verificado"),
+    );
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Sou veterinário" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Seu CRMV precisa estar verificado para acessar dados clínicos.",
+      ),
+    ).toBeInTheDocument();
+    // O vet chegou aqui com o pet na frente: mandá-lo procurar a verificação
+    // em outra tela é perder o atendimento.
+    expect(
+      screen.getByRole("button", { name: "Verificar meu CRMV" }),
+    ).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it("não navega quando a vinculação falha", async () => {
+    authToken = "jwt-vet";
+    adicionarMock.mockRejectedValue(new ApiError(500, "Boom"));
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Sou veterinário" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Não foi possível abrir este pet. Tente de novo.",
+      ),
+    ).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 
   it("mostra 'não encontrada' quando a API responde 404", async () => {
@@ -86,5 +207,35 @@ describe("PublicCardPage", () => {
       await screen.findByText("Carteira não encontrada"),
     ).toBeInTheDocument();
     expect(cardMock).not.toHaveBeenCalled();
+  });
+  it("não expõe o QR nesta tela, mesmo quando a carteira traz a imagem", async () => {
+    // O QR vive só no app do tutor (web#34): quem chega aqui já leu o código.
+    cardMock.mockResolvedValue(
+      buildCard({ qr_code_url: "https://cdn.petcard/qr/p1.png" }) as never,
+    );
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    expect(screen.queryByRole("img", { name: /qr/i })).not.toBeInTheDocument();
+  });
+
+  it("mostra o telefone do tutor como link de ligação", async () => {
+    // É o que torna o QR da coleira útil para quem achou o pet.
+    cardMock.mockResolvedValue(
+      buildCard({ tutor_phone: "+55 85 99999-0000" }) as never,
+    );
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    const link = screen.getByRole("link", { name: "+55 85 99999-0000" });
+    expect(link).toHaveAttribute("href", "tel:+5585999990000");
+  });
+
+  it("não mostra a linha de telefone quando o tutor não cadastrou", async () => {
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+    await screen.findByText("Rex");
+
+    expect(screen.queryByText(/Telefone:/)).not.toBeInTheDocument();
   });
 });

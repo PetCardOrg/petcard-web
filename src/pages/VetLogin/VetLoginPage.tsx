@@ -1,16 +1,22 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IoPaw } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../services/api";
+import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "./VetLoginPage.css";
 
 export function VetLoginPage() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Quem chegou pela carteira do QR volta para ela já autenticado.
+  const location = useLocation();
+  const { redirectTo = "/vet/dashboard", acessoVet } = lerRedirecionamentoVet(
+    location.state,
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +30,12 @@ export function VetLoginPage() {
 
     try {
       await login(email, password);
-      navigate("/vet/dashboard", { replace: true });
+      // `acessoVet` precisa atravessar o login: é ele que diz à carteira que
+      // o clique em "Sou veterinário" já aconteceu.
+      navigate(redirectTo, {
+        replace: true,
+        state: acessoVet ? { acessoVet: true } : undefined,
+      });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError(t("vetLogin.invalidCredentials"));
@@ -87,6 +98,13 @@ export function VetLoginPage() {
             {submitting ? t("vetLogin.submitting") : t("vetLogin.submit")}
           </button>
         </form>
+
+        <p className="vet-login-alt">
+          {t("vetLogin.noAccount")}{" "}
+          <Link to="/vet/register" state={location.state}>
+            {t("vetLogin.goToRegister")}
+          </Link>
+        </p>
       </div>
     </div>
   );
