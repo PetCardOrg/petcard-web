@@ -29,8 +29,13 @@ import type {
   PetProfileData,
   RecordKind,
 } from "../../services/pet-profile.service";
-import type { HistoricoClinicoResponseDto } from "@petcardorg/shared";
+import type {
+  AnexoResponseDto,
+  EntidadeComAnexo,
+  HistoricoClinicoResponseDto,
+} from "@petcardorg/shared";
 import type { CreateNotaClinicaDto } from "@petcardorg/shared";
+import { AnexosDoRegistro } from "./AnexosDoRegistro";
 import { HealthRecordModal } from "./HealthRecordModal";
 import {
   emptyForm,
@@ -453,6 +458,29 @@ export function VetPetProfilePage() {
     );
   }
 
+  /**
+   * Comprovantes do registro. Qualquer veterinário com vínculo com o pet
+   * anexa e verifica; remover fica com quem enviou (regra da API, repetida
+   * aqui só para não oferecer o botão).
+   */
+  function anexosDoRegistro(
+    entidade: EntidadeComAnexo,
+    registro: { id: string; anexos?: AnexoResponseDto[] },
+  ) {
+    if (!token || !id || !user) return null;
+    return (
+      <AnexosDoRegistro
+        token={token}
+        petId={id}
+        entidade={entidade}
+        entidadeId={registro.id}
+        anexos={registro.anexos ?? []}
+        veterinarioId={user.id}
+        onChanged={() => void load()}
+      />
+    );
+  }
+
   return (
     <div className="vet-pet-profile">
       <header className="vet-pet-profile-header">
@@ -643,6 +671,7 @@ export function VetPetProfilePage() {
                             next_dose_at: v.next_dose_at ?? "",
                             notes: v.notes ?? "",
                           })}
+                          {anexosDoRegistro("VACINA", v)}
                         </div>
                       ))}
                     </div>
@@ -707,6 +736,7 @@ export function VetPetProfilePage() {
                               next_dose_at: d.next_dose_at ?? "",
                               notes: d.notes ?? "",
                             })}
+                            {anexosDoRegistro("VERMIFUGO", d)}
                           </div>
                         ),
                       )}
@@ -772,6 +802,7 @@ export function VetPetProfilePage() {
                               end_date: m.end_date ?? "",
                               notes: m.notes ?? "",
                             })}
+                            {anexosDoRegistro("MEDICACAO", m)}
                           </div>
                         ),
                       )}
@@ -839,6 +870,21 @@ export function VetPetProfilePage() {
                               <p className="vet-section-card-notes">
                                 {item.descricao}
                               </p>
+                            )}
+                            {(item.anexos ?? []).length > 0 && (
+                              <ul className="vet-history-acoes">
+                                {(item.anexos ?? []).map((anexo) => (
+                                  <li key={anexo.id}>
+                                    <strong>{anexo.nome_arquivo}</strong> —{" "}
+                                    {anexo.verificado
+                                      ? t("petProfile.anexos.verificadoPor", {
+                                          name: anexo.verificado_por_nome,
+                                          crmv: anexo.verificado_por_crmv,
+                                        })
+                                      : t("petProfile.anexos.aguardando")}
+                                  </li>
+                                ))}
+                              </ul>
                             )}
                             <ul className="vet-history-acoes">
                               {item.acoes.map((acao) => (

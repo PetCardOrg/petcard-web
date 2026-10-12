@@ -295,8 +295,29 @@
       "acao": {
         "CRIACAO": "Registrado",
         "EDICAO": "Editado",
-        "EXCLUSAO": "Excluído"
+        "EXCLUSAO": "Excluído",
+        "ANEXO_ADICIONADO": "Comprovante anexado",
+        "ANEXO_REMOVIDO": "Comprovante removido",
+        "ANEXO_VERIFICADO": "Comprovante verificado"
       }
+    },
+    "anexos": {
+      "titulo": "Comprovantes",
+      "adicionar": "Anexar comprovante",
+      "enviando": "Enviando...",
+      "vazio": "Nenhum comprovante anexado.",
+      "abrir": "Abrir",
+      "verificar": "Marcar como verificado",
+      "remover": "Remover",
+      "verificadoPor": "Verificado por {{name}} ({{crmv}})",
+      "aguardando": "Aguardando verificação",
+      "confirmarRemocao": "Remover este comprovante? Ele sai da carteira, mas o arquivo permanece guardado no histórico clínico.",
+      "tipoInvalido": "Formato não aceito. Use JPEG, PNG, WebP ou PDF.",
+      "grandeDemais": "O arquivo excede o limite de 10 MB.",
+      "erroEnviar": "Não foi possível enviar o comprovante. Tente novamente.",
+      "erroAbrir": "Não foi possível abrir o comprovante.",
+      "erroVerificar": "Não foi possível verificar o comprovante.",
+      "erroRemover": "Não foi possível remover o comprovante."
     }
   },
   "vetScan": {
