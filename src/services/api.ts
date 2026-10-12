@@ -8,13 +8,15 @@ export interface ApiFetchOptions {
   /** `FormData` vai direto no fetch, sem JSON.stringify nem Content-Type manual. */
   body?: unknown;
   token?: string;
+  /** Substitui o teto padrão, para operações lentas por natureza (upload). */
+  timeoutMs?: number;
 }
 
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, token } = options;
+  const { method = "GET", body, token, timeoutMs = API_TIMEOUT_MS } = options;
   const isFormData = body instanceof FormData;
 
   const headers: Record<string, string> = {};
@@ -31,7 +33,7 @@ export async function apiFetch<T>(
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   let res: Response;
   try {

@@ -295,8 +295,29 @@
       "acao": {
         "CRIACAO": "Created",
         "EDICAO": "Edited",
-        "EXCLUSAO": "Deleted"
+        "EXCLUSAO": "Deleted",
+        "ANEXO_ADICIONADO": "Attachment added",
+        "ANEXO_REMOVIDO": "Attachment removed",
+        "ANEXO_VERIFICADO": "Attachment verified"
       }
+    },
+    "anexos": {
+      "titulo": "Proof of treatment",
+      "adicionar": "Attach proof",
+      "enviando": "Uploading...",
+      "vazio": "No attachments yet.",
+      "abrir": "Open",
+      "verificar": "Mark as verified",
+      "remover": "Remove",
+      "verificadoPor": "Verified by {{name}} ({{crmv}})",
+      "aguardando": "Awaiting verification",
+      "confirmarRemocao": "Remove this attachment? It leaves the card, but the file stays saved in the clinical history.",
+      "tipoInvalido": "Unsupported format. Use JPEG, PNG, WebP or PDF.",
+      "grandeDemais": "The file exceeds the 10 MB limit.",
+      "erroEnviar": "Could not upload the attachment. Please try again.",
+      "erroAbrir": "Could not open the attachment.",
+      "erroVerificar": "Could not verify the attachment.",
+      "erroRemover": "Could not remove the attachment."
     }
   },
   "vetScan": {
