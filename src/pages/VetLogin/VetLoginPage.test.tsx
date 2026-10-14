@@ -33,6 +33,27 @@ describe("VetLoginPage", () => {
     locationMock.state = null;
   });
 
+  it("o olhinho mostra e oculta a senha digitada", async () => {
+    const user = userEvent.setup();
+    render(<VetLoginPage />);
+    await user.type(screen.getByLabelText("Senha"), "senha123");
+
+    expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "password");
+
+    await user.click(screen.getByRole("button", { name: "Mostrar senha" }));
+    expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "text");
+    expect(screen.getByLabelText("Senha")).toHaveValue("senha123");
+
+    await user.click(screen.getByRole("button", { name: "Ocultar senha" }));
+    expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "password");
+  });
+
+  it("não mostra as regras de senha no login (a regra vale só ao definir senha)", () => {
+    render(<VetLoginPage />);
+
+    expect(screen.queryByText("Uma letra maiúscula")).not.toBeInTheDocument();
+  });
+
   it("autentica e navega para o dashboard no sucesso", async () => {
     loginMock.mockResolvedValue(undefined);
     render(<VetLoginPage />);
