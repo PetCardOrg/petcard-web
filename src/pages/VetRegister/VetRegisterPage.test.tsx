@@ -28,11 +28,11 @@ async function preencher(
   await user.type(screen.getByLabelText("E-mail"), "camila@vet.com");
   await user.type(
     screen.getByLabelText("Senha"),
-    overrides.password ?? "senha-forte",
+    overrides.password ?? "Senha-forte1!",
   );
   await user.type(
     screen.getByLabelText("Confirmar senha"),
-    overrides.confirm ?? overrides.password ?? "senha-forte",
+    overrides.confirm ?? overrides.password ?? "Senha-forte1!",
   );
   await user.click(screen.getByRole("button", { name: "Criar conta" }));
 }
@@ -54,7 +54,7 @@ describe("VetRegisterPage", () => {
       nome: "Dra. Camila",
       email: "camila@vet.com",
       crmv: "CRMV-SP 12345",
-      password: "senha-forte",
+      password: "Senha-forte1!",
       telefone: undefined,
     });
     await waitFor(() =>
@@ -101,12 +101,82 @@ describe("VetRegisterPage", () => {
   it("barra senhas divergentes sem chamar a API", async () => {
     render(<VetRegisterPage />);
 
-    await preencher({ password: "senha-forte", confirm: "outra-senha" });
+    await preencher({ password: "Senha-forte1!", confirm: "Outra-senha1!" });
 
     expect(
       await screen.findByText("As senhas não coincidem."),
     ).toBeInTheDocument();
     expect(registerMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["curta1!", "A senha deve ter no mínimo 8 caracteres."],
+    ["senha-forte1!", "A senha deve conter ao menos uma letra maiúscula."],
+    ["Senha-forte!", "A senha deve conter ao menos um número."],
+    ["Senhaforte12", "A senha deve conter ao menos um caractere especial."],
+  ])("barra a senha fraca %s sem chamar a API", async (senha, mensagem) => {
+    render(<VetRegisterPage />);
+
+    await preencher({ password: senha });
+
+    expect(await screen.findByText(mensagem)).toBeInTheDocument();
+    expect(registerMock).not.toHaveBeenCalled();
+  });
+
+  it("mostra as regras da senha: cinza até cumprir, verde depois", async () => {
+    const user = userEvent.setup();
+    render(<VetRegisterPage />);
+    const regra = (nome: string) => screen.getByText(nome).closest("li");
+
+    expect(regra("Pelo menos 8 caracteres")).toHaveAttribute(
+      "data-met",
+      "false",
+    );
+    expect(regra("Uma letra maiúscula")).toHaveAttribute("data-met", "false");
+
+    await user.type(screen.getByLabelText("Senha"), "Abc");
+
+    expect(regra("Uma letra maiúscula")).toHaveAttribute("data-met", "true");
+    expect(regra("Pelo menos 8 caracteres")).toHaveAttribute(
+      "data-met",
+      "false",
+    );
+    expect(regra("Um número")).toHaveAttribute("data-met", "false");
+
+    await user.type(screen.getByLabelText("Senha"), "defg1!");
+
+    for (const nome of [
+      "Pelo menos 8 caracteres",
+      "Uma letra maiúscula",
+      "Um número",
+      "Um caractere especial",
+    ]) {
+      expect(regra(nome)).toHaveAttribute("data-met", "true");
+    }
+  });
+
+  it("o olhinho mostra e oculta a senha e a confirmação", async () => {
+    const user = userEvent.setup();
+    render(<VetRegisterPage />);
+
+    expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "password");
+    expect(screen.getByLabelText("Confirmar senha")).toHaveAttribute(
+      "type",
+      "password",
+    );
+
+    const olhos = screen.getAllByRole("button", { name: "Mostrar senha" });
+    expect(olhos).toHaveLength(2);
+
+    await user.click(olhos[0]);
+    expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "text");
+    expect(screen.getByLabelText("Confirmar senha")).toHaveAttribute(
+      "type",
+      "password",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Ocultar senha" }));
+    expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "password");
   });
 
   it("avisa sobre e-mail ou CRMV duplicado no 409", async () => {

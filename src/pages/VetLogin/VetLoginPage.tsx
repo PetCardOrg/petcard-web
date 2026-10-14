@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IoPaw } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
+import { PasswordInput } from "../../components/PasswordInput/PasswordInput";
 import { ApiError } from "../../services/api";
 import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "./VetLoginPage.css";
@@ -76,9 +77,8 @@ export function VetLoginPage() {
 
           <div className="vet-login-field">
             <label htmlFor="password">{t("vetLogin.password")}</label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t("vetLogin.passwordPlaceholder")}

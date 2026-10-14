@@ -3,6 +3,24 @@
     "name": "PetCard",
     "badge": "Digital Card"
   },
+  "passwordInput": {
+    "show": "Show password",
+    "hide": "Hide password"
+  },
+  "passwordRules": {
+    "hint": "Use at least 8 characters, with one uppercase letter, one number and one special character.",
+    "tooShort": "Password must be at least 8 characters.",
+    "tooLong": "Password must be at most 72 characters.",
+    "noUppercase": "Password must contain at least one uppercase letter.",
+    "noNumber": "Password must contain at least one number.",
+    "noSpecial": "Password must contain at least one special character.",
+    "checklist": {
+      "minLength": "At least 8 characters",
+      "uppercase": "One uppercase letter",
+      "number": "One number",
+      "special": "One special character"
+    }
+  },
   "apiErrors": {
     "400": "Check the information provided and try again.",
     "403": "You don't have permission to do that.",
