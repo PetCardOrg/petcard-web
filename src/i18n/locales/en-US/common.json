@@ -3,6 +3,15 @@
     "name": "PetCard",
     "badge": "Digital Card"
   },
+  "apiErrors": {
+    "400": "Check the information provided and try again.",
+    "403": "You don't have permission to do that.",
+    "404": "We couldn't find what you're looking for. Refresh the screen and try again.",
+    "409": "A record with these details already exists.",
+    "413": "The file is too large.",
+    "415": "That file format isn't supported.",
+    "429": "Too many attempts in a short time. Wait a moment and try again."
+  },
   "publicCard": {
     "loading": "Loading digital card...",
     "notFound": {

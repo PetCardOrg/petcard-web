@@ -44,6 +44,7 @@ import {
 } from "./healthRecordValidation";
 import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
 import { ApiError } from "../../services/api";
+import { apiErrorMessage } from "../../services/apiErrorMessage";
 import "./VetPetProfilePage.css";
 
 const SPECIES_COLORS: Record<string, { bg: string; text: string }> = {
@@ -401,8 +402,9 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
-      const detail = err instanceof ApiError ? err.detail : undefined;
-      setRecordError(detail ?? t("petProfile.recordForm.submitError"));
+      setRecordError(
+        apiErrorMessage(err, t("petProfile.recordForm.submitError"), t),
+      );
     } finally {
       setRecordSubmitting(false);
     }

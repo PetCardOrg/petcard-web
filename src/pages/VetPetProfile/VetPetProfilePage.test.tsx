@@ -340,13 +340,9 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(dto.pet_id).toBe("p1");
     });
 
-    it("mostra o motivo da API quando o servidor recusa o registro", async () => {
+    it("traduz o erro da API em vez de mostrar o texto em inglês", async () => {
       createVaccineMock.mockRejectedValue(
-        new ApiError(
-          400,
-          "Bad Request",
-          "next_dose_at deve ser posterior a applied_at.",
-        ),
+        new ApiError(400, "Bad Request", "vaccine_name should not be empty"),
       );
 
       await abrirAba("Vacinas");
@@ -359,8 +355,27 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
 
       expect(
         await screen.findByText(
-          "next_dose_at deve ser posterior a applied_at.",
+          "Confira os dados informados e tente novamente.",
         ),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText("vaccine_name should not be empty"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("usa a mensagem da tela quando o servidor falha (500)", async () => {
+      createVaccineMock.mockRejectedValue(new ApiError(500, "Server Error"));
+
+      await abrirAba("Vacinas");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Nova vacina/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Vacina/), "Antirrábica");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      expect(
+        await screen.findByText("Erro ao salvar o registro. Tente novamente."),
       ).toBeInTheDocument();
     });
 
