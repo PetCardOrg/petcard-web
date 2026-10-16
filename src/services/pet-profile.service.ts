@@ -1,4 +1,5 @@
 import type {
+  AnexoResponseDto,
   HistoricoClinicoResponseDto,
   UpdateNotaClinicaDto,
   CreateDewormingRecordDto,
@@ -33,6 +34,8 @@ export interface VaccineRecord {
   veterinario_id?: string;
   veterinario_crmv?: string;
   notes?: string;
+  /** Comprovantes ativos do registro (foto da carteirinha, receita, PDF). */
+  anexos?: AnexoResponseDto[];
   /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
   created_at: string;
 }
@@ -47,6 +50,8 @@ export interface DewormingRecord {
   veterinario_id?: string;
   veterinario_crmv?: string;
   notes?: string;
+  /** Comprovantes ativos do registro (foto da carteirinha, receita, PDF). */
+  anexos?: AnexoResponseDto[];
   /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
   created_at: string;
 }
@@ -63,6 +68,8 @@ export interface MedicationRecord {
   start_date: string;
   end_date?: string;
   notes?: string;
+  /** Comprovantes ativos do registro (foto da carteirinha, receita, PDF). */
+  anexos?: AnexoResponseDto[];
   /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
   created_at: string;
 }

@@ -340,13 +340,9 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(dto.pet_id).toBe("p1");
     });
 
-    it("mostra o motivo da API quando o servidor recusa o registro", async () => {
+    it("traduz o erro da API em vez de mostrar o texto em inglês", async () => {
       createVaccineMock.mockRejectedValue(
-        new ApiError(
-          400,
-          "Bad Request",
-          "next_dose_at deve ser posterior a applied_at.",
-        ),
+        new ApiError(400, "Bad Request", "vaccine_name should not be empty"),
       );
 
       await abrirAba("Vacinas");
@@ -359,8 +355,27 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
 
       expect(
         await screen.findByText(
-          "next_dose_at deve ser posterior a applied_at.",
+          "Confira os dados informados e tente novamente.",
         ),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText("vaccine_name should not be empty"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("usa a mensagem da tela quando o servidor falha (500)", async () => {
+      createVaccineMock.mockRejectedValue(new ApiError(500, "Server Error"));
+
+      await abrirAba("Vacinas");
+      await userEvent.click(
+        screen.getByRole("button", { name: /Nova vacina/ }),
+      );
+
+      await userEvent.type(screen.getByLabelText(/Vacina/), "Antirrábica");
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      expect(
+        await screen.findByText("Erro ao salvar o registro. Tente novamente."),
       ).toBeInTheDocument();
     });
 
@@ -684,6 +699,42 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       // renderizava 17/08.
       const esperado = new Date(2026, 7, 18).toLocaleDateString();
       expect(screen.getByText(esperado)).toBeInTheDocument();
+    });
+
+    it("mostra na vacina os comprovantes e quem os verificou", async () => {
+      fetchProfileMock.mockResolvedValue(
+        buildProfile({
+          vaccines: [
+            {
+              id: "v1",
+              vaccine_name: "Antirrábica",
+              applied_at: "2026-08-18",
+              created_at: "2026-08-18T12:00:00Z",
+              anexos: [
+                {
+                  id: "a1",
+                  nome_arquivo: "carteirinha.jpg",
+                  mime_type: "image/jpeg",
+                  tamanho_bytes: 1024,
+                  enviado_por_tipo: "TUTOR",
+                  enviado_por_id: "t1",
+                  enviado_por_nome: "Ana",
+                  verificado: false,
+                },
+              ],
+            } as never,
+          ],
+        }),
+      );
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+
+      expect(screen.getByText("carteirinha.jpg")).toBeInTheDocument();
+      expect(screen.getByTestId("anexo-pendente-a1")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Marcar como verificado" }),
+      ).toBeInTheDocument();
     });
   });
   it("mostra quem prescreveu a medicação", async () => {

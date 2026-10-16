@@ -4,6 +4,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IoPaw } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
+import { PasswordInput } from "../../components/PasswordInput/PasswordInput";
+import { PasswordRulesChecklist } from "../../components/PasswordRulesChecklist/PasswordRulesChecklist";
+import { validatePasswordStrength } from "../../utils/passwordStrength";
 import { ApiError } from "../../services/api";
 import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "../VetLogin/VetLoginPage.css";
@@ -31,6 +34,12 @@ export function VetRegisterPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const regraViolada = validatePasswordStrength(password);
+    if (regraViolada) {
+      setError(t(`passwordRules.${regraViolada}`));
+      return;
+    }
 
     if (password !== confirmacao) {
       setError(t("vetRegister.passwordMismatch"));
@@ -126,25 +135,23 @@ export function VetRegisterPage() {
 
           <div className="vet-login-field">
             <label htmlFor="password">{t("vetRegister.password")}</label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t("vetRegister.passwordPlaceholder")}
               required
-              minLength={8}
               maxLength={72}
               autoComplete="new-password"
               disabled={submitting}
             />
+            <PasswordRulesChecklist password={password} />
           </div>
 
           <div className="vet-login-field">
             <label htmlFor="confirmacao">{t("vetRegister.confirm")}</label>
-            <input
+            <PasswordInput
               id="confirmacao"
-              type="password"
               value={confirmacao}
               onChange={(e) => setConfirmacao(e.target.value)}
               placeholder={t("vetRegister.confirmPlaceholder")}
