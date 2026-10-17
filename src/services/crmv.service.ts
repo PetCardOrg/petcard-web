@@ -39,3 +39,25 @@ export function corrigirMeuCrmv(token: string, crmv: string): Promise<void> {
     token,
   });
 }
+
+/** Resposta de `GET /auth/veterinario/crmv` — primeiro passo do cadastro. */
+export interface CrmvConsulta {
+  /** Formato canônico ("CRMV-SP 12345"), que o cadastro deve enviar. */
+  crmv: string;
+  uf: string;
+  numero: string;
+  valido: boolean;
+  /** Nome no CFMV. Ausente quando o provedor não informa (ex.: stub). */
+  nome?: string;
+  situacao?: string;
+}
+
+/**
+ * Consulta o CRMV antes do cadastro (rota pública). A API guarda a consulta
+ * por alguns minutos, e o cadastro em seguida a reaproveita.
+ */
+export function consultarCrmv(crmv: string): Promise<CrmvConsulta> {
+  return apiFetch<CrmvConsulta>(
+    `/auth/veterinario/crmv?crmv=${encodeURIComponent(crmv.trim())}`,
+  );
+}

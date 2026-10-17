@@ -1,0 +1,50 @@
+.vet-register-crmv-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.vet-register-crmv-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.vet-register-crmv-row input:read-only {
+  background: #f6fbfe;
+}
+
+.vet-register-link-button {
+  flex: none;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #107fa8;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vet-register-link-button:hover:not(:disabled) {
+  background: #e6f7fc;
+}
+
+.vet-register-crmv-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #06a77d;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.vet-register-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.vet-login-field input:read-only:focus {
+  border-color: #d8eef6;
+  box-shadow: none;
+}

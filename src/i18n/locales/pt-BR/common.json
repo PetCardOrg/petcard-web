@@ -155,7 +155,7 @@
     "nomePlaceholder": "Dra. Camila Ferreira",
     "crmv": "CRMV",
     "crmvPlaceholder": "CRMV-SP 12345",
-    "crmvHint": "Validamos seu registro no conselho durante o cadastro.",
+    "crmvHint": "Comece pelo seu CRMV: buscamos seus dados no conselho (CFMV).",
     "email": "E-mail",
     "emailPlaceholder": "seu@email.com",
     "telefone": "Telefone (opcional)",
@@ -171,7 +171,17 @@
     "invalid": "Verifique os dados informados.",
     "genericError": "Erro ao criar a conta. Tente novamente.",
     "hasAccount": "Já tem conta?",
-    "goToLogin": "Entrar"
+    "goToLogin": "Entrar",
+    "crmvLookup": "Continuar",
+    "crmvLooking": "Consultando o CFMV...",
+    "crmvChange": "Alterar",
+    "crmvFound": "Registro {{situacao}} no CFMV",
+    "crmvFoundNoStatus": "Registro encontrado no CFMV",
+    "nomeLocked": "Conforme o registro no CFMV — não pode ser alterado.",
+    "crmvNotFound": "Não encontramos esse CRMV ativo no CFMV. Confira o número e a UF.",
+    "crmvDuplicate": "Já existe uma conta com esse CRMV.",
+    "crmvUnavailable": "Não conseguimos consultar o CFMV agora. Preencha seus dados: validamos o CRMV depois do cadastro.",
+    "crmvTooMany": "Muitas consultas seguidas. Aguarde um minuto e tente de novo."
   },
   "vetDashboard": {
     "title": "Pets Atendidos",

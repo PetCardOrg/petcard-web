@@ -19,13 +19,34 @@ vi.mock("react-router-dom", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
 
+const consultarCrmvMock = vi.fn();
+
+vi.mock("../../services/crmv.service", () => ({
+  consultarCrmv: (crmv: string) => consultarCrmvMock(crmv) as unknown,
+}));
+
+const CONSULTA_OK = {
+  crmv: "CRMV-SP 12345",
+  uf: "SP",
+  numero: "12345",
+  valido: true,
+  nome: "CAMILA FERREIRA",
+  situacao: "Ativo",
+};
+
+/** Primeiro passo: informa o CRMV e espera os demais campos aparecerem. */
+async function informarCrmv(crmv = "sp 12345") {
+  const user = userEvent.setup();
+  await user.type(screen.getByLabelText("CRMV"), crmv);
+  await user.click(screen.getByRole("button", { name: "Continuar" }));
+}
+
 async function preencher(
   overrides: { password?: string; confirm?: string } = {},
 ) {
+  await informarCrmv();
   const user = userEvent.setup();
-  await user.type(screen.getByLabelText("Nome completo"), "Dra. Camila");
-  await user.type(screen.getByLabelText("CRMV"), "CRMV-SP 12345");
-  await user.type(screen.getByLabelText("E-mail"), "camila@vet.com");
+  await user.type(await screen.findByLabelText("E-mail"), "camila@vet.com");
   await user.type(
     screen.getByLabelText("Senha"),
     overrides.password ?? "Senha-forte1!",
@@ -40,6 +61,8 @@ async function preencher(
 describe("VetRegisterPage", () => {
   beforeEach(() => {
     registerMock.mockReset();
+    consultarCrmvMock.mockReset();
+    consultarCrmvMock.mockResolvedValue(CONSULTA_OK);
     navigateMock.mockReset();
     locationMock.state = null;
   });
@@ -50,8 +73,11 @@ describe("VetRegisterPage", () => {
 
     await preencher();
 
+    // Nome do registro oficial e CRMV no formato canônico devolvido pela
+    // consulta, não o que foi digitado.
+    expect(consultarCrmvMock).toHaveBeenCalledWith("sp 12345");
     expect(registerMock).toHaveBeenCalledWith({
-      nome: "Dra. Camila",
+      nome: "CAMILA FERREIRA",
       email: "camila@vet.com",
       crmv: "CRMV-SP 12345",
       password: "Senha-forte1!",
@@ -70,11 +96,15 @@ describe("VetRegisterPage", () => {
     render(<VetRegisterPage />);
 
     const user = userEvent.setup();
+    await informarCrmv();
     await user.type(
-      screen.getByLabelText("Telefone (opcional)"),
+      await screen.findByLabelText("Telefone (opcional)"),
       "11999990000",
     );
-    await preencher();
+    await user.type(screen.getByLabelText("E-mail"), "camila@vet.com");
+    await user.type(screen.getByLabelText("Senha"), "Senha-forte1!");
+    await user.type(screen.getByLabelText("Confirmar senha"), "Senha-forte1!");
+    await user.click(screen.getByRole("button", { name: "Criar conta" }));
 
     expect(registerMock).toHaveBeenCalledWith(
       expect.objectContaining({ telefone: "11999990000" }),
@@ -126,6 +156,8 @@ describe("VetRegisterPage", () => {
   it("mostra as regras da senha: cinza até cumprir, verde depois", async () => {
     const user = userEvent.setup();
     render(<VetRegisterPage />);
+    await informarCrmv();
+    await screen.findByLabelText("Senha");
     const regra = (nome: string) => screen.getByText(nome).closest("li");
 
     expect(regra("Pelo menos 8 caracteres")).toHaveAttribute(
@@ -158,6 +190,8 @@ describe("VetRegisterPage", () => {
   it("o olhinho mostra e oculta a senha e a confirmação", async () => {
     const user = userEvent.setup();
     render(<VetRegisterPage />);
+    await informarCrmv();
+    await screen.findByLabelText("Senha");
 
     expect(screen.getByLabelText("Senha")).toHaveAttribute("type", "password");
     expect(screen.getByLabelText("Confirmar senha")).toHaveAttribute(
@@ -217,5 +251,106 @@ describe("VetRegisterPage", () => {
     expect(
       await screen.findByText("Erro ao criar a conta. Tente novamente."),
     ).toBeInTheDocument();
+  });
+
+  describe("CRMV primeiro", () => {
+    it("só mostra os demais campos depois de consultar o CRMV", async () => {
+      render(<VetRegisterPage />);
+
+      expect(screen.queryByLabelText("E-mail")).not.toBeInTheDocument();
+
+      await informarCrmv();
+
+      expect(await screen.findByLabelText("E-mail")).toBeInTheDocument();
+      expect(screen.getByText("Registro Ativo no CFMV")).toBeInTheDocument();
+    });
+
+    it("preenche e trava o nome com o registro oficial", async () => {
+      render(<VetRegisterPage />);
+
+      await informarCrmv();
+
+      const nome = await screen.findByLabelText("Nome completo");
+      expect(nome).toHaveValue("CAMILA FERREIRA");
+      expect(nome).toHaveAttribute("readonly");
+      expect(screen.getByLabelText("CRMV")).toHaveValue("CRMV-SP 12345");
+    });
+
+    it("deixa o nome editável quando o CFMV não informa o nome", async () => {
+      consultarCrmvMock.mockResolvedValue({ ...CONSULTA_OK, nome: undefined });
+      render(<VetRegisterPage />);
+
+      await informarCrmv();
+
+      const nome = await screen.findByLabelText("Nome completo");
+      expect(nome).toHaveValue("");
+      expect(nome).not.toHaveAttribute("readonly");
+    });
+
+    it("barra CRMV que não está ativo no CFMV", async () => {
+      consultarCrmvMock.mockResolvedValue({
+        ...CONSULTA_OK,
+        valido: false,
+        nome: undefined,
+        situacao: "Cancelado",
+      });
+      render(<VetRegisterPage />);
+
+      await informarCrmv();
+
+      expect(
+        await screen.findByText(/Não encontramos esse CRMV ativo/),
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText("E-mail")).not.toBeInTheDocument();
+    });
+
+    it("avisa CRMV já cadastrado na consulta", async () => {
+      consultarCrmvMock.mockRejectedValue(new ApiError(409, "Conflict"));
+      render(<VetRegisterPage />);
+
+      await informarCrmv();
+
+      expect(
+        await screen.findByText("Já existe uma conta com esse CRMV."),
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText("E-mail")).not.toBeInTheDocument();
+    });
+
+    it("segue no preenchimento manual quando o CFMV está fora do ar", async () => {
+      // Indisponibilidade de terceiro não pode impedir o cadastro: a API
+      // verifica o CRMV depois.
+      consultarCrmvMock.mockRejectedValue(new ApiError(502, "Bad Gateway"));
+      registerMock.mockResolvedValue(undefined);
+      const user = userEvent.setup();
+      render(<VetRegisterPage />);
+
+      await informarCrmv("CRMV-SP 12345");
+      const nome = await screen.findByLabelText("Nome completo");
+      expect(nome).not.toHaveAttribute("readonly");
+      await user.type(nome, "Dra. Camila");
+      await user.type(screen.getByLabelText("E-mail"), "camila@vet.com");
+      await user.type(screen.getByLabelText("Senha"), "Senha-forte1!");
+      await user.type(
+        screen.getByLabelText("Confirmar senha"),
+        "Senha-forte1!",
+      );
+      await user.click(screen.getByRole("button", { name: "Criar conta" }));
+
+      expect(registerMock).toHaveBeenCalledWith(
+        expect.objectContaining({ nome: "Dra. Camila", crmv: "CRMV-SP 12345" }),
+      );
+    });
+
+    it("Alterar volta para o passo do CRMV", async () => {
+      const user = userEvent.setup();
+      render(<VetRegisterPage />);
+      await informarCrmv();
+      await screen.findByLabelText("E-mail");
+
+      await user.click(screen.getByRole("button", { name: "Alterar" }));
+
+      expect(screen.queryByLabelText("E-mail")).not.toBeInTheDocument();
+      expect(screen.getByLabelText("CRMV")).not.toHaveAttribute("readonly");
+    });
   });
 });
