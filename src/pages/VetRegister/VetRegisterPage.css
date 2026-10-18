@@ -38,12 +38,6 @@
   font-weight: 700;
 }
 
-.vet-register-locked {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
 .vet-login-field input:read-only:focus {
   border-color: #d8eef6;
   box-shadow: none;

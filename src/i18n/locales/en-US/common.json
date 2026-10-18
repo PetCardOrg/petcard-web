@@ -154,8 +154,8 @@
     "nome": "Full name",
     "nomePlaceholder": "Dr. Camila Ferreira",
     "crmv": "CRMV",
-    "crmvPlaceholder": "CRMV-SP 12345",
-    "crmvHint": "Start with your CRMV: we fetch your details from the council (CFMV).",
+    "crmvPlaceholder": "CE 12345",
+    "crmvHint": "Start with your CRMV (state and number, e.g. CE 12345): we fetch your details from the council (CFMV).",
     "email": "Email",
     "emailPlaceholder": "your@email.com",
     "telefone": "Phone (optional)",
@@ -177,11 +177,11 @@
     "crmvChange": "Change",
     "crmvFound": "Registry {{situacao}} at CFMV",
     "crmvFoundNoStatus": "Registry found at CFMV",
-    "nomeLocked": "As registered at CFMV — cannot be changed.",
     "crmvNotFound": "We could not find this CRMV as active at CFMV. Check the number and state.",
     "crmvDuplicate": "An account with this CRMV already exists.",
     "crmvUnavailable": "We could not reach CFMV right now. Fill in your details: we will validate the CRMV after sign-up.",
-    "crmvTooMany": "Too many lookups in a row. Wait a minute and try again."
+    "crmvTooMany": "Too many lookups in a row. Wait a minute and try again.",
+    "nomeFromCfmv": "Filled in from your CFMV record. Edit it if needed."
   },
   "vetDashboard": {
     "title": "Attended Pets",

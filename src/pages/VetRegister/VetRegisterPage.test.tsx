@@ -73,9 +73,10 @@ describe("VetRegisterPage", () => {
 
     await preencher();
 
-    // Nome do registro oficial e CRMV no formato canônico devolvido pela
-    // consulta, não o que foi digitado.
-    expect(consultarCrmvMock).toHaveBeenCalledWith("sp 12345");
+    // Nome sugerido pelo CFMV e CRMV no formato canônico devolvido pela
+    // consulta.
+    // A máscara já entrega "SP 12345" para a consulta.
+    expect(consultarCrmvMock).toHaveBeenCalledWith("SP 12345");
     expect(registerMock).toHaveBeenCalledWith({
       nome: "CAMILA FERREIRA",
       email: "camila@vet.com",
@@ -265,15 +266,40 @@ describe("VetRegisterPage", () => {
       expect(screen.getByText("Registro Ativo no CFMV")).toBeInTheDocument();
     });
 
-    it("preenche e trava o nome com o registro oficial", async () => {
+    it("sugere o nome do CFMV, mas deixa o vet editar", async () => {
+      registerMock.mockResolvedValue(undefined);
+      const user = userEvent.setup();
       render(<VetRegisterPage />);
 
       await informarCrmv();
 
       const nome = await screen.findByLabelText("Nome completo");
       expect(nome).toHaveValue("CAMILA FERREIRA");
-      expect(nome).toHaveAttribute("readonly");
+      expect(nome).not.toHaveAttribute("readonly");
       expect(screen.getByLabelText("CRMV")).toHaveValue("CRMV-SP 12345");
+
+      await user.clear(nome);
+      await user.type(nome, "Dra. Camila Ferreira");
+      await user.type(screen.getByLabelText("E-mail"), "camila@vet.com");
+      await user.type(screen.getByLabelText("Senha"), "Senha-forte1!");
+      await user.type(
+        screen.getByLabelText("Confirmar senha"),
+        "Senha-forte1!",
+      );
+      await user.click(screen.getByRole("button", { name: "Criar conta" }));
+
+      expect(registerMock).toHaveBeenCalledWith(
+        expect.objectContaining({ nome: "Dra. Camila Ferreira" }),
+      );
+    });
+
+    it("aplica a máscara UF + número enquanto o vet digita o CRMV", async () => {
+      const user = userEvent.setup();
+      render(<VetRegisterPage />);
+
+      await user.type(screen.getByLabelText("CRMV"), "ce12345");
+
+      expect(screen.getByLabelText("CRMV")).toHaveValue("CE 12345");
     });
 
     it("deixa o nome editável quando o CFMV não informa o nome", async () => {
@@ -324,7 +350,7 @@ describe("VetRegisterPage", () => {
       const user = userEvent.setup();
       render(<VetRegisterPage />);
 
-      await informarCrmv("CRMV-SP 12345");
+      await informarCrmv("SP 12345");
       const nome = await screen.findByLabelText("Nome completo");
       expect(nome).not.toHaveAttribute("readonly");
       await user.type(nome, "Dra. Camila");
@@ -337,7 +363,7 @@ describe("VetRegisterPage", () => {
       await user.click(screen.getByRole("button", { name: "Criar conta" }));
 
       expect(registerMock).toHaveBeenCalledWith(
-        expect.objectContaining({ nome: "Dra. Camila", crmv: "CRMV-SP 12345" }),
+        expect.objectContaining({ nome: "Dra. Camila", crmv: "SP 12345" }),
       );
     });
 

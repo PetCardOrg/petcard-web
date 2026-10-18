@@ -2,11 +2,12 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { IoCheckmarkCircle, IoLockClosed, IoPaw } from "react-icons/io5";
+import { IoCheckmarkCircle, IoPaw } from "react-icons/io5";
 import { useAuth } from "../../hooks/useAuth";
 import { PasswordInput } from "../../components/PasswordInput/PasswordInput";
 import { PasswordRulesChecklist } from "../../components/PasswordRulesChecklist/PasswordRulesChecklist";
 import { validatePasswordStrength } from "../../utils/passwordStrength";
+import { formatCrmv } from "../../utils/crmvMask";
 import { ApiError } from "../../services/api";
 import { consultarCrmv } from "../../services/crmv.service";
 import type { CrmvConsulta } from "../../services/crmv.service";
@@ -154,7 +155,7 @@ export function VetRegisterPage() {
                 id="crmv"
                 type="text"
                 value={crmv}
-                onChange={(e) => setCrmv(e.target.value)}
+                onChange={(e) => setCrmv(formatCrmv(e.target.value))}
                 placeholder={t("vetRegister.crmvPlaceholder")}
                 required
                 minLength={3}
@@ -221,13 +222,11 @@ export function VetRegisterPage() {
                   minLength={2}
                   maxLength={120}
                   autoComplete="name"
-                  readOnly={!!nomeOficial}
                   disabled={submitting}
                 />
                 {nomeOficial && (
-                  <small className="vet-login-hint vet-register-locked">
-                    <IoLockClosed size={12} aria-hidden />
-                    {t("vetRegister.nomeLocked")}
+                  <small className="vet-login-hint">
+                    {t("vetRegister.nomeFromCfmv")}
                   </small>
                 )}
               </div>
