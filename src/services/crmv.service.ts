@@ -39,3 +39,33 @@ export function corrigirMeuCrmv(token: string, crmv: string): Promise<void> {
     token,
   });
 }
+
+/** Resposta de `GET /auth/veterinario/crmv` — primeiro passo do cadastro. */
+export interface CrmvConsulta {
+  /** Formato canônico ("CRMV-SP 12345"), que o cadastro deve enviar. */
+  crmv: string;
+  uf: string;
+  numero: string;
+  valido: boolean;
+  /** Nome no CFMV. Ausente quando o provedor não informa (ex.: stub). */
+  nome?: string;
+  situacao?: string;
+}
+
+/**
+ * A consulta ao CFMV passa por um robô de terceiro e leva de 10 a 20 s — acima
+ * do teto padrão do `apiFetch` (10 s), que cortava a resposta e mandava o vet
+ * para o preenchimento manual mesmo com a consulta dando certo.
+ */
+const CONSULTA_CRMV_TIMEOUT_MS = 45000;
+
+/**
+ * Consulta o CRMV antes do cadastro (rota pública). A API guarda a consulta
+ * por alguns minutos, e o cadastro em seguida a reaproveita.
+ */
+export function consultarCrmv(crmv: string): Promise<CrmvConsulta> {
+  return apiFetch<CrmvConsulta>(
+    `/auth/veterinario/crmv?crmv=${encodeURIComponent(crmv.trim())}`,
+    { timeoutMs: CONSULTA_CRMV_TIMEOUT_MS },
+  );
+}
