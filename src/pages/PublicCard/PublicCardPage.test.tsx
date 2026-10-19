@@ -87,6 +87,18 @@ describe("PublicCardPage", () => {
     expect(cardMock).toHaveBeenCalledWith("tok-123");
   });
 
+  it("avisa que medicações são restritas em vez de dizer que não há nenhuma", async () => {
+    cardMock.mockResolvedValue(buildCard() as never);
+    render(<PublicCardPage />);
+
+    expect(
+      await screen.findByText(/apenas para veterinários com CRMV verificado/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Nenhuma medicação registrada."),
+    ).not.toBeInTheDocument();
+  });
+
   it("manda o vet deslogado para o login, guardando o pet do QR", async () => {
     cardMock.mockResolvedValue(buildCard() as never);
     render(<PublicCardPage />);

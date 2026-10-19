@@ -69,6 +69,9 @@
       "dewormings": "Nenhuma vermifugação registrada.",
       "medications": "Nenhuma medicação registrada."
     },
+    "restricted": {
+      "medications": "Medicações ficam visíveis apenas para veterinários com CRMV verificado."
+    },
     "footer": "Carteira digital gerada pelo <strong>PetCard</strong> — saúde do seu pet em um só lugar.",
     "vetAccess": {
       "prompt": "É veterinário? Entre para ver o histórico clínico completo deste pet.",
