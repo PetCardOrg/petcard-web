@@ -4,7 +4,6 @@ import { Trans, useTranslation } from "react-i18next";
 import type {
   CarteiraDigitalPublicResponseDto,
   DewormingRecordResponseDto,
-  MedicationRecordResponseDto,
   VaccineRecordResponseDto,
 } from "@petcardorg/shared";
 import {
@@ -122,49 +121,6 @@ function DewormingTable({
               <td>{formatDate(d.applied_at)}</td>
               <td>{d.next_dose_at ? formatDate(d.next_dose_at) : "—"}</td>
               <td>{d.veterinarian_name ?? "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function MedicationTable({
-  medications,
-}: {
-  medications: MedicationRecordResponseDto[];
-}) {
-  const { t } = useTranslation();
-
-  if (medications.length === 0) {
-    return <p className="empty-section">{t("publicCard.empty.medications")}</p>;
-  }
-
-  return (
-    <div className="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>{t("publicCard.table.medication")}</th>
-            <th>{t("publicCard.table.dosage")}</th>
-            <th>{t("publicCard.table.frequency")}</th>
-            <th>{t("publicCard.table.startDate")}</th>
-            <th>{t("publicCard.table.endDate")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {medications.map((m) => (
-            <tr key={m.id}>
-              <td>{m.medication_name}</td>
-              <td>{m.dosage}</td>
-              <td>{m.frequency}</td>
-              <td>{formatDate(m.start_date)}</td>
-              <td>
-                {m.end_date
-                  ? formatDate(m.end_date)
-                  : t("publicCard.table.ongoing")}
-              </td>
             </tr>
           ))}
         </tbody>
@@ -439,9 +395,10 @@ export function PublicCardPage() {
           <h2 className="section-title">
             <IoBandageOutline className="section-icon" size={20} />
             {t("publicCard.sections.medications")}
-            <span className="count-badge">{card.medications.length}</span>
           </h2>
-          <MedicationTable medications={card.medications} />
+          <p className="empty-section">
+            {t("publicCard.restricted.medications")}
+          </p>
         </section>
       </main>
 
