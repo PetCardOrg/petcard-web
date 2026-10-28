@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError, apiFetch } from "./api";
+import { ApiError, apiFetch, caminho } from "./api";
 
 const BASE = "http://localhost:3000";
 
@@ -109,5 +109,23 @@ describe("apiFetch", () => {
     await vi.advanceTimersByTimeAsync(10000);
     await pending;
     vi.useRealTimers();
+  });
+});
+
+/**
+ * Um id vindo da URL ou da API não pode mudar a rota chamada: sem codificar,
+ * `../veterinarios/me` vira outro endpoint, com o token do vet junto.
+ */
+describe("caminho", () => {
+  it("codifica cada valor interpolado como um segmento só", () => {
+    expect(caminho`/pets/${"../veterinarios/me"}/vaccines`).toBe(
+      "/pets/..%2Fveterinarios%2Fme/vaccines",
+    );
+  });
+
+  it("não deixa o valor abrir query string nem fragmento", () => {
+    expect(caminho`/cards/${"tok?admin=1#x"}`).toBe(
+      "/cards/tok%3Fadmin%3D1%23x",
+    );
   });
 });

@@ -10,7 +10,7 @@ import type {
   UpdateMedicationRecordDto,
   UpdateVaccineRecordDto,
 } from "@petcardorg/shared";
-import { apiFetch } from "./api";
+import { apiFetch, caminho } from "./api";
 
 export interface PetDetail {
   id: string;
@@ -98,7 +98,7 @@ export async function createClinicalNote(
   petId: string,
   dto: CreateNotaClinicaDto,
 ): Promise<ClinicalNote> {
-  return apiFetch<ClinicalNote>(`/pets/${petId}/clinical-notes`, {
+  return apiFetch<ClinicalNote>(caminho`/pets/${petId}/clinical-notes`, {
     method: "POST",
     body: dto,
     token,
@@ -117,7 +117,7 @@ export async function createMedication(
   petId: string,
   dto: CreateMedicationRecordDto,
 ): Promise<MedicationRecord> {
-  return apiFetch<MedicationRecord>(`/pets/${petId}/medications`, {
+  return apiFetch<MedicationRecord>(caminho`/pets/${petId}/medications`, {
     method: "POST",
     body: dto,
     token,
@@ -129,7 +129,7 @@ export async function createVaccine(
   petId: string,
   dto: CreateVaccineRecordDto,
 ): Promise<VaccineRecord> {
-  return apiFetch<VaccineRecord>(`/pets/${petId}/vaccines`, {
+  return apiFetch<VaccineRecord>(caminho`/pets/${petId}/vaccines`, {
     method: "POST",
     body: dto,
     token,
@@ -141,7 +141,7 @@ export async function createDeworming(
   petId: string,
   dto: CreateDewormingRecordDto,
 ): Promise<DewormingRecord> {
-  return apiFetch<DewormingRecord>(`/pets/${petId}/dewormings`, {
+  return apiFetch<DewormingRecord>(caminho`/pets/${petId}/dewormings`, {
     method: "POST",
     body: dto,
     token,
@@ -154,11 +154,17 @@ export async function fetchPetProfile(
 ): Promise<PetProfileData> {
   const [pet, vaccines, dewormings, medications, clinicalNotes] =
     await Promise.all([
-      apiFetch<PetDetail>(`/pets/${petId}`, { token }),
-      apiFetch<VaccineRecord[]>(`/pets/${petId}/vaccines`, { token }),
-      apiFetch<DewormingRecord[]>(`/pets/${petId}/dewormings`, { token }),
-      apiFetch<MedicationRecord[]>(`/pets/${petId}/medications`, { token }),
-      apiFetch<ClinicalNote[]>(`/pets/${petId}/clinical-notes`, { token }),
+      apiFetch<PetDetail>(caminho`/pets/${petId}`, { token }),
+      apiFetch<VaccineRecord[]>(caminho`/pets/${petId}/vaccines`, { token }),
+      apiFetch<DewormingRecord[]>(caminho`/pets/${petId}/dewormings`, {
+        token,
+      }),
+      apiFetch<MedicationRecord[]>(caminho`/pets/${petId}/medications`, {
+        token,
+      }),
+      apiFetch<ClinicalNote[]>(caminho`/pets/${petId}/clinical-notes`, {
+        token,
+      }),
     ]);
 
   return { pet, vaccines, dewormings, medications, clinicalNotes };
@@ -182,7 +188,7 @@ export async function updateHealthRecord(
     | UpdateDewormingRecordDto
     | UpdateMedicationRecordDto,
 ): Promise<void> {
-  await apiFetch(`/${RECORD_ENDPOINT[kind]}/${id}`, {
+  await apiFetch(caminho`/${RECORD_ENDPOINT[kind]}/${id}`, {
     method: "PATCH",
     body: dto,
     token,
@@ -194,7 +200,7 @@ export async function deleteHealthRecord(
   kind: RecordKind,
   id: string,
 ): Promise<void> {
-  await apiFetch(`/${RECORD_ENDPOINT[kind]}/${id}`, {
+  await apiFetch(caminho`/${RECORD_ENDPOINT[kind]}/${id}`, {
     method: "DELETE",
     token,
   });
@@ -206,7 +212,7 @@ export async function fetchHistoricoClinico(
   petId: string,
 ): Promise<HistoricoClinicoResponseDto> {
   return apiFetch<HistoricoClinicoResponseDto>(
-    `/pets/${petId}/historico-clinico`,
+    caminho`/pets/${petId}/historico-clinico`,
     { token },
   );
 }
@@ -216,7 +222,7 @@ export async function updateClinicalNote(
   id: string,
   dto: UpdateNotaClinicaDto,
 ): Promise<void> {
-  await apiFetch(`/clinical-notes/${id}`, {
+  await apiFetch(caminho`/clinical-notes/${id}`, {
     method: "PATCH",
     body: dto,
     token,
@@ -227,5 +233,5 @@ export async function deleteClinicalNote(
   token: string,
   id: string,
 ): Promise<void> {
-  await apiFetch(`/clinical-notes/${id}`, { method: "DELETE", token });
+  await apiFetch(caminho`/clinical-notes/${id}`, { method: "DELETE", token });
 }
