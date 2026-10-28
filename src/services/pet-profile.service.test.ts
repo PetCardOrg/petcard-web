@@ -53,3 +53,30 @@ describe("pet-profile.service", () => {
     }
   });
 });
+
+describe("pet-profile.service — ids na URL", () => {
+  const fetchMock = vi.fn<typeof fetch>();
+
+  beforeEach(() => {
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      json: () => Promise.resolve([]),
+    } as Response);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("codifica o id do pet em vez de deixá-lo trocar de rota", async () => {
+    await fetchPetProfile("jwt", "../veterinarios/me");
+
+    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
+    expect(urls).toContain(`${BASE}/pets/..%2Fveterinarios%2Fme`);
+    expect(urls.some((u) => u.includes("/veterinarios/me"))).toBe(false);
+  });
+});

@@ -104,7 +104,9 @@
       "asking": "Allow location access so the owner knows where the pet is.",
       "sent": "Done! {{name}} received a notice with your location.",
       "denied": "{{name}} was told the pet was found, but without the location. If you can, share it. It helps a lot.",
-      "retry": "Share my location"
+      "retry": "Share my location",
+      "failed": "We could not notify {{name}} right now. Call using the button above or try again.",
+      "retryNotify": "Try notifying again"
     },
     "steps": {
       "title": "What to do now",
@@ -419,6 +421,14 @@
       "cancel": "Cancel",
       "deleting": "Deleting...",
       "error": "Could not delete the account. Please try again."
+    }
+  },
+  "session": {
+    "connecting": "Connecting to the server...",
+    "offline": {
+      "title": "Could not connect",
+      "description": "The server is taking too long to respond. Your session is still saved.",
+      "retry": "Try again"
     }
   }
 }

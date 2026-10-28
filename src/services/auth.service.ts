@@ -51,6 +51,9 @@ export function registerVeterinario(
   });
 }
 
-export function getVeterinarioProfile(token: string): Promise<VetUser> {
-  return apiFetch<VetUser>("/auth/veterinario/profile", { token });
+export function getVeterinarioProfile(
+  token: string,
+  options: { timeoutMs?: number } = {},
+): Promise<VetUser> {
+  return apiFetch<VetUser>("/auth/veterinario/profile", { token, ...options });
 }

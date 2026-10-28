@@ -25,7 +25,8 @@ import "./LostPetPage.css";
 /** Teto de espera pelo GPS antes de avisar o tutor sem a localização. */
 const GEOLOCATION_TIMEOUT_MS = 15_000;
 
-type EstadoLocalizacao = "pedindo" | "enviada" | "sem_permissao";
+/** `falhou`: o aviso não chegou à API, então não dá para dizer que o tutor sabe. */
+type EstadoLocalizacao = "pedindo" | "enviada" | "sem_permissao" | "falhou";
 
 /**
  * Resolve com as coordenadas, ou `undefined` se a pessoa recusar, o GPS falhar
@@ -123,9 +124,11 @@ export function LostPetPage() {
       try {
         await registrarLeitura(token, coordenadas);
       } catch {
-        // O aviso é secundário para quem está com o animal na mão: o telefone do
-        // tutor continua na tela e é o que resolve. Empurrar um erro técnico
-        // para cima de quem quer ajudar não melhora nada.
+        // Sem erro técnico para quem quer ajudar, mas também sem dizer que o
+        // tutor foi avisado: quem acha que avisou espera a ligação em vez de
+        // ligar. O telefone continua na tela.
+        setLocalizacao("falhou");
+        return;
       }
       setLocalizacao(coordenadas ? "enviada" : "sem_permissao");
     } finally {
@@ -266,6 +269,22 @@ export function LostPetPage() {
               disabled={enviando}
             >
               {t("lostPet.location.retry")}
+            </button>
+          </div>
+        )}
+        {localizacao === "falhou" && (
+          <div className="lost-location-retry">
+            <div className="lost-location-retry-text">
+              <IoAlertCircleOutline size={20} />
+              <p>{t("lostPet.location.failed", { name: pet.tutor_name })}</p>
+            </div>
+            <button
+              type="button"
+              className="lost-location-btn"
+              onClick={() => void avisarTutor()}
+              disabled={enviando}
+            >
+              {t("lostPet.location.retryNotify")}
             </button>
           </div>
         )}

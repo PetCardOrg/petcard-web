@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AuthContext } from "../../contexts/auth-context";
 import type { AuthContextValue } from "../../contexts/auth-context";
@@ -15,6 +16,8 @@ function renderWithAuth(auth: Partial<AuthContextValue>) {
     register: async () => {},
     logout: () => {},
     refreshUser: async () => {},
+    semConexao: false,
+    tentarReconectar: () => {},
     ...auth,
   };
 
@@ -59,5 +62,20 @@ describe("ProtectedRoute", () => {
     renderWithAuth({ token: "jwt", loading: true });
     expect(screen.queryByText("Conteúdo protegido")).not.toBeInTheDocument();
     expect(screen.queryByText("Tela de login")).not.toBeInTheDocument();
+  });
+
+  // Token guardado e API fora do ar: nem conteúdo (sem usuário), nem tela de
+  // login (o token ainda vale). O vet escolhe quando tentar de novo.
+  it("oferece tentar de novo quando a API não respondeu à validação", async () => {
+    const tentarReconectar = vi.fn();
+    renderWithAuth({ token: "jwt", semConexao: true, tentarReconectar });
+
+    expect(screen.queryByText("Conteúdo protegido")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tela de login")).not.toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /tentar de novo/i }),
+    );
+    expect(tentarReconectar).toHaveBeenCalledTimes(1);
   });
 });

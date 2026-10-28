@@ -3,6 +3,31 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 /** Mesmo teto usado pelo cliente axios do mobile (src/services/api.ts). */
 const API_TIMEOUT_MS = 10000;
 
+/**
+ * Teto para a primeira chamada de quem chega com a API possivelmente dormindo:
+ * o cold start do Render passa de 10s, e cortar antes disso transforma "a API
+ * está acordando" em erro.
+ */
+export const API_COLD_START_TIMEOUT_MS = 30_000;
+
+/**
+ * Monta o caminho de uma rota codificando cada valor interpolado como um
+ * segmento só: `caminho\`/pets/${id}\``. Sem isso, um id com `/`, `?` ou `#`
+ * (vindo da URL ou de um QR) trocaria o endpoint chamado, com o token junto.
+ */
+export function caminho(
+  partes: TemplateStringsArray,
+  ...valores: (string | number)[]
+): string {
+  return partes.reduce(
+    (acc, parte, i) =>
+      acc +
+      parte +
+      (i < valores.length ? encodeURIComponent(String(valores[i])) : ""),
+    "",
+  );
+}
+
 export interface ApiFetchOptions {
   method?: string;
   /** `FormData` vai direto no fetch, sem JSON.stringify nem Content-Type manual. */
