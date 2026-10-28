@@ -142,6 +142,30 @@ describe("LostPetPage", () => {
     await waitFor(() => expect(botao).not.toBeDisabled());
   });
 
+  // Dizer "avisamos o tutor" quando o aviso não saiu faz quem achou o pet
+  // esperar uma ligação que não vem, em vez de ligar.
+  it("não diz que avisou o tutor quando o envio falha", async () => {
+    leituraMock.mockRejectedValue(new ApiError(0, "Timeout"));
+    renderizar();
+
+    expect(await screen.findByText(/não conseguimos avisar/i)).toBeVisible();
+    expect(screen.queryByText(/recebeu um aviso/i)).toBeNull();
+    expect(screen.queryByText(/foi avisado/i)).toBeNull();
+  });
+
+  it("tenta avisar de novo e confirma quando o reenvio dá certo", async () => {
+    leituraMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    renderizar();
+
+    const botao = await screen.findByRole("button", {
+      name: /tentar avisar de novo/i,
+    });
+    await userEvent.click(botao);
+
+    await waitFor(() => expect(leituraMock).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText(/recebeu um aviso/i)).toBeVisible();
+  });
+
   it("mostra o telefone do tutor como link de chamada", async () => {
     renderizar();
 

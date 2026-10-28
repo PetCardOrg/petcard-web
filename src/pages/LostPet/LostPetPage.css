@@ -236,3 +236,8 @@
 .lost-footer p {
   margin: 0;
 }
+
+.lost-location-falhou {
+  background: #fdf6f5;
+  color: #8a4b41;
+}

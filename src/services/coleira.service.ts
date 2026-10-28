@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { API_COLD_START_TIMEOUT_MS, apiFetch } from "./api";
 
 /**
  * O que a página do achador mostra.
@@ -41,5 +41,8 @@ export function registrarLeitura(
   return apiFetch<{ id: string }>(`/coleira/${token}/leitura`, {
     method: "POST",
     body: coordenadas ?? {},
+    // Quem abre a página pode ter acabado de acordar a API: cortar em 10s faria
+    // o aviso falhar justamente no cold start.
+    timeoutMs: API_COLD_START_TIMEOUT_MS,
   });
 }

@@ -104,7 +104,9 @@
       "asking": "Permita o acesso à localização para o tutor saber onde o pet está.",
       "sent": "Pronto! {{name}} recebeu um aviso com a sua localização.",
       "denied": "{{name}} foi avisado de que o pet foi encontrado, mas sem a localização. Se puder, compartilhe. Ajuda muito.",
-      "retry": "Compartilhar minha localização"
+      "retry": "Compartilhar minha localização",
+      "failed": "Não conseguimos avisar {{name}} agora. Ligue pelo botão acima ou tente de novo.",
+      "retryNotify": "Tentar avisar de novo"
     },
     "steps": {
       "title": "O que fazer agora",
