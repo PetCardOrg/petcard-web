@@ -420,5 +420,13 @@
       "deleting": "Deleting...",
       "error": "Could not delete the account. Please try again."
     }
+  },
+  "session": {
+    "connecting": "Connecting to the server...",
+    "offline": {
+      "title": "Could not connect",
+      "description": "The server is taking too long to respond. Your session is still saved.",
+      "retry": "Try again"
+    }
   }
 }

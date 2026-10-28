@@ -420,5 +420,13 @@
       "deleting": "Excluindo...",
       "error": "Não foi possível excluir a conta. Tente de novo."
     }
+  },
+  "session": {
+    "connecting": "Conectando ao servidor...",
+    "offline": {
+      "title": "Não foi possível conectar",
+      "description": "O servidor está demorando para responder. Sua sessão continua salva.",
+      "retry": "Tentar de novo"
+    }
   }
 }

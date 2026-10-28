@@ -3,6 +3,13 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 /** Mesmo teto usado pelo cliente axios do mobile (src/services/api.ts). */
 const API_TIMEOUT_MS = 10000;
 
+/**
+ * Teto para a primeira chamada de quem chega com a API possivelmente dormindo:
+ * o cold start do Render passa de 10s, e cortar antes disso transforma "a API
+ * está acordando" em erro.
+ */
+export const API_COLD_START_TIMEOUT_MS = 30_000;
+
 export interface ApiFetchOptions {
   method?: string;
   /** `FormData` vai direto no fetch, sem JSON.stringify nem Content-Type manual. */
