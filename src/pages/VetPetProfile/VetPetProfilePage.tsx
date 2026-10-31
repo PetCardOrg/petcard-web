@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -123,6 +123,8 @@ export function VetPetProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Bloqueio por CRMV não verificado (api#113): erro acionável, não falha genérica.
+  // Guarda a mensagem da API; "" = sem mensagem, traduzida só na hora de exibir
+  // para o `load` não depender de `t` (trocar o idioma refazia as 5 chamadas).
   const [crmvBloqueado, setCrmvBloqueado] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
@@ -154,29 +156,39 @@ export function VetPetProfilePage() {
   } | null>(null);
   // Nota clínica em edição; `null` no formulário significa nota nova.
   const [editingNote, setEditingNote] = useState<string | null>(null);
+  // Falha ao apagar: aparece na aba, porque o `recordError` só é exibido
+  // dentro do modal, que está fechado nessa hora.
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Só a carga mais recente escreve na tela: ao trocar de pet, o perfil do
+  // anterior que chega atrasado é descartado.
+  const ultimaCarga = useRef(0);
 
   const load = useCallback(async () => {
     if (!token || !id) return;
+    const carga = ++ultimaCarga.current;
+    const atual = () => carga === ultimaCarga.current;
     setLoading(true);
     setError(false);
     setCrmvBloqueado(null);
     try {
       const result = await fetchPetProfile(token, id);
-      setData(result);
+      if (atual()) setData(result);
     } catch (err) {
+      if (!atual()) return;
       if (err instanceof ApiError && err.status === 401) {
         logout();
         return;
       }
       if (err instanceof ApiError && err.isCrmvNaoVerificado) {
-        setCrmvBloqueado(err.detail ?? t("crmv.blocked"));
+        setCrmvBloqueado(err.detail ?? "");
         return;
       }
       setError(true);
     } finally {
-      setLoading(false);
+      if (atual()) setLoading(false);
     }
-  }, [token, id, logout, t]);
+  }, [token, id, logout]);
 
   useEffect(() => {
     load();
@@ -269,6 +281,7 @@ export function VetPetProfilePage() {
   async function handleDeleteNote(notaId: string) {
     if (!token) return;
     if (!window.confirm(t("petProfile.recordActions.confirmDelete"))) return;
+    setDeleteError(null);
     try {
       await deleteClinicalNote(token, notaId);
       await load();
@@ -277,7 +290,7 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
-      setRecordError(t("petProfile.recordActions.deleteError"));
+      setDeleteError(t("petProfile.recordActions.deleteError"));
     }
   }
 
@@ -413,7 +426,7 @@ export function VetPetProfilePage() {
   async function handleDelete(kind: RecordKind, recordId: string) {
     if (!token) return;
     if (!window.confirm(t("petProfile.recordActions.confirmDelete"))) return;
-
+    setDeleteError(null);
     try {
       await deleteHealthRecord(token, kind, recordId);
       await load();
@@ -422,7 +435,7 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
-      setRecordError(t("petProfile.recordActions.deleteError"));
+      setDeleteError(t("petProfile.recordActions.deleteError"));
     }
   }
 
@@ -511,7 +524,7 @@ export function VetPetProfilePage() {
           </div>
         )}
 
-        {crmvBloqueado && !loading && (
+        {crmvBloqueado !== null && !loading && (
           <div className="vet-pet-profile-state-card">
             <div className="vet-pet-profile-state-icon vet-pet-profile-error-icon">
               <IoAlertCircle size={36} color="#e63946" />
@@ -519,7 +532,7 @@ export function VetPetProfilePage() {
             <h3>{t("crmv.title")}</h3>
             <CrmvAviso
               token={token}
-              mensagem={crmvBloqueado}
+              mensagem={crmvBloqueado || t("crmv.blocked")}
               crmvAtual={user?.crmv}
               onVerificado={() => void load()}
             />
@@ -610,7 +623,10 @@ export function VetPetProfilePage() {
                   key={tab}
                   type="button"
                   className={`vet-pet-profile-tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setDeleteError(null);
+                    setActiveTab(tab);
+                  }}
                 >
                   {t(`petProfile.tabs.${tab}`)}
                 </button>
@@ -619,6 +635,14 @@ export function VetPetProfilePage() {
 
             {/* Tab content */}
             <div className="vet-pet-profile-tab-content">
+              {deleteError && (
+                <p
+                  className="vet-note-form-error vet-delete-error"
+                  role="alert"
+                >
+                  {deleteError}
+                </p>
+              )}
               {activeTab === "vaccines" && (
                 <>
                   <button

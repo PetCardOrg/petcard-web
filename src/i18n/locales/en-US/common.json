@@ -93,12 +93,12 @@
     },
     "hero": {
       "title": "You found {{name}}!",
-      "lead": "This pet has an owner and is being looked for. Call the person below. They have already been notified that {{name}} was found."
+      "lead": "This pet has an owner and is being looked for. Call the person below."
     },
     "contact": {
       "label": "Owner: {{name}}",
       "call": "Call {{phone}}",
-      "noPhone": "The owner has no phone number registered. They were notified in the app and should reach out soon."
+      "noPhone": "The owner has no phone number registered. The notice that {{name}} was found reaches them in the app: check below whether it went through."
     },
     "location": {
       "asking": "Allow location access so the owner knows where the pet is.",
@@ -112,7 +112,7 @@
       "title": "What to do now",
       "one": "Call the owner using the button above.",
       "two": "Agree on a safe place to hand the pet over.",
-      "three": "If you cannot reach them, keep the pet somewhere safe. The owner has been notified and will look for you."
+      "three": "If you cannot reach them, keep the pet somewhere safe until the owner gets in touch."
     },
     "footer": "PetCard digital collar."
   },
@@ -233,7 +233,10 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "duplicate": "An account with this CRMV already exists.",
-    "saveFailed": "Could not save the CRMV right now. Please try again."
+    "saveFailed": "Could not save the CRMV right now. Please try again.",
+    "nameMismatch": "The name on your account does not match the holder of this CRMV at the council. Update the name in your profile, as it appears on your registration, and verify again.",
+    "editName": "Fix my name",
+    "reason": "Status reported by the council: {{situacao}}."
   },
   "petProfile": {
     "title": "Pet Profile",

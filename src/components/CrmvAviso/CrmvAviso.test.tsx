@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { CrmvAviso } from "./CrmvAviso";
 
 vi.mock("../../services/crmv.service", () => ({
@@ -22,14 +23,17 @@ describe("CrmvAviso", () => {
     onVerificado.mockReset();
   });
 
-  function renderizar(crmvAtual?: string) {
+  function renderizar(crmvAtual?: string, situacao?: string) {
     render(
-      <CrmvAviso
-        token="jwt-vet"
-        mensagem="Acesso barrado"
-        crmvAtual={crmvAtual}
-        onVerificado={onVerificado}
-      />,
+      <MemoryRouter>
+        <CrmvAviso
+          token="jwt-vet"
+          mensagem="Acesso barrado"
+          crmvAtual={crmvAtual}
+          situacao={situacao}
+          onVerificado={onVerificado}
+        />
+      </MemoryRouter>,
     );
   }
 
@@ -70,6 +74,35 @@ describe("CrmvAviso", () => {
     // A situação é o que diz ao vet se o problema é o cadastro ou o registro.
     expect(await screen.findByText(/SUSPENSO/)).toBeInTheDocument();
     expect(onVerificado).not.toHaveBeenCalled();
+  });
+
+  // AUD WEB-16: com nome divergente o problema é o nome do cadastro, não o
+  // número; mandar "corrigir o CRMV" levava o vet para o lugar errado.
+  it("pede para corrigir o nome quando ele não confere com o titular (AUD WEB-16)", async () => {
+    verificarMock.mockResolvedValue({
+      verified: false,
+      situacao: "Nome do cadastro não confere com o titular do CRMV",
+    });
+    renderizar();
+
+    await clicarEmVerificar();
+
+    expect(
+      await screen.findByText(/O nome do seu cadastro não confere/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Corrigir meu nome" }),
+    ).toHaveAttribute("href", "/vet/profile");
+    expect(screen.queryByText(/Corrija o CRMV/)).not.toBeInTheDocument();
+  });
+
+  it("mostra o motivo já conhecido pela tela, sem precisar verificar (AUD WEB-16)", () => {
+    renderizar(undefined, "Nome do cadastro não confere com o titular do CRMV");
+
+    expect(
+      screen.getByText(/O nome do seu cadastro não confere/),
+    ).toBeInTheDocument();
+    expect(verificarMock).not.toHaveBeenCalled();
   });
 
   it("salva o CRMV corrigido e verifica na mesma ação", async () => {

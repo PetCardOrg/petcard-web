@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   emptyForm,
   hasQuantity,
@@ -6,13 +6,14 @@ import {
   validate,
   type HealthRecordForm,
 } from "./healthRecordValidation";
+import { diaIsoLocal } from "../../utils/datas";
 
 function form(overrides: Partial<HealthRecordForm> = {}): HealthRecordForm {
   return { ...emptyForm(), ...overrides };
 }
 
-const ONTEM = new Date(Date.now() - 86_400_000).toISOString().split("T")[0];
-const AMANHA = new Date(Date.now() + 86_400_000).toISOString().split("T")[0];
+const ONTEM = diaIsoLocal(new Date(Date.now() - 86_400_000));
+const AMANHA = diaIsoLocal(new Date(Date.now() + 86_400_000));
 
 describe("isValidDate", () => {
   it("aceita data real", () => {
@@ -136,5 +137,33 @@ describe("validate — vacina e vermífugo", () => {
       form({ name: "Raiva", applied_at: ONTEM }),
     );
     expect(errors.dosage).toBeUndefined();
+  });
+});
+
+describe("'hoje' no fuso do veterinário (AUD WEB-06)", () => {
+  // 30/10 às 23h30 em São Paulo já é 31/10 em UTC.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-30T23:30:00-03:00"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("o formulário começa no dia local, não no dia UTC", () => {
+    const vazio = emptyForm();
+    expect(vazio.applied_at).toBe("2026-10-30");
+    expect(vazio.start_date).toBe("2026-10-30");
+  });
+
+  it("aceita a aplicação de hoje e recusa a de amanhã", () => {
+    expect(
+      validate("vaccine", form({ name: "Raiva", applied_at: "2026-10-30" }))
+        .applied_at,
+    ).toBeUndefined();
+    expect(
+      validate("vaccine", form({ name: "Raiva", applied_at: "2026-10-31" }))
+        .applied_at,
+    ).toBe("appliedInFuture");
   });
 });
