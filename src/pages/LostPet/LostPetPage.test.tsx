@@ -153,6 +153,23 @@ describe("LostPetPage", () => {
     expect(screen.queryByText(/foi avisado/i)).toBeNull();
   });
 
+  // Os textos fixos (abertura, sem telefone, passos) também não podem afirmar
+  // o aviso: eles aparecem antes do envio terminar e continuam na falha.
+  it.each([
+    ["com telefone", PET],
+    ["sem telefone", { ...PET, tutor_phone: undefined }],
+  ])(
+    "nenhum texto afirma que o tutor foi avisado quando o envio falha, %s (AUD WEB-15)",
+    async (_caso, pet) => {
+      getMock.mockResolvedValue(pet);
+      leituraMock.mockRejectedValue(new ApiError(0, "Timeout"));
+      renderizar();
+
+      await screen.findByText(/não conseguimos avisar/i);
+      expect(document.body.textContent).not.toMatch(/avisad|notificad/i);
+    },
+  );
+
   it("tenta avisar de novo e confirma quando o reenvio dá certo", async () => {
     leituraMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
     renderizar();

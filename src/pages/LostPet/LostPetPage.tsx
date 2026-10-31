@@ -234,7 +234,9 @@ export function LostPetPage() {
             <span>{t("lostPet.contact.call", { phone: pet.tutor_phone })}</span>
           </a>
         ) : (
-          <p className="lost-no-phone">{t("lostPet.contact.noPhone")}</p>
+          <p className="lost-no-phone">
+            {t("lostPet.contact.noPhone", { name: pet.pet_name })}
+          </p>
         )}
       </section>
 

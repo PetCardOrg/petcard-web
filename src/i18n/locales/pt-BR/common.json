@@ -93,12 +93,12 @@
     },
     "hero": {
       "title": "Você encontrou {{name}}!",
-      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo. Ela já foi avisada de que {{name}} foi encontrado."
+      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo."
     },
     "contact": {
       "label": "Tutor: {{name}}",
       "call": "Ligar para {{phone}}",
-      "noPhone": "O tutor não cadastrou telefone. Ele já foi avisado pelo aplicativo e deve entrar em contato em breve."
+      "noPhone": "O tutor não cadastrou telefone. O aviso de que {{name}} foi encontrado chega a ele pelo aplicativo: confira abaixo se deu certo."
     },
     "location": {
       "asking": "Permita o acesso à localização para o tutor saber onde o pet está.",
@@ -112,7 +112,7 @@
       "title": "O que fazer agora",
       "one": "Ligue para o tutor pelo botão acima.",
       "two": "Combine um ponto de encontro seguro para a entrega.",
-      "three": "Se não conseguir falar, mantenha o pet em local seguro. O tutor já foi notificado e vai te procurar."
+      "three": "Se não conseguir falar, mantenha o pet em local seguro até o tutor entrar em contato."
     },
     "footer": "Coleira digital PetCard."
   },
