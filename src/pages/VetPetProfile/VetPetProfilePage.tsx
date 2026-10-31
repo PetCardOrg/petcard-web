@@ -123,6 +123,8 @@ export function VetPetProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Bloqueio por CRMV não verificado (api#113): erro acionável, não falha genérica.
+  // Guarda a mensagem da API; "" = sem mensagem, traduzida só na hora de exibir
+  // para o `load` não depender de `t` (trocar o idioma refazia as 5 chamadas).
   const [crmvBloqueado, setCrmvBloqueado] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "timeline" | "vaccines" | "dewormings" | "medications" | "notes"
@@ -179,14 +181,14 @@ export function VetPetProfilePage() {
         return;
       }
       if (err instanceof ApiError && err.isCrmvNaoVerificado) {
-        setCrmvBloqueado(err.detail ?? t("crmv.blocked"));
+        setCrmvBloqueado(err.detail ?? "");
         return;
       }
       setError(true);
     } finally {
       if (atual()) setLoading(false);
     }
-  }, [token, id, logout, t]);
+  }, [token, id, logout]);
 
   useEffect(() => {
     load();
@@ -522,7 +524,7 @@ export function VetPetProfilePage() {
           </div>
         )}
 
-        {crmvBloqueado && !loading && (
+        {crmvBloqueado !== null && !loading && (
           <div className="vet-pet-profile-state-card">
             <div className="vet-pet-profile-state-icon vet-pet-profile-error-icon">
               <IoAlertCircle size={36} color="#e63946" />
@@ -530,7 +532,7 @@ export function VetPetProfilePage() {
             <h3>{t("crmv.title")}</h3>
             <CrmvAviso
               token={token}
-              mensagem={crmvBloqueado}
+              mensagem={crmvBloqueado || t("crmv.blocked")}
               crmvAtual={user?.crmv}
               onVerificado={() => void load()}
             />

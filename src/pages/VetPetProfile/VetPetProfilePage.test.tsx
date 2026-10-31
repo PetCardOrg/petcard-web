@@ -1,9 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VetPetProfilePage } from "./VetPetProfilePage";
 import { ApiError } from "../../services/api";
 import type { PetProfileData } from "../../services/pet-profile.service";
+import i18n from "../../i18n";
 
 const navigateMock = vi.fn();
 // Pet da rota; mutável para simular a troca de '/vet/pets/:id'.
@@ -137,6 +138,26 @@ describe("VetPetProfilePage", () => {
     render(<VetPetProfilePage />);
 
     await waitFor(() => expect(logoutMock).toHaveBeenCalled());
+  });
+
+  it("trocar o idioma não recarrega o perfil (AUD WEB-13)", async () => {
+    fetchProfileMock.mockResolvedValue(buildProfile());
+    render(<VetPetProfilePage />);
+    await screen.findByRole("heading", { name: "Rex" });
+
+    try {
+      await act(async () => {
+        await i18n.changeLanguage("en-US");
+      });
+      expect(
+        await screen.findByRole("button", { name: "Vaccines" }),
+      ).toBeInTheDocument();
+      expect(fetchProfileMock).toHaveBeenCalledTimes(1);
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage("pt-BR");
+      });
+    }
   });
 
   it("descarta o perfil do pet anterior que chega por último (AUD WEB-07)", async () => {
@@ -289,6 +310,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
   );
 
   beforeEach(() => {
+    petIdAtual = "p1";
     vi.clearAllMocks();
   });
 
