@@ -233,7 +233,10 @@
     "saving": "Salvando...",
     "cancel": "Cancelar",
     "duplicate": "Já existe uma conta com esse CRMV.",
-    "saveFailed": "Não foi possível salvar o CRMV agora. Tente novamente."
+    "saveFailed": "Não foi possível salvar o CRMV agora. Tente novamente.",
+    "nameMismatch": "O nome do seu cadastro não confere com o titular deste CRMV no conselho. Ajuste o nome no seu perfil, como consta no registro, e verifique de novo.",
+    "editName": "Corrigir meu nome",
+    "reason": "Situação informada pelo conselho: {{situacao}}."
   },
   "petProfile": {
     "title": "Perfil do Pet",

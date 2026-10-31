@@ -233,7 +233,10 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "duplicate": "An account with this CRMV already exists.",
-    "saveFailed": "Could not save the CRMV right now. Please try again."
+    "saveFailed": "Could not save the CRMV right now. Please try again.",
+    "nameMismatch": "The name on your account does not match the holder of this CRMV at the council. Update the name in your profile, as it appears on your registration, and verify again.",
+    "editName": "Fix my name",
+    "reason": "Status reported by the council: {{situacao}}."
   },
   "petProfile": {
     "title": "Pet Profile",

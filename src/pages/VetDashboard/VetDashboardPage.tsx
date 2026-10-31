@@ -22,6 +22,7 @@ import type {
 } from "../../services/dashboard.service";
 import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
+import { nomeDivergente } from "../../utils/crmvSituacao";
 import "./VetDashboardPage.css";
 
 const PAGE_SIZE = 10;
@@ -41,6 +42,9 @@ export function VetDashboardPage() {
   // O dashboard é a primeira tela do vet: é aqui que ele precisa descobrir
   // que o CRMV não passou, e não no primeiro atendimento (api#113).
   const [crmvVerificado, setCrmvVerificado] = useState<boolean | null>(null);
+  // Motivo da recusa, quando o conselho informou um: sem ele o vet só via o
+  // aviso genérico de pendente depois do cadastro (AUD WEB-16).
+  const [crmvSituacao, setCrmvSituacao] = useState<string | undefined>();
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -91,6 +95,7 @@ export function VetDashboardPage() {
     try {
       const status = await fetchCrmvStatus(token);
       setCrmvVerificado(status.verified);
+      setCrmvSituacao(status.situacao);
     } catch {
       // O aviso é secundário: falhar a consulta não pode esconder a lista.
       setCrmvVerificado(null);
@@ -195,7 +200,12 @@ export function VetDashboardPage() {
         {crmvVerificado === false && (
           <CrmvAviso
             token={token}
-            mensagem={t("crmv.pending")}
+            mensagem={
+              crmvSituacao && !nomeDivergente(crmvSituacao)
+                ? `${t("crmv.pending")} ${t("crmv.reason", { situacao: crmvSituacao })}`
+                : t("crmv.pending")
+            }
+            situacao={crmvSituacao}
             crmvAtual={user?.crmv}
             onVerificado={() => void carregarStatusCrmv()}
             className="vet-dashboard-crmv-aviso"

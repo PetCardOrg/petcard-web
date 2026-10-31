@@ -216,6 +216,27 @@ describe("VetDashboardPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("mostra no aviso pós-cadastro que o nome não confere com o CRMV (AUD WEB-16)", async () => {
+    crmvStatusMock.mockResolvedValue({
+      verified: false,
+      situacao: "Nome do cadastro não confere com o titular do CRMV",
+    });
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+
+    expect(
+      await screen.findByText(/O nome do seu cadastro não confere/),
+    ).toBeInTheDocument();
+  });
+
+  it("mostra no aviso pós-cadastro a situação informada pelo conselho (AUD WEB-16)", async () => {
+    crmvStatusMock.mockResolvedValue({ verified: false, situacao: "SUSPENSO" });
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+
+    expect(await screen.findByText(/SUSPENSO/)).toBeInTheDocument();
+  });
+
   it("não avisa quando o CRMV está verificado", async () => {
     crmvStatusMock.mockResolvedValue({ verified: true });
     fetchMock.mockResolvedValue(page([rex]));
