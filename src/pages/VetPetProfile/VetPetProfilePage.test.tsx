@@ -6,10 +6,12 @@ import { ApiError } from "../../services/api";
 import type { PetProfileData } from "../../services/pet-profile.service";
 
 const navigateMock = vi.fn();
+// Pet da rota; mutável para simular a troca de '/vet/pets/:id'.
+let petIdAtual = "p1";
 const logoutMock = vi.fn();
 
 vi.mock("react-router-dom", () => ({
-  useParams: () => ({ id: "p1" }),
+  useParams: () => ({ id: petIdAtual }),
   useNavigate: () => navigateMock,
   useLocation: () => ({ state: { tutor_name: "Alice Tutora" } }),
 }));
@@ -94,6 +96,7 @@ function buildProfile(overrides: Partial<PetProfileData> = {}): PetProfileData {
 
 describe("VetPetProfilePage", () => {
   beforeEach(() => {
+    petIdAtual = "p1";
     navigateMock.mockReset();
     logoutMock.mockReset();
     fetchProfileMock.mockReset();
@@ -134,6 +137,36 @@ describe("VetPetProfilePage", () => {
     render(<VetPetProfilePage />);
 
     await waitFor(() => expect(logoutMock).toHaveBeenCalled());
+  });
+
+  it("descarta o perfil do pet anterior que chega por último (AUD WEB-07)", async () => {
+    let responderP1: (p: PetProfileData) => void = () => {};
+    fetchProfileMock.mockImplementation((_token, petId) =>
+      petId === "p1"
+        ? new Promise((resolve) => {
+            responderP1 = resolve;
+          })
+        : Promise.resolve(
+            buildProfile({
+              pet: { ...buildProfile().pet, id: "p2", name: "Mel" },
+            }),
+          ),
+    );
+    const { rerender } = render(<VetPetProfilePage />);
+    await waitFor(() => expect(fetchProfileMock).toHaveBeenCalledTimes(1));
+
+    petIdAtual = "p2";
+    rerender(<VetPetProfilePage />);
+    expect(
+      await screen.findByRole("heading", { name: "Mel" }),
+    ).toBeInTheDocument();
+
+    responderP1(buildProfile());
+    await new Promise((r) => setTimeout(r, 0));
+    expect(
+      screen.queryByRole("heading", { name: "Rex" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Mel" })).toBeInTheDocument();
   });
 
   it("lista o histórico na ordem devolvida pela API", async () => {

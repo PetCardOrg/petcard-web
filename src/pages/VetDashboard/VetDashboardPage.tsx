@@ -48,14 +48,21 @@ export function VetDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
+  // Termo já passado pelo debounce: é ele, e não o texto digitado, que busca.
+  const [termo, setTermo] = useState("");
   const [page, setPage] = useState(1);
   const [removendo, setRemovendo] = useState<string | null>(null);
   const [erroRemocao, setErroRemocao] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Só a busca mais recente pode escrever na tela: a resposta de "a" que
+  // chega depois da de "ab" é descartada.
+  const ultimaBusca = useRef(0);
 
   const load = useCallback(
     async (searchTerm: string, pageNum: number) => {
       if (!token) return;
+      const busca = ++ultimaBusca.current;
+      const atual = () => busca === ultimaBusca.current;
       setLoading(true);
       setError(false);
       try {
@@ -64,15 +71,16 @@ export function VetDashboardPage() {
           pageSize: PAGE_SIZE,
           search: searchTerm || undefined,
         });
-        setData(result);
+        if (atual()) setData(result);
       } catch (err) {
+        if (!atual()) return;
         if (err instanceof ApiError && err.status === 401) {
           logout();
           return;
         }
         setError(true);
       } finally {
-        setLoading(false);
+        if (atual()) setLoading(false);
       }
     },
     [token, logout],
@@ -93,20 +101,22 @@ export function VetDashboardPage() {
     void carregarStatusCrmv();
   }, [carregarStatusCrmv]);
 
+  // Um efeito só para página e termo: com um por dependência, a primeira
+  // carga e a troca de termo numa página > 1 buscavam duas vezes.
   useEffect(() => {
-    load(search, page);
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+    void load(termo, page);
+  }, [load, termo, page]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      setTermo(search);
       setPage(1);
-      load(search, 1);
     }, DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [search]);
 
   /**
    * Tira o pet da lista do veterinário.
@@ -125,7 +135,7 @@ export function VetDashboardPage() {
     setErroRemocao(false);
     try {
       await removerPetAtendido(token, pet.id);
-      await load(search, page);
+      await load(termo, page);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         logout();
@@ -231,7 +241,7 @@ export function VetDashboardPage() {
               <IoAlertCircle size={36} color="#e63946" />
             </div>
             <h3>{t("vetDashboard.error")}</h3>
-            <button type="button" onClick={() => load(search, page)}>
+            <button type="button" onClick={() => load(termo, page)}>
               {t("vetDashboard.retry")}
             </button>
           </div>

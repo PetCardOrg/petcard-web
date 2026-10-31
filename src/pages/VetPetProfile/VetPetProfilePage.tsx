@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -158,15 +158,22 @@ export function VetPetProfilePage() {
   // dentro do modal, que está fechado nessa hora.
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Só a carga mais recente escreve na tela: ao trocar de pet, o perfil do
+  // anterior que chega atrasado é descartado.
+  const ultimaCarga = useRef(0);
+
   const load = useCallback(async () => {
     if (!token || !id) return;
+    const carga = ++ultimaCarga.current;
+    const atual = () => carga === ultimaCarga.current;
     setLoading(true);
     setError(false);
     setCrmvBloqueado(null);
     try {
       const result = await fetchPetProfile(token, id);
-      setData(result);
+      if (atual()) setData(result);
     } catch (err) {
+      if (!atual()) return;
       if (err instanceof ApiError && err.status === 401) {
         logout();
         return;
@@ -177,7 +184,7 @@ export function VetPetProfilePage() {
       }
       setError(true);
     } finally {
-      setLoading(false);
+      if (atual()) setLoading(false);
     }
   }, [token, id, logout, t]);
 
