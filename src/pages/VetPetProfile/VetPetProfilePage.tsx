@@ -154,6 +154,9 @@ export function VetPetProfilePage() {
   } | null>(null);
   // Nota clínica em edição; `null` no formulário significa nota nova.
   const [editingNote, setEditingNote] = useState<string | null>(null);
+  // Falha ao apagar: aparece na aba, porque o `recordError` só é exibido
+  // dentro do modal, que está fechado nessa hora.
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!token || !id) return;
@@ -269,6 +272,7 @@ export function VetPetProfilePage() {
   async function handleDeleteNote(notaId: string) {
     if (!token) return;
     if (!window.confirm(t("petProfile.recordActions.confirmDelete"))) return;
+    setDeleteError(null);
     try {
       await deleteClinicalNote(token, notaId);
       await load();
@@ -277,7 +281,7 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
-      setRecordError(t("petProfile.recordActions.deleteError"));
+      setDeleteError(t("petProfile.recordActions.deleteError"));
     }
   }
 
@@ -413,7 +417,7 @@ export function VetPetProfilePage() {
   async function handleDelete(kind: RecordKind, recordId: string) {
     if (!token) return;
     if (!window.confirm(t("petProfile.recordActions.confirmDelete"))) return;
-
+    setDeleteError(null);
     try {
       await deleteHealthRecord(token, kind, recordId);
       await load();
@@ -422,7 +426,7 @@ export function VetPetProfilePage() {
         logout();
         return;
       }
-      setRecordError(t("petProfile.recordActions.deleteError"));
+      setDeleteError(t("petProfile.recordActions.deleteError"));
     }
   }
 
@@ -610,7 +614,10 @@ export function VetPetProfilePage() {
                   key={tab}
                   type="button"
                   className={`vet-pet-profile-tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setDeleteError(null);
+                    setActiveTab(tab);
+                  }}
                 >
                   {t(`petProfile.tabs.${tab}`)}
                 </button>
@@ -619,6 +626,14 @@ export function VetPetProfilePage() {
 
             {/* Tab content */}
             <div className="vet-pet-profile-tab-content">
+              {deleteError && (
+                <p
+                  className="vet-note-form-error vet-delete-error"
+                  role="alert"
+                >
+                  {deleteError}
+                </p>
+              )}
               {activeTab === "vaccines" && (
                 <>
                   <button

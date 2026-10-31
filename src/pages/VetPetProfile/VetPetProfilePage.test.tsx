@@ -591,6 +591,46 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(deleteRecordMock).not.toHaveBeenCalled();
       confirmSpy.mockRestore();
     });
+
+    it("mostra na aba o erro ao apagar e mantém o registro (AUD WEB-04)", async () => {
+      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      deleteRecordMock.mockRejectedValueOnce(new ApiError(500, "boom"));
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
+      await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+
+      expect(
+        await screen.findByText("Erro ao apagar o registro. Tente novamente."),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Amoxicilina")).toBeInTheDocument();
+
+      // Trocar de aba limpa o aviso: ele é da ação, não da página.
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+      expect(
+        screen.queryByText("Erro ao apagar o registro. Tente novamente."),
+      ).not.toBeInTheDocument();
+      confirmSpy.mockRestore();
+    });
+
+    it("mostra o erro ao apagar a nota recusada (403) (AUD WEB-04)", async () => {
+      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      deleteNoteMock.mockRejectedValueOnce(new ApiError(403, "Forbidden"));
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(
+        screen.getByRole("button", { name: "Notas Clínicas" }),
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+
+      expect(
+        await screen.findByText("Erro ao apagar o registro. Tente novamente."),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Otite")).toBeInTheDocument();
+      confirmSpy.mockRestore();
+    });
   });
   describe("ordem e data dos registros", () => {
     const perfil = () =>
