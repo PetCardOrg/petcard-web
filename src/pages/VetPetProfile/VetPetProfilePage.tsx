@@ -51,14 +51,9 @@ import {
 import { CrmvAviso } from "../../components/CrmvAviso/CrmvAviso";
 import { ApiError } from "../../services/api";
 import { apiErrorMessage } from "../../services/apiErrorMessage";
+import { formatarData } from "../../utils/datas";
+import { coresDaEspecie } from "../../utils/especies";
 import "./VetPetProfilePage.css";
-
-const SPECIES_COLORS: Record<string, { bg: string; text: string }> = {
-  DOG: { bg: "#e6f7fc", text: "#27a9d8" },
-  CAT: { bg: "#ede5fc", text: "#6b48c8" },
-  BIRD: { bg: "#e5f8ee", text: "#06a77d" },
-  OTHER: { bg: "#fef5e6", text: "#d4940a" },
-};
 
 /** Entidade do histórico → chave visual usada pelos ícones e cores. */
 const ENTIDADE_TIPO: Record<string, string> = {
@@ -271,27 +266,7 @@ export function VetPetProfilePage() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
   }
-  const speciesColors =
-    SPECIES_COLORS[data?.pet.species ?? ""] ?? SPECIES_COLORS.OTHER;
-
-  /**
-   * `2026-08-18` é dia de calendário, não instante. Passar isso pelo `Date`
-   * faz o navegador interpretar como meia-noite UTC e, em fuso negativo,
-   * renderizar o dia anterior — a vacina registrada hoje aparecia como ontem.
-   */
-  function formatDate(d: Date | string) {
-    if (typeof d === "string") {
-      const soData = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (soData) {
-        return new Date(
-          Number(soData[1]),
-          Number(soData[2]) - 1,
-          Number(soData[3]),
-        ).toLocaleDateString();
-      }
-    }
-    return new Date(d).toLocaleDateString();
-  }
+  const speciesColors = coresDaEspecie(data?.pet.species);
 
   function openForm() {
     setFormData({ diagnostico: "" });
@@ -597,7 +572,7 @@ export function VetPetProfilePage() {
                   )}
                   {data.pet.birth_date && (
                     <span className="vet-pet-profile-birth">
-                      {formatDate(data.pet.birth_date)}
+                      {formatarData(data.pet.birth_date)}
                     </span>
                   )}
                 </div>
@@ -668,11 +643,11 @@ export function VetPetProfilePage() {
                         <RecordCard
                           key={v.id}
                           titulo={v.vaccine_name}
-                          data={formatDate(v.applied_at)}
+                          data={formatarData(v.applied_at)}
                           veterinario={v.veterinarian_name}
                           crmv={v.veterinario_crmv}
                           proximaDose={
-                            v.next_dose_at && formatDate(v.next_dose_at)
+                            v.next_dose_at && formatarData(v.next_dose_at)
                           }
                           notes={v.notes}
                           acoes={acoesDoRegistro("vaccine", v, {
@@ -715,11 +690,11 @@ export function VetPetProfilePage() {
                           <RecordCard
                             key={d.id}
                             titulo={d.product_name}
-                            data={formatDate(d.applied_at)}
+                            data={formatarData(d.applied_at)}
                             veterinario={d.veterinarian_name}
                             crmv={d.veterinario_crmv}
                             proximaDose={
-                              d.next_dose_at && formatDate(d.next_dose_at)
+                              d.next_dose_at && formatarData(d.next_dose_at)
                             }
                             notes={d.notes}
                             acoes={acoesDoRegistro("deworming", d, {
@@ -765,8 +740,8 @@ export function VetPetProfilePage() {
                             titulo={m.medication_name}
                             data={
                               m.end_date
-                                ? `${formatDate(m.start_date)} — ${formatDate(m.end_date)}`
-                                : formatDate(m.start_date)
+                                ? `${formatarData(m.start_date)} — ${formatarData(m.end_date)}`
+                                : formatarData(m.start_date)
                             }
                             detalhe={`${m.dosage} — ${m.frequency}`}
                             veterinario={m.veterinarian_name}
@@ -835,7 +810,7 @@ export function VetPetProfilePage() {
                                 {item.titulo}
                               </span>
                               <span className="vet-section-card-date">
-                                {formatDate(item.ocorrido_em)}
+                                {formatarData(item.ocorrido_em)}
                               </span>
                             </div>
                             <span className="vet-section-card-sub">
@@ -875,7 +850,7 @@ export function VetPetProfilePage() {
                                   {acao.autor_crmv
                                     ? ` (${acao.autor_crmv})`
                                     : ""}{" "}
-                                  · {formatDate(acao.ocorrido_em)}
+                                  · {formatarData(acao.ocorrido_em)}
                                 </li>
                               ))}
                             </ul>
@@ -910,7 +885,7 @@ export function VetPetProfilePage() {
                               {n.diagnostico}
                             </span>
                             <span className="vet-section-card-date">
-                              {formatDate(n.created_at)}
+                              {formatarData(n.created_at)}
                             </span>
                           </div>
                           <span className="vet-section-card-sub">

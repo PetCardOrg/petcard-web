@@ -23,17 +23,12 @@ import type {
 import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import { nomeDivergente } from "../../utils/crmvSituacao";
+import { formatarData } from "../../utils/datas";
+import { coresDaEspecie } from "../../utils/especies";
 import "./VetDashboardPage.css";
 
 const PAGE_SIZE = 10;
 const DEBOUNCE_MS = 400;
-
-const SPECIES_COLORS: Record<string, { bg: string; text: string }> = {
-  DOG: { bg: "#e6f7fc", text: "#27a9d8" },
-  CAT: { bg: "#ede5fc", text: "#6b48c8" },
-  BIRD: { bg: "#e5f8ee", text: "#06a77d" },
-  OTHER: { bg: "#fef5e6", text: "#d4940a" },
-};
 
 export function VetDashboardPage() {
   const { t } = useTranslation();
@@ -152,14 +147,6 @@ export function VetDashboardPage() {
     }
   }
 
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString();
-  }
-
-  function getSpeciesColors(species: string) {
-    return SPECIES_COLORS[species] ?? SPECIES_COLORS.OTHER;
-  }
-
   return (
     <div className="vet-dashboard">
       <header className="vet-dashboard-header">
@@ -276,7 +263,7 @@ export function VetDashboardPage() {
             )}
             <div className="vet-dashboard-pet-list">
               {data.items.map((pet) => {
-                const colors = getSpeciesColors(pet.species);
+                const colors = coresDaEspecie(pet.species);
                 return (
                   <div
                     key={pet.id}
@@ -328,7 +315,7 @@ export function VetDashboardPage() {
                           {pet.tutor_name}
                         </span>
                         <span className="vet-pet-card-date">
-                          {formatDate(pet.last_attended_at)}
+                          {formatarData(pet.last_attended_at)}
                         </span>
                       </div>
                     </div>
