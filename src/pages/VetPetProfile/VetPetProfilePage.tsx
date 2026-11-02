@@ -34,8 +34,14 @@ import type {
   EntidadeComAnexo,
   HistoricoClinicoResponseDto,
 } from "@petcardorg/shared";
-import type { CreateNotaClinicaDto } from "@petcardorg/shared";
+import type {
+  CreateDewormingRecordDto,
+  CreateMedicationRecordDto,
+  CreateNotaClinicaDto,
+  CreateVaccineRecordDto,
+} from "@petcardorg/shared";
 import { AnexosDoRegistro } from "./AnexosDoRegistro";
+import { RecordCard } from "./RecordCard";
 import { HealthRecordModal } from "./HealthRecordModal";
 import {
   emptyForm,
@@ -99,16 +105,48 @@ function TypeIcon({
  * anterior e a lista mostra a vacina de hoje como de ontem. Data de calendário
  * não é instante, então os componentes são passados um a um.
  */
-/** "Dra. Camila Ferreira — CRMV-SP 12345", ou só o nome quando não há CRMV. */
-function assinatura(nome?: string, crmv?: string): string | undefined {
-  if (!nome) return undefined;
-  return crmv ? `${nome} — ${crmv}` : nome;
-}
-
 function diaLocal(iso: string): Date {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return new Date(iso);
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/** Campos de cada tipo de registro, sem o `pet_id` (que só a criação leva). */
+type CamposDoRegistro = {
+  medication: Omit<CreateMedicationRecordDto, "pet_id">;
+  vaccine: Omit<CreateVaccineRecordDto, "pet_id">;
+  deworming: Omit<CreateDewormingRecordDto, "pet_id">;
+};
+
+/**
+ * Campos do registro, no formato que a API recebe. Serve à criação e à
+ * edição, para as duas não divergirem.
+ */
+function toDto<K extends HealthRecordType>(
+  kind: K,
+  form: HealthRecordForm,
+): CamposDoRegistro[K] {
+  const notes = form.notes.trim() || undefined;
+  if (kind === "medication") {
+    return {
+      medication_name: form.name.trim(),
+      dosage: form.dosage.trim(),
+      frequency: form.frequency.trim(),
+      start_date: form.start_date,
+      ...(form.end_date ? { end_date: form.end_date } : {}),
+      notes,
+    } as CamposDoRegistro[K];
+  }
+  const nome =
+    kind === "vaccine"
+      ? { vaccine_name: form.name.trim() }
+      : { product_name: form.name.trim() };
+  return {
+    ...nome,
+    applied_at: form.applied_at,
+    ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
+    notes,
+  } as CamposDoRegistro[K];
 }
 
 export function VetPetProfilePage() {
@@ -337,31 +375,6 @@ export function VetPetProfilePage() {
     }
   }
 
-  /** Campos do registro, no formato que a API recebe. */
-  function toDto(kind: HealthRecordType, form: HealthRecordForm) {
-    const notes = form.notes.trim() || undefined;
-    if (kind === "medication") {
-      return {
-        medication_name: form.name.trim(),
-        dosage: form.dosage.trim(),
-        frequency: form.frequency.trim(),
-        start_date: form.start_date,
-        ...(form.end_date ? { end_date: form.end_date } : {}),
-        notes,
-      };
-    }
-    const nome =
-      kind === "vaccine"
-        ? { vaccine_name: form.name.trim() }
-        : { product_name: form.name.trim() };
-    return {
-      ...nome,
-      applied_at: form.applied_at,
-      ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
-      notes,
-    };
-  }
-
   async function handleRecordSubmit(form: HealthRecordForm) {
     if (!token || !id || !recordType) return;
 
@@ -380,32 +393,20 @@ export function VetPetProfilePage() {
         await load();
         return;
       }
-      const notes = form.notes.trim() || undefined;
       if (recordType === "medication") {
         await createMedication(token, id, {
           pet_id: id,
-          medication_name: form.name.trim(),
-          dosage: form.dosage.trim(),
-          frequency: form.frequency.trim(),
-          start_date: form.start_date,
-          ...(form.end_date ? { end_date: form.end_date } : {}),
-          notes,
+          ...toDto("medication", form),
         });
       } else if (recordType === "vaccine") {
         await createVaccine(token, id, {
           pet_id: id,
-          vaccine_name: form.name.trim(),
-          applied_at: form.applied_at,
-          ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
-          notes,
+          ...toDto("vaccine", form),
         });
       } else {
         await createDeworming(token, id, {
           pet_id: id,
-          product_name: form.name.trim(),
-          applied_at: form.applied_at,
-          ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
-          notes,
+          ...toDto("deworming", form),
         });
       }
       setRecordType(null);
@@ -664,41 +665,25 @@ export function VetPetProfilePage() {
                   ) : (
                     <div className="vet-pet-profile-section-list">
                       {porData(data.vaccines, (v) => v.applied_at).map((v) => (
-                        <div key={v.id} className="vet-section-card">
-                          <div className="vet-section-card-header">
-                            <span className="vet-section-card-title">
-                              {v.vaccine_name}
-                            </span>
-                            <span className="vet-section-card-date">
-                              {formatDate(v.applied_at)}
-                            </span>
-                          </div>
-                          {v.veterinarian_name && (
-                            <span className="vet-section-card-sub">
-                              {assinatura(
-                                v.veterinarian_name,
-                                v.veterinario_crmv,
-                              )}
-                            </span>
-                          )}
-                          {v.next_dose_at && (
-                            <span className="vet-section-card-sub">
-                              {t("petProfile.nextDose")}:{" "}
-                              {formatDate(v.next_dose_at)}
-                            </span>
-                          )}
-                          {v.notes && (
-                            <p className="vet-section-card-notes">{v.notes}</p>
-                          )}
-                          {acoesDoRegistro("vaccine", v, {
+                        <RecordCard
+                          key={v.id}
+                          titulo={v.vaccine_name}
+                          data={formatDate(v.applied_at)}
+                          veterinario={v.veterinarian_name}
+                          crmv={v.veterinario_crmv}
+                          proximaDose={
+                            v.next_dose_at && formatDate(v.next_dose_at)
+                          }
+                          notes={v.notes}
+                          acoes={acoesDoRegistro("vaccine", v, {
                             ...emptyForm(),
                             name: v.vaccine_name,
                             applied_at: v.applied_at,
                             next_dose_at: v.next_dose_at ?? "",
                             notes: v.notes ?? "",
                           })}
-                          {anexosDoRegistro("VACINA", v)}
-                        </div>
+                          anexos={anexosDoRegistro("VACINA", v)}
+                        />
                       ))}
                     </div>
                   )}
@@ -727,43 +712,25 @@ export function VetPetProfilePage() {
                     <div className="vet-pet-profile-section-list">
                       {porData(data.dewormings, (d) => d.applied_at).map(
                         (d) => (
-                          <div key={d.id} className="vet-section-card">
-                            <div className="vet-section-card-header">
-                              <span className="vet-section-card-title">
-                                {d.product_name}
-                              </span>
-                              <span className="vet-section-card-date">
-                                {formatDate(d.applied_at)}
-                              </span>
-                            </div>
-                            {d.veterinarian_name && (
-                              <span className="vet-section-card-sub">
-                                {assinatura(
-                                  d.veterinarian_name,
-                                  d.veterinario_crmv,
-                                )}
-                              </span>
-                            )}
-                            {d.next_dose_at && (
-                              <span className="vet-section-card-sub">
-                                {t("petProfile.nextDose")}:{" "}
-                                {formatDate(d.next_dose_at)}
-                              </span>
-                            )}
-                            {d.notes && (
-                              <p className="vet-section-card-notes">
-                                {d.notes}
-                              </p>
-                            )}
-                            {acoesDoRegistro("deworming", d, {
+                          <RecordCard
+                            key={d.id}
+                            titulo={d.product_name}
+                            data={formatDate(d.applied_at)}
+                            veterinario={d.veterinarian_name}
+                            crmv={d.veterinario_crmv}
+                            proximaDose={
+                              d.next_dose_at && formatDate(d.next_dose_at)
+                            }
+                            notes={d.notes}
+                            acoes={acoesDoRegistro("deworming", d, {
                               ...emptyForm(),
                               name: d.product_name,
                               applied_at: d.applied_at,
                               next_dose_at: d.next_dose_at ?? "",
                               notes: d.notes ?? "",
                             })}
-                            {anexosDoRegistro("VERMIFUGO", d)}
-                          </div>
+                            anexos={anexosDoRegistro("VERMIFUGO", d)}
+                          />
                         ),
                       )}
                     </div>
@@ -793,33 +760,19 @@ export function VetPetProfilePage() {
                     <div className="vet-pet-profile-section-list">
                       {porData(data.medications, (m) => m.start_date).map(
                         (m) => (
-                          <div key={m.id} className="vet-section-card">
-                            <div className="vet-section-card-header">
-                              <span className="vet-section-card-title">
-                                {m.medication_name}
-                              </span>
-                              <span className="vet-section-card-date">
-                                {formatDate(m.start_date)}
-                                {m.end_date && ` — ${formatDate(m.end_date)}`}
-                              </span>
-                            </div>
-                            <span className="vet-section-card-sub">
-                              {m.dosage} — {m.frequency}
-                            </span>
-                            {m.veterinarian_name && (
-                              <span className="vet-section-card-sub">
-                                {assinatura(
-                                  m.veterinarian_name,
-                                  m.veterinario_crmv,
-                                )}
-                              </span>
-                            )}
-                            {m.notes && (
-                              <p className="vet-section-card-notes">
-                                {m.notes}
-                              </p>
-                            )}
-                            {acoesDoRegistro("medication", m, {
+                          <RecordCard
+                            key={m.id}
+                            titulo={m.medication_name}
+                            data={
+                              m.end_date
+                                ? `${formatDate(m.start_date)} — ${formatDate(m.end_date)}`
+                                : formatDate(m.start_date)
+                            }
+                            detalhe={`${m.dosage} — ${m.frequency}`}
+                            veterinario={m.veterinarian_name}
+                            crmv={m.veterinario_crmv}
+                            notes={m.notes}
+                            acoes={acoesDoRegistro("medication", m, {
                               ...emptyForm(),
                               name: m.medication_name,
                               dosage: m.dosage,
@@ -828,8 +781,8 @@ export function VetPetProfilePage() {
                               end_date: m.end_date ?? "",
                               notes: m.notes ?? "",
                             })}
-                            {anexosDoRegistro("MEDICACAO", m)}
-                          </div>
+                            anexos={anexosDoRegistro("MEDICACAO", m)}
+                          />
                         ),
                       )}
                     </div>
