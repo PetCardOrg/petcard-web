@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { updateVeterinario } from "./vet-profile.service";
 
 export interface CrmvStatus {
   verified: boolean;
@@ -33,11 +34,7 @@ export function verificarCrmv(
  * destrava nada — quem chama precisa verificar em seguida.
  */
 export function corrigirMeuCrmv(token: string, crmv: string): Promise<void> {
-  return apiFetch("/veterinarios/me", {
-    method: "PATCH",
-    body: { crmv },
-    token,
-  });
+  return updateVeterinario(token, { crmv });
 }
 
 /** Resposta de `GET /auth/veterinario/crmv` — primeiro passo do cadastro. */
