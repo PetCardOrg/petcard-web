@@ -128,4 +128,12 @@ export class ApiError extends Error {
   get isCrmvNaoVerificado(): boolean {
     return this.status === 403 && /CRMV/i.test(this.detail ?? "");
   }
+
+  /**
+   * 401 por senha atual errada (AUD API-04), e não por sessão expirada: a
+   * pessoa só precisa digitar de novo, não entrar de novo.
+   */
+  get isSenhaAtualIncorreta(): boolean {
+    return this.status === 401 && /senha atual/i.test(this.detail ?? "");
+  }
 }

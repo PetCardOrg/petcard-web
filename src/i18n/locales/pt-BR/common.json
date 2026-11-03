@@ -412,7 +412,10 @@
       "success": "Perfil atualizado.",
       "duplicate": "Já existe uma conta com esse e-mail ou CRMV.",
       "invalid": "Confira os dados informados.",
-      "genericError": "Não foi possível salvar. Tente de novo."
+      "genericError": "Não foi possível salvar. Tente de novo.",
+      "senhaAtual": "Senha atual",
+      "senhaAtualHint": "Para trocar o e-mail, confirme que é você.",
+      "senhaAtualIncorreta": "Senha atual incorreta. Confira e tente de novo."
     },
     "danger": {
       "title": "Excluir conta",
