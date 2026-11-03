@@ -6,6 +6,8 @@ export interface UpdateVeterinarioRequest {
   telefone?: string;
   crmv?: string;
   foto_url?: string;
+  /** Obrigatória quando o e-mail muda (AUD API-04). */
+  senha_atual?: string;
 }
 
 /**

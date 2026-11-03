@@ -156,6 +156,51 @@ describe("VetDashboardPage", () => {
     );
   });
 
+  it("faz uma chamada só na primeira carga (AUD WEB-07)", async () => {
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+    await screen.findByText("Rex");
+
+    // Passa do debounce da busca, que antes disparava a segunda chamada.
+    await new Promise((r) => setTimeout(r, 500));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("descarta a resposta de uma busca antiga que chega por último (AUD WEB-07)", async () => {
+    let responderA: (r: PaginatedResponse<DashboardPetItem>) => void = () => {};
+    fetchMock.mockImplementation((_token, params) => {
+      if (params?.search === "a") {
+        return new Promise((resolve) => {
+          responderA = resolve;
+        });
+      }
+      if (params?.search === "ab") {
+        return Promise.resolve(page([{ ...rex, id: "p2", name: "Abel" }]));
+      }
+      return Promise.resolve(page([rex]));
+    });
+    render(<VetDashboardPage />);
+    await screen.findByText("Rex");
+    const campo = screen.getByPlaceholderText(
+      "Buscar por nome do pet ou tutor...",
+    );
+
+    await userEvent.type(campo, "a");
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "jwt",
+        expect.objectContaining({ search: "a" }),
+      ),
+    );
+    await userEvent.type(campo, "b");
+    expect(await screen.findByText("Abel")).toBeInTheDocument();
+
+    responderA(page([{ ...rex, id: "p3", name: "Amora" }]));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(screen.queryByText("Amora")).not.toBeInTheDocument();
+    expect(screen.getByText("Abel")).toBeInTheDocument();
+  });
+
   it("avisa e oferece a verificação quando o CRMV está pendente", async () => {
     // Sem o botão o vet leria o aviso e não teria o que fazer com ele: é a
     // primeira tela dele, e o histórico clínico fica barrado até verificar.
@@ -169,6 +214,27 @@ describe("VetDashboardPage", () => {
     expect(
       screen.getByRole("button", { name: "Verificar meu CRMV" }),
     ).toBeInTheDocument();
+  });
+
+  it("mostra no aviso pós-cadastro que o nome não confere com o CRMV (AUD WEB-16)", async () => {
+    crmvStatusMock.mockResolvedValue({
+      verified: false,
+      situacao: "Nome do cadastro não confere com o titular do CRMV",
+    });
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+
+    expect(
+      await screen.findByText(/O nome do seu cadastro não confere/),
+    ).toBeInTheDocument();
+  });
+
+  it("mostra no aviso pós-cadastro a situação informada pelo conselho (AUD WEB-16)", async () => {
+    crmvStatusMock.mockResolvedValue({ verified: false, situacao: "SUSPENSO" });
+    fetchMock.mockResolvedValue(page([rex]));
+    render(<VetDashboardPage />);
+
+    expect(await screen.findByText(/SUSPENSO/)).toBeInTheDocument();
   });
 
   it("não avisa quando o CRMV está verificado", async () => {

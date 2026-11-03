@@ -22,17 +22,13 @@ import type {
 } from "../../services/dashboard.service";
 import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
+import { nomeDivergente } from "../../utils/crmvSituacao";
+import { formatarData } from "../../utils/datas";
+import { coresDaEspecie } from "../../utils/especies";
 import "./VetDashboardPage.css";
 
 const PAGE_SIZE = 10;
 const DEBOUNCE_MS = 400;
-
-const SPECIES_COLORS: Record<string, { bg: string; text: string }> = {
-  DOG: { bg: "#e6f7fc", text: "#27a9d8" },
-  CAT: { bg: "#ede5fc", text: "#6b48c8" },
-  BIRD: { bg: "#e5f8ee", text: "#06a77d" },
-  OTHER: { bg: "#fef5e6", text: "#d4940a" },
-};
 
 export function VetDashboardPage() {
   const { t } = useTranslation();
@@ -41,6 +37,9 @@ export function VetDashboardPage() {
   // O dashboard é a primeira tela do vet: é aqui que ele precisa descobrir
   // que o CRMV não passou, e não no primeiro atendimento (api#113).
   const [crmvVerificado, setCrmvVerificado] = useState<boolean | null>(null);
+  // Motivo da recusa, quando o conselho informou um: sem ele o vet só via o
+  // aviso genérico de pendente depois do cadastro (AUD WEB-16).
+  const [crmvSituacao, setCrmvSituacao] = useState<string | undefined>();
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -48,14 +47,21 @@ export function VetDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
+  // Termo já passado pelo debounce: é ele, e não o texto digitado, que busca.
+  const [termo, setTermo] = useState("");
   const [page, setPage] = useState(1);
   const [removendo, setRemovendo] = useState<string | null>(null);
   const [erroRemocao, setErroRemocao] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Só a busca mais recente pode escrever na tela: a resposta de "a" que
+  // chega depois da de "ab" é descartada.
+  const ultimaBusca = useRef(0);
 
   const load = useCallback(
     async (searchTerm: string, pageNum: number) => {
       if (!token) return;
+      const busca = ++ultimaBusca.current;
+      const atual = () => busca === ultimaBusca.current;
       setLoading(true);
       setError(false);
       try {
@@ -64,15 +70,16 @@ export function VetDashboardPage() {
           pageSize: PAGE_SIZE,
           search: searchTerm || undefined,
         });
-        setData(result);
+        if (atual()) setData(result);
       } catch (err) {
+        if (!atual()) return;
         if (err instanceof ApiError && err.status === 401) {
           logout();
           return;
         }
         setError(true);
       } finally {
-        setLoading(false);
+        if (atual()) setLoading(false);
       }
     },
     [token, logout],
@@ -83,6 +90,7 @@ export function VetDashboardPage() {
     try {
       const status = await fetchCrmvStatus(token);
       setCrmvVerificado(status.verified);
+      setCrmvSituacao(status.situacao);
     } catch {
       // O aviso é secundário: falhar a consulta não pode esconder a lista.
       setCrmvVerificado(null);
@@ -93,20 +101,22 @@ export function VetDashboardPage() {
     void carregarStatusCrmv();
   }, [carregarStatusCrmv]);
 
+  // Um efeito só para página e termo: com um por dependência, a primeira
+  // carga e a troca de termo numa página > 1 buscavam duas vezes.
   useEffect(() => {
-    load(search, page);
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+    void load(termo, page);
+  }, [load, termo, page]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      setTermo(search);
       setPage(1);
-      load(search, 1);
     }, DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [search]);
 
   /**
    * Tira o pet da lista do veterinário.
@@ -125,7 +135,7 @@ export function VetDashboardPage() {
     setErroRemocao(false);
     try {
       await removerPetAtendido(token, pet.id);
-      await load(search, page);
+      await load(termo, page);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         logout();
@@ -135,14 +145,6 @@ export function VetDashboardPage() {
     } finally {
       setRemovendo(null);
     }
-  }
-
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString();
-  }
-
-  function getSpeciesColors(species: string) {
-    return SPECIES_COLORS[species] ?? SPECIES_COLORS.OTHER;
   }
 
   return (
@@ -185,7 +187,12 @@ export function VetDashboardPage() {
         {crmvVerificado === false && (
           <CrmvAviso
             token={token}
-            mensagem={t("crmv.pending")}
+            mensagem={
+              crmvSituacao && !nomeDivergente(crmvSituacao)
+                ? `${t("crmv.pending")} ${t("crmv.reason", { situacao: crmvSituacao })}`
+                : t("crmv.pending")
+            }
+            situacao={crmvSituacao}
             crmvAtual={user?.crmv}
             onVerificado={() => void carregarStatusCrmv()}
             className="vet-dashboard-crmv-aviso"
@@ -231,7 +238,7 @@ export function VetDashboardPage() {
               <IoAlertCircle size={36} color="#e63946" />
             </div>
             <h3>{t("vetDashboard.error")}</h3>
-            <button type="button" onClick={() => load(search, page)}>
+            <button type="button" onClick={() => load(termo, page)}>
               {t("vetDashboard.retry")}
             </button>
           </div>
@@ -256,7 +263,7 @@ export function VetDashboardPage() {
             )}
             <div className="vet-dashboard-pet-list">
               {data.items.map((pet) => {
-                const colors = getSpeciesColors(pet.species);
+                const colors = coresDaEspecie(pet.species);
                 return (
                   <div
                     key={pet.id}
@@ -308,7 +315,7 @@ export function VetDashboardPage() {
                           {pet.tutor_name}
                         </span>
                         <span className="vet-pet-card-date">
-                          {formatDate(pet.last_attended_at)}
+                          {formatarData(pet.last_attended_at)}
                         </span>
                       </div>
                     </div>

@@ -144,7 +144,10 @@ describe("PublicCardPage", () => {
     await waitFor(() =>
       expect(adicionarMock).toHaveBeenCalledWith("jwt-vet", "tok-123"),
     );
-    expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1");
+    // `replace`: o Voltar não pode cair de novo nesta entrada (AUD WEB-03).
+    expect(navigateMock).toHaveBeenCalledWith("/vet/pets/p1", {
+      replace: true,
+    });
   });
 
   it("oferece a verificação quando o CRMV barra o acesso", async () => {

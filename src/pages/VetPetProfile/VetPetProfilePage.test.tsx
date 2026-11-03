@@ -1,15 +1,19 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VetPetProfilePage } from "./VetPetProfilePage";
 import { ApiError } from "../../services/api";
 import type { PetProfileData } from "../../services/pet-profile.service";
+import i18n from "../../i18n";
+import { hojeLocal } from "../../utils/datas";
 
 const navigateMock = vi.fn();
+// Pet da rota; mutável para simular a troca de '/vet/pets/:id'.
+let petIdAtual = "p1";
 const logoutMock = vi.fn();
 
 vi.mock("react-router-dom", () => ({
-  useParams: () => ({ id: "p1" }),
+  useParams: () => ({ id: petIdAtual }),
   useNavigate: () => navigateMock,
   useLocation: () => ({ state: { tutor_name: "Alice Tutora" } }),
 }));
@@ -94,6 +98,7 @@ function buildProfile(overrides: Partial<PetProfileData> = {}): PetProfileData {
 
 describe("VetPetProfilePage", () => {
   beforeEach(() => {
+    petIdAtual = "p1";
     navigateMock.mockReset();
     logoutMock.mockReset();
     fetchProfileMock.mockReset();
@@ -134,6 +139,56 @@ describe("VetPetProfilePage", () => {
     render(<VetPetProfilePage />);
 
     await waitFor(() => expect(logoutMock).toHaveBeenCalled());
+  });
+
+  it("trocar o idioma não recarrega o perfil (AUD WEB-13)", async () => {
+    fetchProfileMock.mockResolvedValue(buildProfile());
+    render(<VetPetProfilePage />);
+    await screen.findByRole("heading", { name: "Rex" });
+
+    try {
+      await act(async () => {
+        await i18n.changeLanguage("en-US");
+      });
+      expect(
+        await screen.findByRole("button", { name: "Vaccines" }),
+      ).toBeInTheDocument();
+      expect(fetchProfileMock).toHaveBeenCalledTimes(1);
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage("pt-BR");
+      });
+    }
+  });
+
+  it("descarta o perfil do pet anterior que chega por último (AUD WEB-07)", async () => {
+    let responderP1: (p: PetProfileData) => void = () => {};
+    fetchProfileMock.mockImplementation((_token, petId) =>
+      petId === "p1"
+        ? new Promise((resolve) => {
+            responderP1 = resolve;
+          })
+        : Promise.resolve(
+            buildProfile({
+              pet: { ...buildProfile().pet, id: "p2", name: "Mel" },
+            }),
+          ),
+    );
+    const { rerender } = render(<VetPetProfilePage />);
+    await waitFor(() => expect(fetchProfileMock).toHaveBeenCalledTimes(1));
+
+    petIdAtual = "p2";
+    rerender(<VetPetProfilePage />);
+    expect(
+      await screen.findByRole("heading", { name: "Mel" }),
+    ).toBeInTheDocument();
+
+    responderP1(buildProfile());
+    await new Promise((r) => setTimeout(r, 0));
+    expect(
+      screen.queryByRole("heading", { name: "Rex" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Mel" })).toBeInTheDocument();
   });
 
   it("lista o histórico na ordem devolvida pela API", async () => {
@@ -256,6 +311,7 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
   );
 
   beforeEach(() => {
+    petIdAtual = "p1";
     vi.clearAllMocks();
   });
 
@@ -331,13 +387,17 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
         screen.getByRole("button", { name: /Nova vacina/ }),
       );
 
-      await userEvent.type(screen.getByLabelText(/Vacina/), "Antirrábica");
+      await userEvent.type(screen.getByLabelText(/Vacina/), " Antirrábica ");
+      await userEvent.type(screen.getByLabelText("Observações"), " reforço ");
       await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
       await waitFor(() => expect(createVaccineMock).toHaveBeenCalled());
-      const [, , dto] = createVaccineMock.mock.calls[0];
-      expect(dto.vaccine_name).toBe("Antirrábica");
-      expect(dto.pet_id).toBe("p1");
+      expect(createVaccineMock.mock.calls[0][2]).toStrictEqual({
+        pet_id: "p1",
+        vaccine_name: "Antirrábica",
+        applied_at: hojeLocal(),
+        notes: "reforço",
+      });
     });
 
     it("traduz o erro da API em vez de mostrar o texto em inglês", async () => {
@@ -389,8 +449,12 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
       await waitFor(() => expect(createDewormingMock).toHaveBeenCalled());
-      const [, , dto] = createDewormingMock.mock.calls[0];
-      expect(dto.product_name).toBe("Drontal");
+      expect(createDewormingMock.mock.calls[0][2]).toStrictEqual({
+        pet_id: "p1",
+        product_name: "Drontal",
+        applied_at: hojeLocal(),
+        notes: undefined,
+      });
     });
 
     it("bloqueia dosagem sem quantidade e não chama a API", async () => {
@@ -422,9 +486,14 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
       await waitFor(() => expect(createMedicationMock).toHaveBeenCalled());
-      const [, , dto] = createMedicationMock.mock.calls[0];
-      expect(dto.medication_name).toBe("Amoxicilina");
-      expect(dto.dosage).toBe("250mg");
+      expect(createMedicationMock.mock.calls[0][2]).toStrictEqual({
+        pet_id: "p1",
+        medication_name: "Amoxicilina",
+        dosage: "250mg",
+        frequency: "12/12h",
+        start_date: hojeLocal(),
+        notes: undefined,
+      });
     });
   });
   describe("timeline e ações no registro (web#34)", () => {
@@ -589,6 +658,46 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
 
       expect(deleteRecordMock).not.toHaveBeenCalled();
+      confirmSpy.mockRestore();
+    });
+
+    it("mostra na aba o erro ao apagar e mantém o registro (AUD WEB-04)", async () => {
+      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      deleteRecordMock.mockRejectedValueOnce(new ApiError(500, "boom"));
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
+      await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+
+      expect(
+        await screen.findByText("Erro ao apagar o registro. Tente novamente."),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Amoxicilina")).toBeInTheDocument();
+
+      // Trocar de aba limpa o aviso: ele é da ação, não da página.
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+      expect(
+        screen.queryByText("Erro ao apagar o registro. Tente novamente."),
+      ).not.toBeInTheDocument();
+      confirmSpy.mockRestore();
+    });
+
+    it("mostra o erro ao apagar a nota recusada (403) (AUD WEB-04)", async () => {
+      const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+      fetchProfileMock.mockResolvedValue(comRegistros());
+      deleteNoteMock.mockRejectedValueOnce(new ApiError(403, "Forbidden"));
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(
+        screen.getByRole("button", { name: "Notas Clínicas" }),
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Apagar" }));
+
+      expect(
+        await screen.findByText("Erro ao apagar o registro. Tente novamente."),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Otite")).toBeInTheDocument();
       confirmSpy.mockRestore();
     });
   });
@@ -762,6 +871,80 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
     expect(
       await screen.findByText(/Dra\. Camila Ferreira/),
     ).toBeInTheDocument();
+  });
+  it("mostra no card de cada aba os dados do registro (AUD WEB-09)", async () => {
+    const dia = (m: number, d: number, a = 2026) =>
+      new Date(a, m - 1, d).toLocaleDateString();
+    fetchProfileMock.mockResolvedValue(
+      buildProfile({
+        vaccines: [
+          {
+            id: "v1",
+            vaccine_name: "V10",
+            applied_at: "2026-03-01",
+            next_dose_at: "2027-03-01",
+            veterinarian_name: "Dra. Ana",
+            veterinario_crmv: "CRMV-CE 111",
+            notes: "Lote 42",
+            created_at: "2026-03-01T12:00:00Z",
+          },
+        ],
+        dewormings: [
+          {
+            id: "d1",
+            product_name: "Drontal",
+            applied_at: "2026-04-02",
+            next_dose_at: "2026-07-02",
+            veterinarian_name: "Dr. Bruno",
+            notes: "Em jejum",
+            created_at: "2026-04-02T12:00:00Z",
+          },
+        ],
+        medications: [
+          {
+            id: "m1",
+            medication_name: "Amoxicilina",
+            dosage: "250mg",
+            frequency: "12/12h",
+            start_date: "2026-05-03",
+            end_date: "2026-05-10",
+            veterinarian_name: "Dra. Ana",
+            veterinario_crmv: "CRMV-CE 111",
+            notes: "Com comida",
+            created_at: "2026-05-03T12:00:00Z",
+          },
+        ],
+      }),
+    );
+    render(<VetPetProfilePage />);
+    await screen.findByRole("heading", { name: "Rex" });
+
+    await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+    expect(screen.getByText("V10")).toBeInTheDocument();
+    expect(screen.getByText(dia(3, 1))).toBeInTheDocument();
+    expect(screen.getByText("Dra. Ana — CRMV-CE 111")).toBeInTheDocument();
+    expect(
+      screen.getByText(`Próxima dose: ${dia(3, 1, 2027)}`),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Lote 42")).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Vermifugações" }),
+    );
+    expect(screen.getByText("Drontal")).toBeInTheDocument();
+    expect(screen.getByText(dia(4, 2))).toBeInTheDocument();
+    expect(screen.getByText("Dr. Bruno")).toBeInTheDocument();
+    expect(screen.getByText(`Próxima dose: ${dia(7, 2)}`)).toBeInTheDocument();
+    expect(screen.getByText("Em jejum")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Medicações" }));
+    expect(screen.getByText("Amoxicilina")).toBeInTheDocument();
+    expect(
+      screen.getByText(`${dia(5, 3)} — ${dia(5, 10)}`),
+    ).toBeInTheDocument();
+    expect(screen.getByText("250mg — 12/12h")).toBeInTheDocument();
+    expect(screen.getByText("Dra. Ana — CRMV-CE 111")).toBeInTheDocument();
+    expect(screen.getByText("Com comida")).toBeInTheDocument();
   });
   describe("nota clínica e histórico imutável", () => {
     const comNota = () =>

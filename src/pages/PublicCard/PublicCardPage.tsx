@@ -178,6 +178,12 @@ export function PublicCardPage() {
     };
   }, [token]);
 
+  // Quem chegou aqui vindo do login ou do cadastro já pediu para entrar como
+  // veterinário; repetir o clique seria só atrito.
+  const pediuAcessoVet = Boolean(
+    lerRedirecionamentoVet(location.state).acessoVet,
+  );
+
   /**
    * Põe o pet na lista do veterinário e abre o prontuário.
    *
@@ -200,7 +206,14 @@ export function PublicCardPage() {
     setCrmvBloqueado(false);
     try {
       await adicionarPetAtendido(authToken, token);
-      navigate(`/vet/pets/${card.pet_id}`);
+      // Na volta do login, esta entrada do histórico (com `acessoVet`) é
+      // substituída: deixada para trás, o Voltar cairia nela e o efeito abaixo
+      // reabriria o prontuário — o vet ficava preso sem sair do lugar.
+      if (pediuAcessoVet) {
+        navigate(`/vet/pets/${card.pet_id}`, { replace: true });
+      } else {
+        navigate(`/vet/pets/${card.pet_id}`);
+      }
     } catch (err) {
       // CRMV pendente não é falha: é um passo que falta, e o vet resolve
       // sem sair da tela.
@@ -212,13 +225,8 @@ export function PublicCardPage() {
     } finally {
       setEntrando(false);
     }
-  }, [authToken, card, navigate, t, token]);
+  }, [authToken, card, navigate, pediuAcessoVet, t, token]);
 
-  // Quem chegou aqui vindo do login ou do cadastro já pediu para entrar como
-  // veterinário; repetir o clique seria só atrito.
-  const pediuAcessoVet = Boolean(
-    lerRedirecionamentoVet(location.state).acessoVet,
-  );
   useEffect(() => {
     if (pediuAcessoVet && authToken && card) {
       void entrarComoVet();

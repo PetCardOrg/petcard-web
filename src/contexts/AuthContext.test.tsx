@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "./AuthContext";
 import { useAuth } from "../hooks/useAuth";
+import { API_COLD_START_TIMEOUT_MS, ApiError } from "../services/api";
 
 vi.mock("../services/auth.service", () => ({
   loginVeterinario: vi.fn(),
@@ -116,7 +117,7 @@ describe("AuthProvider / useAuth", () => {
     expect(result.current.loading).toBe(true);
 
     await waitFor(() => expect(result.current.user).toEqual(vetUser));
-    expect(profileMock).toHaveBeenCalledWith("jwt-saved");
+    expect(profileMock).toHaveBeenCalledWith("jwt-saved", expect.anything());
     expect(result.current.loading).toBe(false);
   });
 
@@ -151,15 +152,64 @@ describe("AuthProvider / useAuth", () => {
     expect(profileMock).not.toHaveBeenCalled();
   });
 
-  it("descarta o token salvo quando o perfil falha (token inválido)", async () => {
+  it("descarta o token salvo quando a API responde 401 (token inválido)", async () => {
     localStorage.setItem(TOKEN_KEY, "jwt-stale");
-    profileMock.mockRejectedValue(new Error("401"));
+    profileMock.mockRejectedValue(new ApiError(401, "Unauthorized"));
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await waitFor(() => expect(result.current.token).toBeNull());
     expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
     expect(result.current.user).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+
+  /**
+   * O cold start do Render passa de 10s. Tratar timeout ou queda de rede como
+   * "token inválido" deslogava o vet toda vez que a API estava dormindo.
+   */
+  it.each([
+    ["timeout", new ApiError(0, "Timeout")],
+    ["erro de rede", new TypeError("Failed to fetch")],
+    ["erro 500", new ApiError(500, "Internal Server Error")],
+  ])("mantém o token salvo em %s", async (_caso, erro) => {
+    localStorage.setItem(TOKEN_KEY, "jwt-saved");
+    profileMock.mockRejectedValue(erro);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => expect(result.current.semConexao).toBe(true));
+    expect(localStorage.getItem(TOKEN_KEY)).toBe("jwt-saved");
+    expect(result.current.token).toBe("jwt-saved");
+    expect(result.current.loading).toBe(false);
+  });
+
+  it("a validação inicial espera o cold start da API", async () => {
+    localStorage.setItem(TOKEN_KEY, "jwt-saved");
+    profileMock.mockResolvedValue(vetUser);
+
+    renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() =>
+      expect(profileMock).toHaveBeenCalledWith("jwt-saved", {
+        timeoutMs: API_COLD_START_TIMEOUT_MS,
+      }),
+    );
+  });
+
+  it("tentarReconectar recupera a sessão quando a API acorda", async () => {
+    localStorage.setItem(TOKEN_KEY, "jwt-saved");
+    profileMock.mockRejectedValueOnce(new ApiError(0, "Timeout"));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.semConexao).toBe(true));
+
+    profileMock.mockResolvedValue(vetUser);
+    act(() => result.current.tentarReconectar());
+    expect(result.current.loading).toBe(true);
+
+    await waitFor(() => expect(result.current.user).toEqual(vetUser));
+    expect(result.current.semConexao).toBe(false);
     expect(result.current.loading).toBe(false);
   });
 });

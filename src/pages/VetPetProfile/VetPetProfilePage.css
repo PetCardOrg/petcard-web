@@ -559,6 +559,11 @@
   font-weight: 500;
 }
 
+/* Falha ao apagar, mostrada na aba (fora do modal) */
+.vet-delete-error {
+  margin-bottom: 0.75rem;
+}
+
 .vet-note-form-actions {
   display: flex;
   gap: 0.75rem;

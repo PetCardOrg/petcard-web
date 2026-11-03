@@ -9,6 +9,8 @@
  * sem quantidade, próxima dose antes da aplicação — é esta camada.
  */
 
+import { diaIsoLocal, hojeLocal } from "../../utils/datas";
+
 export type HealthRecordType = "vaccine" | "deworming" | "medication";
 
 export interface HealthRecordForm {
@@ -26,7 +28,7 @@ export interface HealthRecordForm {
 export type FieldErrors = Partial<Record<keyof HealthRecordForm, string>>;
 
 export function emptyForm(): HealthRecordForm {
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = hojeLocal();
   return {
     name: "",
     applied_at: hoje,
@@ -45,7 +47,7 @@ export function isValidDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const data = new Date(`${value}T00:00:00`);
   if (Number.isNaN(data.getTime())) return false;
-  return data.toISOString().split("T")[0] === value;
+  return diaIsoLocal(data) === value;
 }
 
 /**
@@ -97,7 +99,7 @@ export function validate(
 
   if (!isValidDate(form.applied_at)) {
     errors.applied_at = "invalidDate";
-  } else if (form.applied_at > new Date().toISOString().split("T")[0]) {
+  } else if (form.applied_at > hojeLocal()) {
     // Vacina e vermífugo registram o que já foi aplicado.
     errors.applied_at = "appliedInFuture";
   }

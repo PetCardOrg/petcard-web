@@ -93,24 +93,26 @@
     },
     "hero": {
       "title": "Você encontrou {{name}}!",
-      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo. Ela já foi avisada de que {{name}} foi encontrado."
+      "lead": "Este pet tem tutor e está sendo procurado. Ligue para a pessoa abaixo."
     },
     "contact": {
       "label": "Tutor: {{name}}",
       "call": "Ligar para {{phone}}",
-      "noPhone": "O tutor não cadastrou telefone. Ele já foi avisado pelo aplicativo e deve entrar em contato em breve."
+      "noPhone": "O tutor não cadastrou telefone. O aviso de que {{name}} foi encontrado chega a ele pelo aplicativo: confira abaixo se deu certo."
     },
     "location": {
       "asking": "Permita o acesso à localização para o tutor saber onde o pet está.",
       "sent": "Pronto! {{name}} recebeu um aviso com a sua localização.",
       "denied": "{{name}} foi avisado de que o pet foi encontrado, mas sem a localização. Se puder, compartilhe. Ajuda muito.",
-      "retry": "Compartilhar minha localização"
+      "retry": "Compartilhar minha localização",
+      "failed": "Não conseguimos avisar {{name}} agora. Ligue pelo botão acima ou tente de novo.",
+      "retryNotify": "Tentar avisar de novo"
     },
     "steps": {
       "title": "O que fazer agora",
       "one": "Ligue para o tutor pelo botão acima.",
       "two": "Combine um ponto de encontro seguro para a entrega.",
-      "three": "Se não conseguir falar, mantenha o pet em local seguro. O tutor já foi notificado e vai te procurar."
+      "three": "Se não conseguir falar, mantenha o pet em local seguro até o tutor entrar em contato."
     },
     "footer": "Coleira digital PetCard."
   },
@@ -231,7 +233,10 @@
     "saving": "Salvando...",
     "cancel": "Cancelar",
     "duplicate": "Já existe uma conta com esse CRMV.",
-    "saveFailed": "Não foi possível salvar o CRMV agora. Tente novamente."
+    "saveFailed": "Não foi possível salvar o CRMV agora. Tente novamente.",
+    "nameMismatch": "O nome do seu cadastro não confere com o titular deste CRMV no conselho. Ajuste o nome no seu perfil, como consta no registro, e verifique de novo.",
+    "editName": "Corrigir meu nome",
+    "reason": "Situação informada pelo conselho: {{situacao}}."
   },
   "petProfile": {
     "title": "Perfil do Pet",
@@ -407,7 +412,10 @@
       "success": "Perfil atualizado.",
       "duplicate": "Já existe uma conta com esse e-mail ou CRMV.",
       "invalid": "Confira os dados informados.",
-      "genericError": "Não foi possível salvar. Tente de novo."
+      "genericError": "Não foi possível salvar. Tente de novo.",
+      "senhaAtual": "Senha atual",
+      "senhaAtualHint": "Para trocar o e-mail, confirme que é você.",
+      "senhaAtualIncorreta": "Senha atual incorreta. Confira e tente de novo."
     },
     "danger": {
       "title": "Excluir conta",
@@ -419,6 +427,14 @@
       "cancel": "Cancelar",
       "deleting": "Excluindo...",
       "error": "Não foi possível excluir a conta. Tente de novo."
+    }
+  },
+  "session": {
+    "connecting": "Conectando ao servidor...",
+    "offline": {
+      "title": "Não foi possível conectar",
+      "description": "O servidor está demorando para responder. Sua sessão continua salva.",
+      "retry": "Tentar de novo"
     }
   }
 }

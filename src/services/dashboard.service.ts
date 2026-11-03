@@ -1,5 +1,5 @@
 import type { PetAtendidoResponseDto } from "@petcardorg/shared";
-import { apiFetch } from "./api";
+import { apiFetch, caminho } from "./api";
 
 export interface DashboardPetItem {
   id: string;
@@ -62,7 +62,7 @@ export async function removerPetAtendido(
   token: string,
   petId: string,
 ): Promise<void> {
-  await apiFetch(`/veterinarios/me/pets/${petId}`, {
+  await apiFetch(caminho`/veterinarios/me/pets/${petId}`, {
     method: "DELETE",
     token,
   });
