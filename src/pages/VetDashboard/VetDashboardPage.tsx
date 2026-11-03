@@ -23,6 +23,7 @@ import type {
 import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import { nomeDivergente } from "../../utils/crmvSituacao";
+import type { CrmvMotivoRecusa } from "@petcardorg/shared";
 import { formatarData } from "../../utils/datas";
 import { coresDaEspecie } from "../../utils/especies";
 import "./VetDashboardPage.css";
@@ -40,6 +41,7 @@ export function VetDashboardPage() {
   // Motivo da recusa, quando o conselho informou um: sem ele o vet só via o
   // aviso genérico de pendente depois do cadastro (AUD WEB-16).
   const [crmvSituacao, setCrmvSituacao] = useState<string | undefined>();
+  const [crmvMotivo, setCrmvMotivo] = useState<CrmvMotivoRecusa | undefined>();
 
   const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
     null,
@@ -91,6 +93,7 @@ export function VetDashboardPage() {
       const status = await fetchCrmvStatus(token);
       setCrmvVerificado(status.verified);
       setCrmvSituacao(status.situacao);
+      setCrmvMotivo(status.motivo);
     } catch {
       // O aviso é secundário: falhar a consulta não pode esconder a lista.
       setCrmvVerificado(null);
@@ -188,11 +191,11 @@ export function VetDashboardPage() {
           <CrmvAviso
             token={token}
             mensagem={
-              crmvSituacao && !nomeDivergente(crmvSituacao)
+              crmvSituacao && !nomeDivergente(crmvMotivo)
                 ? `${t("crmv.pending")} ${t("crmv.reason", { situacao: crmvSituacao })}`
                 : t("crmv.pending")
             }
-            situacao={crmvSituacao}
+            motivo={crmvMotivo}
             crmvAtual={user?.crmv}
             onVerificado={() => void carregarStatusCrmv()}
             className="vet-dashboard-crmv-aviso"
