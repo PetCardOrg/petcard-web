@@ -632,6 +632,27 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       expect(dto).toMatchObject({ vaccine_name: "Antirrábica reforço" });
     });
 
+    it("na edição, opcional apagado vai como null (AUD WEB-05)", async () => {
+      const perfil = comRegistros();
+      Object.assign(perfil.vaccines[0], {
+        next_dose_at: "2027-03-01",
+        notes: "Reforço anual",
+      });
+      fetchProfileMock.mockResolvedValue(perfil);
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(screen.getByRole("button", { name: "Vacinas" }));
+      await userEvent.click(screen.getByRole("button", { name: "Editar" }));
+
+      await userEvent.clear(screen.getByLabelText(/Próxima dose/));
+      await userEvent.clear(screen.getByLabelText(/Observações/));
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      await waitFor(() => expect(updateRecordMock).toHaveBeenCalled());
+      const [, , , dto] = updateRecordMock.mock.calls[0];
+      expect(dto).toMatchObject({ next_dose_at: null, notes: null });
+    });
+
     it("apaga o registro depois de confirmar", async () => {
       const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
       fetchProfileMock.mockResolvedValue(comRegistros());
@@ -980,6 +1001,29 @@ describe("VetPetProfilePage — bloqueio por CRMV (api#113)", () => {
       const [, notaId, dto] = updateNoteMock.mock.calls[0];
       expect(notaId).toBe("n1");
       expect(dto.diagnostico).toBe("Otite bilateral");
+    });
+
+    it("na edição da nota, prescrição apagada vai como null (AUD WEB-05)", async () => {
+      const perfil = comNota();
+      Object.assign(perfil.clinicalNotes[0], { prescricao: "Gotas 2x ao dia" });
+      fetchProfileMock.mockResolvedValue(perfil);
+      render(<VetPetProfilePage />);
+      await screen.findByRole("heading", { name: "Rex" });
+      await userEvent.click(
+        screen.getByRole("button", { name: "Notas Clínicas" }),
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Editar" }));
+
+      await userEvent.clear(screen.getByLabelText(/Prescrição/));
+      await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+
+      await waitFor(() => expect(updateNoteMock).toHaveBeenCalled());
+      const [, , dto] = updateNoteMock.mock.calls[0];
+      expect(dto).toEqual({
+        diagnostico: "Otite",
+        prescricao: null,
+        observacoes: null,
+      });
     });
 
     it("apaga a própria nota depois de confirmar", async () => {

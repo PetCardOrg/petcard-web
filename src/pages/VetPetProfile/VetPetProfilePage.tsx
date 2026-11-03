@@ -26,6 +26,7 @@ import {
   fetchHistoricoClinico,
 } from "../../services/pet-profile.service";
 import type {
+  ComLimpeza,
   PetProfileData,
   RecordKind,
 } from "../../services/pet-profile.service";
@@ -142,6 +143,29 @@ function toDto<K extends HealthRecordType>(
     ...(form.next_dose_at ? { next_dose_at: form.next_dose_at } : {}),
     notes,
   } as CamposDoRegistro[K];
+}
+
+/** Opcionais de cada tipo que a edição pode apagar. */
+const OPCIONAIS: Record<HealthRecordType, readonly string[]> = {
+  medication: ["end_date", "notes"],
+  vaccine: ["next_dose_at", "notes"],
+  deworming: ["next_dose_at", "notes"],
+};
+
+/**
+ * Campos do registro para o PATCH. Opcional vazio vai como `null` (AUD
+ * WEB-05): omitido, a API mantinha o valor antigo e o campo não se apagava.
+ * A criação segue com `toDto`, que só omite.
+ */
+function toUpdateDto<K extends HealthRecordType>(
+  kind: K,
+  form: HealthRecordForm,
+): ComLimpeza<CamposDoRegistro[K]> {
+  const dto: Record<string, unknown> = { ...toDto(kind, form) };
+  for (const campo of OPCIONAIS[kind]) {
+    if (dto[campo] === undefined) dto[campo] = null;
+  }
+  return dto as ComLimpeza<CamposDoRegistro[K]>;
 }
 
 export function VetPetProfilePage() {
@@ -328,10 +352,11 @@ export function VetPetProfilePage() {
         dto.observacoes = formData.observacoes.trim();
       }
       if (editingNote) {
+        // Opcional vazio vai como `null` para apagar (AUD WEB-05).
         await updateClinicalNote(token, editingNote, {
           diagnostico: dto.diagnostico,
-          prescricao: dto.prescricao,
-          observacoes: dto.observacoes,
+          prescricao: dto.prescricao ?? null,
+          observacoes: dto.observacoes ?? null,
         });
       } else {
         await createClinicalNote(token, id, dto);
@@ -361,7 +386,7 @@ export function VetPetProfilePage() {
           token,
           recordType as RecordKind,
           editing.id,
-          toDto(recordType, form),
+          toUpdateDto(recordType, form),
         );
         setRecordType(null);
         setEditing(null);
