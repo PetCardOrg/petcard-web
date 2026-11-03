@@ -204,6 +204,11 @@
   transition: border-color 0.2s;
 }
 
+/* Espaço para o olhinho do PasswordInput, que o `padding` acima apagaria. */
+.vet-profile-field .password-input input {
+  padding-right: 3rem;
+}
+
 .vet-profile-field input::placeholder {
   color: #607d8b;
 }

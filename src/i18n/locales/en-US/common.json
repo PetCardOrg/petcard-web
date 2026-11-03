@@ -412,7 +412,10 @@
       "success": "Profile updated.",
       "duplicate": "An account with this email or CRMV already exists.",
       "invalid": "Please check the information provided.",
-      "genericError": "Could not save. Please try again."
+      "genericError": "Could not save. Please try again.",
+      "senhaAtual": "Current password",
+      "senhaAtualHint": "To change your email, confirm it's you.",
+      "senhaAtualIncorreta": "Incorrect current password. Please check and try again."
     },
     "danger": {
       "title": "Delete account",

@@ -9,6 +9,7 @@ import {
   IoPersonCircleOutline,
   IoWarningOutline,
 } from "react-icons/io5";
+import { PasswordInput } from "../../components/PasswordInput/PasswordInput";
 import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../services/api";
 import { uploadImage } from "../../services/upload.service";
@@ -23,6 +24,11 @@ import {
 } from "../../utils/phoneMask";
 import "./VetProfilePage.css";
 
+/** O mesmo que a API faz antes de comparar e gravar o e-mail. */
+function normalizarEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 export function VetProfilePage() {
   const { t } = useTranslation();
   const { user, token, logout, refreshUser } = useAuth();
@@ -34,6 +40,7 @@ export function VetProfilePage() {
   const [nome, setNome] = useState(user?.nome ?? "");
   const [crmv, setCrmv] = useState(user?.crmv ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [senhaAtual, setSenhaAtual] = useState("");
   const [telefone, setTelefone] = useState(formatPhoneBR(user?.telefone ?? ""));
   const [telefoneError, setTelefoneError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -44,6 +51,7 @@ export function VetProfilePage() {
     setNome(user?.nome ?? "");
     setCrmv(user?.crmv ?? "");
     setEmail(user?.email ?? "");
+    setSenhaAtual("");
     setTelefone(formatPhoneBR(user?.telefone ?? ""));
     setTelefoneError(null);
     setSaveError(null);
@@ -53,9 +61,15 @@ export function VetProfilePage() {
 
   function handleCancelEditing() {
     setIsEditing(false);
+    setSenhaAtual("");
     setTelefoneError(null);
     setSaveError(null);
   }
+
+  // Trocar o e-mail pede a senha atual (AUD WEB-14): com só o token, quem o
+  // pegasse trocava o e-mail e recuperava a senha por ele.
+  const emailMudou =
+    normalizarEmail(email) !== normalizarEmail(user?.email ?? "");
 
   function handleTelefoneChange(e: ChangeEvent<HTMLInputElement>) {
     setTelefone(formatPhoneBR(e.target.value));
@@ -111,11 +125,17 @@ export function VetProfilePage() {
         crmv: crmv.trim(),
         email: email.trim(),
         telefone: telefoneDigits === "" ? undefined : telefoneDigits,
+        ...(emailMudou && { senha_atual: senhaAtual }),
       });
       await refreshUser();
       setSaveSuccess(true);
       setIsEditing(false);
+      setSenhaAtual("");
     } catch (err) {
+      if (err instanceof ApiError && err.isSenhaAtualIncorreta) {
+        setSaveError(t("vetProfile.form.senhaAtualIncorreta"));
+        return;
+      }
       if (err instanceof ApiError && err.status === 401) {
         logout();
         return;
@@ -293,6 +313,25 @@ export function VetProfilePage() {
                 disabled={saving}
               />
             </div>
+
+            {emailMudou && (
+              <div className="vet-profile-field">
+                <label htmlFor="senha-atual">
+                  {t("vetProfile.form.senhaAtual")}
+                </label>
+                <PasswordInput
+                  id="senha-atual"
+                  value={senhaAtual}
+                  onChange={(e) => setSenhaAtual(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  disabled={saving}
+                />
+                <small className="vet-profile-hint">
+                  {t("vetProfile.form.senhaAtualHint")}
+                </small>
+              </div>
+            )}
 
             <div className="vet-profile-field">
               <label htmlFor="telefone">{t("vetProfile.form.telefone")}</label>

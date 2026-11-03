@@ -174,6 +174,7 @@ describe("VetProfilePage", () => {
     await user.type(screen.getByLabelText("CRMV"), "CRMV-SP 54321");
     await user.clear(screen.getByLabelText("E-mail"));
     await user.type(screen.getByLabelText("E-mail"), "camila.s@vet.com");
+    await user.type(screen.getByLabelText("Senha atual"), "SenhaAtual1!");
     await user.clear(screen.getByLabelText("Telefone"));
     await user.type(screen.getByLabelText("Telefone"), "11888887777");
     await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
@@ -184,6 +185,7 @@ describe("VetProfilePage", () => {
         crmv: "CRMV-SP 54321",
         email: "camila.s@vet.com",
         telefone: "11888887777",
+        senha_atual: "SenhaAtual1!",
       }),
     );
     expect(refreshUserMock).toHaveBeenCalled();
@@ -218,6 +220,71 @@ describe("VetProfilePage", () => {
     expect(
       await screen.findByText("Já existe uma conta com esse e-mail ou CRMV."),
     ).toBeInTheDocument();
+  });
+
+  it("só pede a senha atual quando o e-mail muda (AUD WEB-14)", async () => {
+    updateVeterinarioMock.mockResolvedValue(undefined);
+    refreshUserMock.mockResolvedValue(undefined);
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    expect(screen.queryByLabelText("Senha atual")).not.toBeInTheDocument();
+
+    // Só maiúsculas e espaços: a API normaliza e o e-mail continua o mesmo.
+    await user.clear(screen.getByLabelText("E-mail"));
+    await user.type(screen.getByLabelText("E-mail"), " Camila@Vet.com ");
+    expect(screen.queryByLabelText("Senha atual")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    await waitFor(() => expect(updateVeterinarioMock).toHaveBeenCalled());
+    expect(updateVeterinarioMock.mock.calls[0][1]).not.toHaveProperty(
+      "senha_atual",
+    );
+  });
+
+  it("exige a senha atual para trocar o e-mail (AUD WEB-14)", async () => {
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    await user.clear(screen.getByLabelText("E-mail"));
+    await user.type(screen.getByLabelText("E-mail"), "nova@vet.com");
+
+    expect(screen.getByLabelText("Senha atual")).toBeRequired();
+  });
+
+  it("senha atual errada mostra o erro e não desloga (AUD WEB-14)", async () => {
+    updateVeterinarioMock.mockRejectedValue(
+      new ApiError(401, "Unauthorized", "Senha atual incorreta."),
+    );
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    await user.clear(screen.getByLabelText("E-mail"));
+    await user.type(screen.getByLabelText("E-mail"), "nova@vet.com");
+    await user.type(screen.getByLabelText("Senha atual"), "chute");
+    await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    expect(
+      await screen.findByText(
+        "Senha atual incorreta. Confira e tente de novo.",
+      ),
+    ).toBeInTheDocument();
+    expect(logoutMock).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("E-mail")).toHaveValue("nova@vet.com");
+  });
+
+  it("sessão expirada ao trocar o e-mail ainda desloga (AUD WEB-14)", async () => {
+    updateVeterinarioMock.mockRejectedValue(new ApiError(401, "Unauthorized"));
+    render(<VetProfilePage />);
+    const user = await openEditMode();
+
+    await user.clear(screen.getByLabelText("E-mail"));
+    await user.type(screen.getByLabelText("E-mail"), "nova@vet.com");
+    await user.type(screen.getByLabelText("Senha atual"), "SenhaAtual1!");
+    await user.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    await waitFor(() => expect(logoutMock).toHaveBeenCalled());
   });
 
   it("desloga em 401 ao salvar", async () => {
