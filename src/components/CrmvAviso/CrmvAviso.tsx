@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import type { CrmvMotivoRecusa } from "@petcardorg/shared";
 import { corrigirMeuCrmv, verificarCrmv } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import { nomeDivergente } from "../../utils/crmvSituacao";
@@ -13,8 +14,8 @@ interface CrmvAvisoProps {
   mensagem: string;
   /** CRMV atual da conta, para o veterinário corrigir a partir dele. */
   crmvAtual?: string;
-  /** Última situação devolvida pelo conselho, quando a tela já a conhece. */
-  situacao?: string;
+  /** Motivo estável da última recusa, quando a tela já o conhece (AUD WEB-17). */
+  motivo?: CrmvMotivoRecusa;
   /** Chamado quando a verificação passa: cada tela refaz o que ficou parado. */
   onVerificado: () => void;
   className?: string;
@@ -35,7 +36,7 @@ export function CrmvAviso({
   token,
   mensagem,
   crmvAtual,
-  situacao,
+  motivo,
   onVerificado,
   className,
 }: CrmvAvisoProps) {
@@ -45,7 +46,7 @@ export function CrmvAviso({
   const [corrigindo, setCorrigindo] = useState(false);
   const [crmv, setCrmv] = useState(crmvAtual ?? "");
   const [erro, setErro] = useState<string | null>(null);
-  const [situacaoAtual, setSituacaoAtual] = useState(situacao);
+  const [motivoAtual, setMotivoAtual] = useState(motivo);
 
   /** Consulta o conselho e destrava a tela, ou explica a recusa. */
   async function consultarConselho(autenticacao: string) {
@@ -54,10 +55,10 @@ export function CrmvAviso({
       onVerificado();
       return;
     }
-    setSituacaoAtual(status.situacao);
+    setMotivoAtual(status.motivo);
     // Nome divergente tem aviso próprio (abaixo): o número está certo, e
     // "corrija o CRMV" mandaria o vet mexer no campo errado.
-    if (nomeDivergente(status.situacao)) return;
+    if (nomeDivergente(status.motivo)) return;
     // Recusa do conselho não é falha da chamada: dizer qual é a situação
     // é o que permite ao vet corrigir o cadastro.
     setErro(t("crmv.refused", { situacao: status.situacao ?? "-" }));
@@ -161,7 +162,7 @@ export function CrmvAviso({
         </div>
       )}
 
-      {nomeDivergente(situacaoAtual) && (
+      {nomeDivergente(motivoAtual) && (
         <p className="crmv-aviso-erro">
           {t("crmv.nameMismatch")}{" "}
           <Link to="/vet/profile">{t("crmv.editName")}</Link>

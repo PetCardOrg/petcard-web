@@ -1,11 +1,9 @@
+import type { CrmvStatusResponseDto } from "@petcardorg/shared";
 import { apiFetch } from "./api";
 import { updateVeterinario } from "./vet-profile.service";
 
-export interface CrmvStatus {
-  verified: boolean;
-  situacao?: string;
-  verified_at?: string;
-}
+/** Status do CRMV, com o `motivo` estável da recusa (AUD WEB-17). */
+export type CrmvStatus = CrmvStatusResponseDto;
 
 export function fetchCrmvStatus(token: string): Promise<CrmvStatus> {
   return apiFetch<CrmvStatus>("/veterinarios/me/crmv", { token });
