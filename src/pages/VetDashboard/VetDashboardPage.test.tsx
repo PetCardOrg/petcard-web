@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { VetDashboardPage } from "./VetDashboardPage";
 import { ApiError } from "../../services/api";
+import { MOTIVO_NOME_DIVERGENTE } from "../../utils/crmvSituacao";
 import type {
   DashboardPetItem,
   PaginatedResponse,
@@ -219,7 +220,8 @@ describe("VetDashboardPage", () => {
   it("mostra no aviso pós-cadastro que o nome não confere com o CRMV (AUD WEB-16)", async () => {
     crmvStatusMock.mockResolvedValue({
       verified: false,
-      situacao: "Nome do cadastro não confere com o titular do CRMV",
+      situacao: "Titular divergente",
+      motivo: MOTIVO_NOME_DIVERGENTE,
     });
     fetchMock.mockResolvedValue(page([rex]));
     render(<VetDashboardPage />);

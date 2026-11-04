@@ -179,14 +179,21 @@ export const RECORD_ENDPOINT = {
 
 export type RecordKind = keyof typeof RECORD_ENDPOINT;
 
+/**
+ * Corpo de PATCH em que `null` limpa o campo opcional (AUD WEB-05). A API
+ * aceita desde o API-24; os DTOs do shared ainda não tipam o `null` (SH-09).
+ */
+export type ComLimpeza<T> = { [K in keyof T]?: T[K] | null };
+
 export async function updateHealthRecord(
   token: string,
   kind: RecordKind,
   id: string,
-  dto:
+  dto: ComLimpeza<
     | UpdateVaccineRecordDto
     | UpdateDewormingRecordDto
-    | UpdateMedicationRecordDto,
+    | UpdateMedicationRecordDto
+  >,
 ): Promise<void> {
   await apiFetch(caminho`/${RECORD_ENDPOINT[kind]}/${id}`, {
     method: "PATCH",
@@ -220,7 +227,7 @@ export async function fetchHistoricoClinico(
 export async function updateClinicalNote(
   token: string,
   id: string,
-  dto: UpdateNotaClinicaDto,
+  dto: ComLimpeza<UpdateNotaClinicaDto>,
 ): Promise<void> {
   await apiFetch(caminho`/clinical-notes/${id}`, {
     method: "PATCH",

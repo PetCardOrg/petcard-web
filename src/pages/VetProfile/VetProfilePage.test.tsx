@@ -348,21 +348,59 @@ describe("VetProfilePage", () => {
     expect(deleteVeterinarioMock).not.toHaveBeenCalled();
   });
 
-  it("confirma a exclusão, limpa a sessão e redireciona ao login", async () => {
+  it("confirma a exclusão com a senha, limpa a sessão e redireciona ao login (AUD API-28)", async () => {
     deleteVeterinarioMock.mockResolvedValue(undefined);
     render(<VetProfilePage />);
 
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Excluir conta" }));
+    await user.type(screen.getByLabelText("Senha atual"), "SenhaAtual1!");
     await user.click(
       screen.getByRole("button", { name: "Sim, excluir definitivamente" }),
     );
 
     await waitFor(() =>
-      expect(deleteVeterinarioMock).toHaveBeenCalledWith("jwt-123"),
+      expect(deleteVeterinarioMock).toHaveBeenCalledWith("jwt-123", {
+        senha_atual: "SenhaAtual1!",
+      }),
     );
     expect(logoutMock).toHaveBeenCalled();
     expect(navigateMock).toHaveBeenCalledWith("/vet/login", { replace: true });
+  });
+
+  it("não chama a API sem a senha (AUD API-28)", async () => {
+    render(<VetProfilePage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Excluir conta" }));
+
+    expect(screen.getByLabelText("Senha atual")).toBeRequired();
+    await user.click(
+      screen.getByRole("button", { name: "Sim, excluir definitivamente" }),
+    );
+    expect(deleteVeterinarioMock).not.toHaveBeenCalled();
+  });
+
+  it("senha errada na exclusão mostra o erro e não desloga (AUD API-28)", async () => {
+    deleteVeterinarioMock.mockRejectedValue(
+      new ApiError(401, "Unauthorized", "Senha atual incorreta."),
+    );
+    render(<VetProfilePage />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Excluir conta" }));
+    await user.type(screen.getByLabelText("Senha atual"), "chute");
+    await user.click(
+      screen.getByRole("button", { name: "Sim, excluir definitivamente" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Senha atual incorreta. Confira e tente de novo.",
+      ),
+    ).toBeInTheDocument();
+    expect(logoutMock).not.toHaveBeenCalled();
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 
   it("mostra erro e permite tentar de novo se a exclusão falhar", async () => {
@@ -373,6 +411,7 @@ describe("VetProfilePage", () => {
 
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "Excluir conta" }));
+    await user.type(screen.getByLabelText("Senha atual"), "SenhaAtual1!");
     await user.click(
       screen.getByRole("button", { name: "Sim, excluir definitivamente" }),
     );

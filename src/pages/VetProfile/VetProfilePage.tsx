@@ -82,6 +82,7 @@ export function VetProfilePage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [senhaExclusao, setSenhaExclusao] = useState("");
 
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -152,16 +153,23 @@ export function VetProfilePage() {
     }
   }
 
-  async function handleDelete() {
-    if (!token) return;
+  async function handleDelete(e: FormEvent) {
+    e.preventDefault();
+    if (!token || senhaExclusao === "") return;
 
     setDeleting(true);
     setDeleteError(null);
     try {
-      await deleteVeterinario(token);
+      // Só o token não basta para uma ação irreversível (AUD API-28).
+      await deleteVeterinario(token, { senha_atual: senhaExclusao });
       logout();
       navigate("/vet/login", { replace: true });
     } catch (err) {
+      if (err instanceof ApiError && err.isSenhaAtualIncorreta) {
+        setDeleteError(t("vetProfile.form.senhaAtualIncorreta"));
+        setDeleting(false);
+        return;
+      }
       if (err instanceof ApiError && err.status === 401) {
         logout();
         navigate("/vet/login", { replace: true });
@@ -395,9 +403,25 @@ export function VetProfilePage() {
               </button>
             </>
           ) : (
-            <div className="vet-profile-danger-confirm">
+            <form
+              className="vet-profile-danger-confirm"
+              onSubmit={(e) => void handleDelete(e)}
+            >
               <h4>{t("vetProfile.danger.confirmTitle")}</h4>
               <p>{t("vetProfile.danger.confirmDescription")}</p>
+              <div className="vet-profile-field">
+                <label htmlFor="senha-exclusao">
+                  {t("vetProfile.form.senhaAtual")}
+                </label>
+                <PasswordInput
+                  id="senha-exclusao"
+                  value={senhaExclusao}
+                  onChange={(e) => setSenhaExclusao(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  disabled={deleting}
+                />
+              </div>
               {deleteError && (
                 <p className="vet-profile-error">{deleteError}</p>
               )}
@@ -409,22 +433,22 @@ export function VetProfilePage() {
                   onClick={() => {
                     setConfirmingDelete(false);
                     setDeleteError(null);
+                    setSenhaExclusao("");
                   }}
                 >
                   {t("vetProfile.danger.cancel")}
                 </button>
                 <button
-                  type="button"
+                  type="submit"
                   className="vet-profile-danger-confirm-button"
                   disabled={deleting}
-                  onClick={() => void handleDelete()}
                 >
                   {deleting
                     ? t("vetProfile.danger.deleting")
                     : t("vetProfile.danger.confirmButton")}
                 </button>
               </div>
-            </div>
+            </form>
           )}
         </div>
       </main>

@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import { MOTIVO_NOME_DIVERGENTE } from "../../utils/crmvSituacao";
 import { CrmvAviso } from "./CrmvAviso";
 
 vi.mock("../../services/crmv.service", () => ({
@@ -23,14 +24,17 @@ describe("CrmvAviso", () => {
     onVerificado.mockReset();
   });
 
-  function renderizar(crmvAtual?: string, situacao?: string) {
+  function renderizar(
+    crmvAtual?: string,
+    motivo?: typeof MOTIVO_NOME_DIVERGENTE,
+  ) {
     render(
       <MemoryRouter>
         <CrmvAviso
           token="jwt-vet"
           mensagem="Acesso barrado"
           crmvAtual={crmvAtual}
-          situacao={situacao}
+          motivo={motivo}
           onVerificado={onVerificado}
         />
       </MemoryRouter>,
@@ -78,10 +82,12 @@ describe("CrmvAviso", () => {
 
   // AUD WEB-16: com nome divergente o problema é o nome do cadastro, não o
   // número; mandar "corrigir o CRMV" levava o vet para o lugar errado.
+  // O texto da situação é qualquer um: a decisão vem do `motivo` (AUD WEB-17).
   it("pede para corrigir o nome quando ele não confere com o titular (AUD WEB-16)", async () => {
     verificarMock.mockResolvedValue({
       verified: false,
-      situacao: "Nome do cadastro não confere com o titular do CRMV",
+      situacao: "Titular divergente",
+      motivo: MOTIVO_NOME_DIVERGENTE,
     });
     renderizar();
 
@@ -97,7 +103,7 @@ describe("CrmvAviso", () => {
   });
 
   it("mostra o motivo já conhecido pela tela, sem precisar verificar (AUD WEB-16)", () => {
-    renderizar(undefined, "Nome do cadastro não confere com o titular do CRMV");
+    renderizar(undefined, MOTIVO_NOME_DIVERGENTE);
 
     expect(
       screen.getByText(/O nome do seu cadastro não confere/),

@@ -1,3 +1,4 @@
+import type { DeleteVeterinarioDto } from "@petcardorg/shared";
 import { apiFetch } from "./api";
 
 export interface UpdateVeterinarioRequest {
@@ -27,9 +28,14 @@ export function updateVeterinario(
   });
 }
 
-export function deleteVeterinario(token: string): Promise<void> {
+/** Exclui a conta. Exige a senha atual no corpo (AUD API-28). */
+export function deleteVeterinario(
+  token: string,
+  dto: DeleteVeterinarioDto,
+): Promise<void> {
   return apiFetch<void>("/veterinarios/me", {
     method: "DELETE",
+    body: dto,
     token,
   });
 }
