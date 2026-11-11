@@ -5,9 +5,9 @@ import { VetDashboardPage } from "./VetDashboardPage";
 import { ApiError } from "../../services/api";
 import { MOTIVO_NOME_DIVERGENTE } from "../../utils/crmvSituacao";
 import type {
-  DashboardPetItem,
+  DashboardPetResponseDto,
   PaginatedResponse,
-} from "../../services/dashboard.service";
+} from "@petcardorg/shared";
 
 const navigateMock = vi.fn();
 const logoutMock = vi.fn();
@@ -48,9 +48,9 @@ const removerMock = vi.mocked(removerPetAtendido);
 const crmvStatusMock = vi.mocked(fetchCrmvStatus);
 
 function page(
-  items: DashboardPetItem[],
-  overrides: Partial<PaginatedResponse<DashboardPetItem>> = {},
-): PaginatedResponse<DashboardPetItem> {
+  items: DashboardPetResponseDto[],
+  overrides: Partial<PaginatedResponse<DashboardPetResponseDto>> = {},
+): PaginatedResponse<DashboardPetResponseDto> {
   return {
     items,
     total: items.length,
@@ -61,13 +61,13 @@ function page(
   };
 }
 
-const rex: DashboardPetItem = {
+const rex: DashboardPetResponseDto = {
   id: "p1",
   name: "Rex",
   species: "DOG",
   breed: "Labrador",
   tutor_name: "Alice Tutora",
-  last_attended_at: "2026-01-10T12:00:00.000Z",
+  last_attended_at: new Date("2026-01-10T12:00:00.000Z"),
 };
 
 let confirmado = true;
@@ -168,7 +168,9 @@ describe("VetDashboardPage", () => {
   });
 
   it("descarta a resposta de uma busca antiga que chega por último (AUD WEB-07)", async () => {
-    let responderA: (r: PaginatedResponse<DashboardPetItem>) => void = () => {};
+    let responderA: (
+      r: PaginatedResponse<DashboardPetResponseDto>,
+    ) => void = () => {};
     fetchMock.mockImplementation((_token, params) => {
       if (params?.search === "a") {
         return new Promise((resolve) => {

@@ -1,12 +1,12 @@
-import type { CrmvStatusResponseDto } from "@petcardorg/shared";
+import type {
+  CrmvConsultaResponseDto,
+  CrmvStatusResponseDto,
+} from "@petcardorg/shared";
 import { apiFetch } from "./api";
 import { updateVeterinario } from "./vet-profile.service";
 
-/** Status do CRMV, com o `motivo` estável da recusa (AUD WEB-17). */
-export type CrmvStatus = CrmvStatusResponseDto;
-
-export function fetchCrmvStatus(token: string): Promise<CrmvStatus> {
-  return apiFetch<CrmvStatus>("/veterinarios/me/crmv", { token });
+export function fetchCrmvStatus(token: string): Promise<CrmvStatusResponseDto> {
+  return apiFetch<CrmvStatusResponseDto>("/veterinarios/me/crmv", { token });
 }
 
 /**
@@ -18,8 +18,8 @@ export function fetchCrmvStatus(token: string): Promise<CrmvStatus> {
 export function verificarCrmv(
   token: string,
   force = false,
-): Promise<CrmvStatus> {
-  return apiFetch<CrmvStatus>(
+): Promise<CrmvStatusResponseDto> {
+  return apiFetch<CrmvStatusResponseDto>(
     `/veterinarios/me/crmv/verificar${force ? "?force=true" : ""}`,
     { method: "POST", token },
   );
@@ -35,18 +35,6 @@ export function corrigirMeuCrmv(token: string, crmv: string): Promise<void> {
   return updateVeterinario(token, { crmv });
 }
 
-/** Resposta de `GET /auth/veterinario/crmv` — primeiro passo do cadastro. */
-export interface CrmvConsulta {
-  /** Formato canônico ("CRMV-SP 12345"), que o cadastro deve enviar. */
-  crmv: string;
-  uf: string;
-  numero: string;
-  valido: boolean;
-  /** Nome no CFMV. Ausente quando o provedor não informa (ex.: stub). */
-  nome?: string;
-  situacao?: string;
-}
-
 /**
  * A consulta ao CFMV passa por um robô de terceiro e leva de 10 a 20 s — acima
  * do teto padrão do `apiFetch` (10 s), que cortava a resposta e mandava o vet
@@ -58,8 +46,8 @@ const CONSULTA_CRMV_TIMEOUT_MS = 45000;
  * Consulta o CRMV antes do cadastro (rota pública). A API guarda a consulta
  * por alguns minutos, e o cadastro em seguida a reaproveita.
  */
-export function consultarCrmv(crmv: string): Promise<CrmvConsulta> {
-  return apiFetch<CrmvConsulta>(
+export function consultarCrmv(crmv: string): Promise<CrmvConsultaResponseDto> {
+  return apiFetch<CrmvConsultaResponseDto>(
     `/auth/veterinario/crmv?crmv=${encodeURIComponent(crmv.trim())}`,
     { timeoutMs: CONSULTA_CRMV_TIMEOUT_MS },
   );
