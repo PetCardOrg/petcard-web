@@ -1,15 +1,8 @@
-import type { DeleteVeterinarioDto } from "@petcardorg/shared";
+import type {
+  DeleteVeterinarioDto,
+  UpdateVeterinarioDto,
+} from "@petcardorg/shared";
 import { apiFetch } from "./api";
-
-export interface UpdateVeterinarioRequest {
-  nome?: string;
-  email?: string;
-  telefone?: string;
-  crmv?: string;
-  foto_url?: string;
-  /** Obrigatória quando o e-mail muda (AUD API-04). */
-  senha_atual?: string;
-}
 
 /**
  * A resposta do PATCH é o registro cru do banco (camelCase, com campos
@@ -19,7 +12,7 @@ export interface UpdateVeterinarioRequest {
  */
 export function updateVeterinario(
   token: string,
-  dto: UpdateVeterinarioRequest,
+  dto: UpdateVeterinarioDto,
 ): Promise<void> {
   return apiFetch<void>("/veterinarios/me", {
     method: "PATCH",

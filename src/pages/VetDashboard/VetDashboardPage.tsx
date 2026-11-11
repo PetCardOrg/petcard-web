@@ -16,14 +16,14 @@ import {
   fetchDashboardPets,
   removerPetAtendido,
 } from "../../services/dashboard.service";
-import type {
-  DashboardPetItem,
-  PaginatedResponse,
-} from "../../services/dashboard.service";
 import { fetchCrmvStatus } from "../../services/crmv.service";
 import { ApiError } from "../../services/api";
 import { nomeDivergente } from "../../utils/crmvSituacao";
-import type { CrmvMotivoRecusa } from "@petcardorg/shared";
+import type {
+  CrmvMotivoRecusa,
+  DashboardPetResponseDto,
+  PaginatedResponse,
+} from "@petcardorg/shared";
 import { formatarData } from "../../utils/datas";
 import { coresDaEspecie } from "../../utils/especies";
 import "./VetDashboardPage.css";
@@ -43,9 +43,8 @@ export function VetDashboardPage() {
   const [crmvSituacao, setCrmvSituacao] = useState<string | undefined>();
   const [crmvMotivo, setCrmvMotivo] = useState<CrmvMotivoRecusa | undefined>();
 
-  const [data, setData] = useState<PaginatedResponse<DashboardPetItem> | null>(
-    null,
-  );
+  const [data, setData] =
+    useState<PaginatedResponse<DashboardPetResponseDto> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
@@ -127,7 +126,7 @@ export function VetDashboardPage() {
    * Some só o vínculo: o pet, os registros clínicos e a trilha continuam, e
    * ler o QR de novo traz o pet de volta.
    */
-  async function removerPet(pet: DashboardPetItem) {
+  async function removerPet(pet: DashboardPetResponseDto) {
     if (!token) return;
     if (
       !window.confirm(t("vetDashboard.remover.confirmar", { nome: pet.name }))

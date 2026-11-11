@@ -10,7 +10,7 @@ import { validatePasswordStrength } from "../../utils/passwordStrength";
 import { formatCrmv } from "../../utils/crmvMask";
 import { ApiError } from "../../services/api";
 import { consultarCrmv } from "../../services/crmv.service";
-import type { CrmvConsulta } from "../../services/crmv.service";
+import type { CrmvConsultaResponseDto } from "@petcardorg/shared";
 import { lerRedirecionamentoVet } from "../vetAuthRedirect";
 import "../VetLogin/VetLoginPage.css";
 import "./VetRegisterPage.css";
@@ -22,7 +22,7 @@ import "./VetRegisterPage.css";
  */
 type EtapaCrmv =
   | { tipo: "pendente" }
-  | { tipo: "consultado"; consulta: CrmvConsulta }
+  | { tipo: "consultado"; consulta: CrmvConsultaResponseDto }
   | { tipo: "manual" };
 
 export function VetRegisterPage() {

@@ -1,9 +1,12 @@
 import { createContext } from "react";
-import type { VetRegisterRequest, VetUser } from "../services/auth.service";
+import type {
+  CreateVeterinarioDto,
+  VeterinarioSessionUserDto,
+} from "@petcardorg/shared";
 
 interface AuthState {
   token: string | null;
-  user: VetUser | null;
+  user: VeterinarioSessionUserDto | null;
   loading: boolean;
   /**
    * Há token salvo, mas a API não respondeu à validação (dormindo, fora do ar,
@@ -20,7 +23,7 @@ export interface AuthContextValue extends AuthState {
    * A situação do CRMV não sai daqui: quem precisa dela consulta
    * `GET /veterinarios/me/crmv`, que continua valendo depois do cadastro.
    */
-  register: (dto: VetRegisterRequest) => Promise<void>;
+  register: (dto: CreateVeterinarioDto) => Promise<void>;
   logout: () => void;
   /** Reconsulta `GET /auth/veterinario/profile` para atualizar nome/foto exibidos. */
   refreshUser: () => Promise<void>;

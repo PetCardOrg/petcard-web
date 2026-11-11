@@ -65,7 +65,11 @@ describe("LostPetPage", () => {
     getMock.mockReset();
     leituraMock.mockReset();
     getMock.mockResolvedValue(PET);
-    leituraMock.mockResolvedValue({ id: "scan-1" });
+    leituraMock.mockResolvedValue({
+      id: "scan-1",
+      pet_id: "p1",
+      created_at: "2026-08-18T10:00:00Z",
+    });
     comGeolocation(posicaoConcedida);
   });
 
@@ -125,7 +129,12 @@ describe("LostPetPage", () => {
     leituraMock.mockImplementation(
       () =>
         new Promise((resolve) => {
-          liberarEnvio = () => resolve({ id: "scan-1" });
+          liberarEnvio = () =>
+            resolve({
+              id: "scan-1",
+              pet_id: "p1",
+              created_at: "2026-08-18T10:00:00Z",
+            });
         }),
     );
 
