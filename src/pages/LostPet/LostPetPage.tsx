@@ -14,11 +14,11 @@ import {
   getColeiraPublica,
   registrarLeitura,
 } from "../../services/coleira.service";
-import type {
-  ColeiraPublica,
-  CoordenadasCompartilhadas,
-} from "../../services/coleira.service";
 import { ApiError } from "../../services/api";
+import type {
+  ColeiraPublicResponseDto,
+  RegistrarLeituraDto,
+} from "@petcardorg/shared";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher/LanguageSwitcher";
 import "./LostPetPage.css";
 
@@ -33,7 +33,7 @@ type EstadoLocalizacao = "pedindo" | "enviada" | "sem_permissao" | "falhou";
  * ou o navegador não suportar. Nunca rejeita: negar a localização não pode
  * impedir o aviso de que o pet foi encontrado.
  */
-function obterLocalizacao(): Promise<CoordenadasCompartilhadas | undefined> {
+function obterLocalizacao(): Promise<RegistrarLeituraDto | undefined> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       resolve(undefined);
@@ -66,7 +66,7 @@ export function LostPetPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation();
 
-  const [pet, setPet] = useState<ColeiraPublica | null>(null);
+  const [pet, setPet] = useState<ColeiraPublicResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<"not_found" | "network" | null>(null);
   const [localizacao, setLocalizacao] = useState<EstadoLocalizacao>("pedindo");

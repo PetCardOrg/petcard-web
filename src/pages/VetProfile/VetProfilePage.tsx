@@ -124,9 +124,11 @@ export function VetProfilePage() {
       await updateVeterinario(token, {
         nome: nome.trim(),
         crmv: crmv.trim(),
-        email: email.trim(),
         telefone: telefoneDigits === "" ? undefined : telefoneDigits,
-        ...(emailMudou && { senha_atual: senhaAtual }),
+        // O e-mail só vai quando muda: a API exige a senha atual sempre que
+        // o campo aparece (AUD SH-03), e reenviar o mesmo e-mail travava a
+        // edição de nome, CRMV ou telefone.
+        ...(emailMudou && { email: email.trim(), senha_atual: senhaAtual }),
       });
       await refreshUser();
       setSaveSuccess(true);

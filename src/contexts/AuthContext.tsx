@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { VetRegisterRequest, VetUser } from "../services/auth.service";
+import type {
+  CreateVeterinarioDto,
+  VeterinarioSessionUserDto,
+} from "@petcardorg/shared";
 import {
   loginVeterinario,
   registerVeterinario,
@@ -13,7 +16,7 @@ const TOKEN_KEY = "petcard-vet-token";
 
 interface AuthState {
   token: string | null;
-  user: VetUser | null;
+  user: VeterinarioSessionUserDto | null;
   loading: boolean;
   semConexao: boolean;
 }
@@ -81,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const register = useCallback(async (dto: VetRegisterRequest) => {
+  const register = useCallback(async (dto: CreateVeterinarioDto) => {
     const response = await registerVeterinario(dto);
     localStorage.setItem(TOKEN_KEY, response.access_token);
     setState({

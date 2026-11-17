@@ -1,108 +1,42 @@
 import type {
-  AnexoResponseDto,
   HistoricoClinicoResponseDto,
   UpdateNotaClinicaDto,
   CreateDewormingRecordDto,
   CreateMedicationRecordDto,
   CreateNotaClinicaDto,
   CreateVaccineRecordDto,
+  DewormingRecordResponseDto,
+  MedicationRecordResponseDto,
+  NotaClinicaResponseDto,
+  PetResponseDto,
   UpdateDewormingRecordDto,
   UpdateMedicationRecordDto,
   UpdateVaccineRecordDto,
+  VaccineRecordResponseDto,
 } from "@petcardorg/shared";
 import { apiFetch, caminho } from "./api";
 
-export interface PetDetail {
-  id: string;
-  name: string;
-  species: string;
-  breed?: string;
-  sex: string;
-  birth_date?: string;
-  weight?: number;
-  photo_url?: string;
-  tutor_id: string;
-}
-
-export interface VaccineRecord {
-  id: string;
-  vaccine_name: string;
-  applied_at: string;
-  next_dose_at?: string;
-  veterinarian_name?: string;
-  /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
-  veterinario_id?: string;
-  veterinario_crmv?: string;
-  notes?: string;
-  /** Comprovantes ativos do registro (foto da carteirinha, receita, PDF). */
-  anexos?: AnexoResponseDto[];
-  /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
-  created_at: string;
-}
-
-export interface DewormingRecord {
-  id: string;
-  product_name: string;
-  applied_at: string;
-  next_dose_at?: string;
-  veterinarian_name?: string;
-  /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
-  veterinario_id?: string;
-  veterinario_crmv?: string;
-  notes?: string;
-  /** Comprovantes ativos do registro (foto da carteirinha, receita, PDF). */
-  anexos?: AnexoResponseDto[];
-  /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
-  created_at: string;
-}
-
-export interface MedicationRecord {
-  id: string;
-  medication_name: string;
-  dosage: string;
-  frequency: string;
-  veterinarian_name?: string;
-  /** Veterinário do PetCard que registrou; ausente quando foi o tutor. */
-  veterinario_id?: string;
-  veterinario_crmv?: string;
-  start_date: string;
-  end_date?: string;
-  notes?: string;
-  /** Comprovantes ativos do registro (foto da carteirinha, receita, PDF). */
-  anexos?: AnexoResponseDto[];
-  /** Quando o registro foi criado; ordena a tela pela ordem de registro. */
-  created_at: string;
-}
-
-export interface ClinicalNote {
-  id: string;
-  veterinario_id: string;
-  veterinario_nome: string;
-  veterinario_crmv: string;
-  diagnostico: string;
-  prescricao?: string;
-  observacoes?: string;
-  created_at: string;
-}
-
 export interface PetProfileData {
-  pet: PetDetail;
-  vaccines: VaccineRecord[];
-  dewormings: DewormingRecord[];
-  medications: MedicationRecord[];
-  clinicalNotes: ClinicalNote[];
+  pet: PetResponseDto;
+  vaccines: VaccineRecordResponseDto[];
+  dewormings: DewormingRecordResponseDto[];
+  medications: MedicationRecordResponseDto[];
+  clinicalNotes: NotaClinicaResponseDto[];
 }
 
 export async function createClinicalNote(
   token: string,
   petId: string,
   dto: CreateNotaClinicaDto,
-): Promise<ClinicalNote> {
-  return apiFetch<ClinicalNote>(caminho`/pets/${petId}/clinical-notes`, {
-    method: "POST",
-    body: dto,
-    token,
-  });
+): Promise<NotaClinicaResponseDto> {
+  return apiFetch<NotaClinicaResponseDto>(
+    caminho`/pets/${petId}/clinical-notes`,
+    {
+      method: "POST",
+      body: dto,
+      token,
+    },
+  );
 }
 
 /**
@@ -116,20 +50,23 @@ export async function createMedication(
   token: string,
   petId: string,
   dto: CreateMedicationRecordDto,
-): Promise<MedicationRecord> {
-  return apiFetch<MedicationRecord>(caminho`/pets/${petId}/medications`, {
-    method: "POST",
-    body: dto,
-    token,
-  });
+): Promise<MedicationRecordResponseDto> {
+  return apiFetch<MedicationRecordResponseDto>(
+    caminho`/pets/${petId}/medications`,
+    {
+      method: "POST",
+      body: dto,
+      token,
+    },
+  );
 }
 
 export async function createVaccine(
   token: string,
   petId: string,
   dto: CreateVaccineRecordDto,
-): Promise<VaccineRecord> {
-  return apiFetch<VaccineRecord>(caminho`/pets/${petId}/vaccines`, {
+): Promise<VaccineRecordResponseDto> {
+  return apiFetch<VaccineRecordResponseDto>(caminho`/pets/${petId}/vaccines`, {
     method: "POST",
     body: dto,
     token,
@@ -140,12 +77,15 @@ export async function createDeworming(
   token: string,
   petId: string,
   dto: CreateDewormingRecordDto,
-): Promise<DewormingRecord> {
-  return apiFetch<DewormingRecord>(caminho`/pets/${petId}/dewormings`, {
-    method: "POST",
-    body: dto,
-    token,
-  });
+): Promise<DewormingRecordResponseDto> {
+  return apiFetch<DewormingRecordResponseDto>(
+    caminho`/pets/${petId}/dewormings`,
+    {
+      method: "POST",
+      body: dto,
+      token,
+    },
+  );
 }
 
 export async function fetchPetProfile(
@@ -154,17 +94,28 @@ export async function fetchPetProfile(
 ): Promise<PetProfileData> {
   const [pet, vaccines, dewormings, medications, clinicalNotes] =
     await Promise.all([
-      apiFetch<PetDetail>(caminho`/pets/${petId}`, { token }),
-      apiFetch<VaccineRecord[]>(caminho`/pets/${petId}/vaccines`, { token }),
-      apiFetch<DewormingRecord[]>(caminho`/pets/${petId}/dewormings`, {
+      apiFetch<PetResponseDto>(caminho`/pets/${petId}`, { token }),
+      apiFetch<VaccineRecordResponseDto[]>(caminho`/pets/${petId}/vaccines`, {
         token,
       }),
-      apiFetch<MedicationRecord[]>(caminho`/pets/${petId}/medications`, {
-        token,
-      }),
-      apiFetch<ClinicalNote[]>(caminho`/pets/${petId}/clinical-notes`, {
-        token,
-      }),
+      apiFetch<DewormingRecordResponseDto[]>(
+        caminho`/pets/${petId}/dewormings`,
+        {
+          token,
+        },
+      ),
+      apiFetch<MedicationRecordResponseDto[]>(
+        caminho`/pets/${petId}/medications`,
+        {
+          token,
+        },
+      ),
+      apiFetch<NotaClinicaResponseDto[]>(
+        caminho`/pets/${petId}/clinical-notes`,
+        {
+          token,
+        },
+      ),
     ]);
 
   return { pet, vaccines, dewormings, medications, clinicalNotes };

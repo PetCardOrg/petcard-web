@@ -241,6 +241,8 @@ describe("VetProfilePage", () => {
     expect(updateVeterinarioMock.mock.calls[0][1]).not.toHaveProperty(
       "senha_atual",
     );
+    // Sem o e-mail no corpo, a API não exige a senha atual (AUD SH-03).
+    expect(updateVeterinarioMock.mock.calls[0][1]).not.toHaveProperty("email");
   });
 
   it("exige a senha atual para trocar o e-mail (AUD WEB-14)", async () => {

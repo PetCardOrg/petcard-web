@@ -280,7 +280,7 @@ export function VetPetProfilePage() {
    * Mesma regra da timeline: ordena pela data exibida no card, usando a data
    * de registro só para desempatar o mesmo dia.
    */
-  function porData<T extends { created_at: string }>(
+  function porData<T extends { created_at: Date | string }>(
     itens: T[],
     dataDoItem: (item: T) => string,
   ): T[] {

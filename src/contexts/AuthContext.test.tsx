@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Role } from "@petcardorg/shared";
 import { AuthProvider } from "./AuthContext";
 import { useAuth } from "../hooks/useAuth";
 import { API_COLD_START_TIMEOUT_MS, ApiError } from "../services/api";
@@ -27,7 +28,7 @@ const vetUser = {
   nome: "Dra. Camila",
   email: "vet@petcard.com",
   crmv: "CRMV-CE-1234",
-  role: "VET",
+  role: "VET" as Role.VET,
 };
 
 function wrapper({ children }: { children: ReactNode }) {
